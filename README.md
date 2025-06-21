@@ -1,36 +1,85 @@
 # ArcadeSnake
 
-A classic Snake game implementation.
+A classic Snake game built with PixiJS and TypeScript, featuring smooth graphics and modern web technologies.
 
 ## Description
 
-This project implements the classic Snake game with modern features and clean code architecture.
+This project implements the classic Snake game using PixiJS for fast 2D rendering, TypeScript for type safety, and Vite for fast development and building. The game features smooth animations, responsive design, and local high score persistence.
 
 ## Features
 
-- [ ] Classic snake gameplay
-- [ ] Score tracking
-- [ ] Game over detection
-- [ ] Responsive design
-- [ ] High score system
+- ✅ Classic snake gameplay with smooth movement
+- ✅ Score tracking and high score persistence
+- ✅ Game over detection and restart functionality
+- ✅ Responsive design that scales to different screen sizes
+- ✅ Beautiful graphics with animated food and snake segments
+- ✅ Keyboard controls (Arrow keys or WASD)
+- ✅ Pause functionality (Spacebar)
+- ✅ Local storage for high scores
+- ✅ Progressive difficulty (speed increases with score)
 
 ## Getting Started
 
 ### Prerequisites
 
-[To be determined based on project type]
+- Node.js (version 16 or higher)
+- npm or yarn package manager
 
 ### Installation
 
-[To be added]
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/ArcadeSnake.git
+   cd ArcadeSnake
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+4. Open your browser and navigate to `http://localhost:3000`
+
+### Building for Production
+
+To create a production build:
+
+```bash
+npm run build
+```
+
+The built files will be in the `dist` directory.
 
 ### How to Play
 
-[To be added]
+- **Movement**: Use Arrow keys or WASD to control the snake
+- **Pause**: Press Spacebar to pause/unpause the game
+- **Objective**: Eat the red food to grow longer and increase your score
+- **Game Over**: Avoid hitting the walls or your own tail
+- **Restart**: Click "Play Again" when the game ends
 
 ## Technologies Used
 
-[To be determined]
+- **PixiJS** - Fast 2D rendering library
+- **TypeScript** - Type-safe JavaScript
+- **Vite** - Fast build tool and development server
+- **HTML5 Canvas** - Game rendering
+- **Local Storage** - High score persistence
+
+## Project Structure
+
+```
+src/
+├── main.ts          # Application entry point
+├── Game.ts          # Main game logic and state management
+├── Snake.ts         # Snake class with movement and rendering
+└── Food.ts          # Food class with positioning and animation
+```
 
 ## Contributing
 
@@ -47,4 +96,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Acknowledgments
 
 - Classic Snake game inspiration
-- [Add any other acknowledgments here] 
+- PixiJS team for the excellent rendering library
+- Vite team for the fast build tool 
