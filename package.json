@@ -1,5 +1,5 @@
 {
-  "name": "arcade-collection",
+  "name": "arcade",
   "version": "1.0.0",
   "description": "A collection of classic arcade games built with PixiJS",
   "main": "index.js",
