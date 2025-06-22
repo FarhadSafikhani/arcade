@@ -8,28 +8,40 @@ const getGameDimensions = () => {
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
     const maxWorkableWidth = windowWidth - 40; // 20px padding on each side
-    const maxWorkableHeight = windowHeight - 200; // Leave space for UI
+    const maxWorkableHeight = windowHeight - 250; // More conservative - leave more space for UI
     
     // 2. Determine grid count based on screen size
     const isMobile = windowWidth < 768;
-    const gridColumns = isMobile ? 10 : 20;
-    const gridRows = isMobile ? 15 : 20;
+    const gridColumns = isMobile ? 10 : 15;
+    let gridRows = isMobile ? 15 : 20;
     
     // 3. Calculate grid size to fit within available space
     const maxGridSizeFromWidth = maxWorkableWidth / gridColumns;
     const maxGridSizeFromHeight = maxWorkableHeight / gridRows;
-    const gridSize = Math.floor(Math.min(maxGridSizeFromWidth, maxGridSizeFromHeight));
+    let gridSize = Math.floor(Math.min(maxGridSizeFromWidth, maxGridSizeFromHeight));
     
-    // 4. Calculate final game dimensions
+    // 4. Recalculate if the game would overflow and adjust row count
     const gameWidth = gridColumns * gridSize;
     const gameHeight = gridRows * gridSize;
+    
+    // If game height would overflow, reduce row count
+    if (gameHeight > maxWorkableHeight) {
+        gridRows = Math.floor(maxWorkableHeight / gridSize);
+        // Recalculate grid size with new row count
+        const newMaxGridSizeFromHeight = maxWorkableHeight / gridRows;
+        gridSize = Math.floor(Math.min(maxGridSizeFromWidth, newMaxGridSizeFromHeight));
+    }
+    
+    // 5. Calculate final game dimensions
+    const finalGameWidth = gridColumns * gridSize;
+    const finalGameHeight = gridRows * gridSize;
     
     return {
         gridSize,
         gridWidth: gridColumns,
         gridHeight: gridRows,
-        gameWidth,
-        gameHeight
+        gameWidth: finalGameWidth,
+        gameHeight: finalGameHeight
     };
 };
 
@@ -44,6 +56,7 @@ export class SnakeGame {
     private lastMoveTime: number = 0;
     private isGameOver: boolean = false;
     private isPaused: boolean = false;
+    private isWaitingToStart: boolean = true;
     private removeInputHandler?: () => void;
     private removeTouchHandler?: () => void;
 
@@ -89,6 +102,7 @@ export class SnakeGame {
         // Set up input handling
         this.setupInput();
         this.setupTouchControls();
+        this.setupStartScreen();
         
         // Initialize UI
         this.updateUI();
@@ -219,8 +233,57 @@ export class SnakeGame {
         };
     }
 
+    private setupStartScreen(): void {
+        // Create start screen overlay
+        const startScreen = document.createElement('div');
+        startScreen.id = 'startScreen';
+        startScreen.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            z-index: 30;
+            cursor: pointer;
+        `;
+        
+        startScreen.innerHTML = `
+            <h2 style="margin: 0 0 20px 0; font-size: 24px;">🐍 Snake</h2>
+            <p style="margin: 0 0 30px 0; font-size: 16px; opacity: 0.8;">
+                Click or tap to start<br>
+                Use arrow keys or swipe to control
+            </p>
+            <div style="font-size: 14px; opacity: 0.6;">
+                Desktop: Arrow keys or WASD<br>
+                Mobile: Swipe to control
+            </div>
+        `;
+        
+        const gameContainer = document.getElementById('gameContainer');
+        if (gameContainer) {
+            gameContainer.appendChild(startScreen);
+        }
+        
+        // Add click/tap handler to start game
+        const startGame = () => {
+            this.isWaitingToStart = false;
+            this.lastMoveTime = Date.now();
+            startScreen.style.display = 'none';
+        };
+        
+        startScreen.addEventListener('click', startGame);
+        startScreen.addEventListener('touchstart', startGame, { passive: true });
+    }
+
     update(delta: number): void {
-        if (this.isGameOver || this.isPaused) return;
+        if (this.isGameOver || this.isPaused || this.isWaitingToStart) return;
 
         const currentTime = Date.now();
         if (currentTime - this.lastMoveTime > this.gameSpeed) {
@@ -249,7 +312,7 @@ export class SnakeGame {
         if (head.x === this.food.x && head.y === this.food.y) {
             this.snake.grow();
             this.spawnFood();
-            this.score += 10;
+            this.score += 1;
             this.updateUI();
             
             // Increase speed every 50 points
@@ -330,7 +393,8 @@ export class SnakeGame {
         this.gameSpeed = 150;
         this.isGameOver = false;
         this.isPaused = false;
-        this.lastMoveTime = Date.now(); // Set to current time to start immediately
+        this.isWaitingToStart = true;
+        this.lastMoveTime = 0;
         
         this.snake.reset();
         this.spawnFood();
@@ -344,6 +408,12 @@ export class SnakeGame {
         
         // Hide pause menu
         this.hidePauseMenu();
+        
+        // Show start screen
+        const startScreen = document.getElementById('startScreen');
+        if (startScreen) {
+            startScreen.style.display = 'flex';
+        }
     }
 
     resume(): void {
@@ -385,7 +455,13 @@ async function initGame() {
     // Add canvas to game container
     const gameContainer = document.getElementById('gameContainer');
     if (gameContainer) {
-        gameContainer.appendChild(app.view as HTMLCanvasElement);
+        const canvas = app.view as HTMLCanvasElement;
+        // Set CSS dimensions to match the app dimensions (not the canvas buffer size)
+        canvas.style.width = `${dimensions.gameWidth}px`;
+        canvas.style.height = `${dimensions.gameHeight}px`;
+        canvas.style.maxWidth = '100%';
+        canvas.style.maxHeight = '100%';
+        gameContainer.appendChild(canvas);
     }
 
     // Create and initialize game
