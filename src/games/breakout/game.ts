@@ -196,6 +196,24 @@ export class BreakoutGame {
             startTouchY = touch.clientY;
             event.preventDefault();
             
+            // Center paddle on initial touch position
+            const touchX = touch.clientX;
+            const canvas = this.app.view as HTMLCanvasElement;
+            const rect = canvas.getBoundingClientRect();
+            
+            // Calculate touch position relative to the canvas
+            const relativeX = touchX - rect.left;
+            
+            // Convert from scaled canvas coordinates to game coordinates
+            const scale = rect.width / BASE_GAME_WIDTH;
+            const gameX = relativeX / scale;
+            
+            // Position paddle so touch point maps to paddle center
+            const paddleX = gameX - this.currentPaddleWidth / 2;
+            const clampedX = Math.max(0, Math.min(BASE_GAME_WIDTH - this.currentPaddleWidth, paddleX));
+            const paddleY = BASE_GAME_HEIGHT - PADDLE_HEIGHT - 10;
+            this.paddle.setPosition(clampedX, paddleY);
+            
             if (!this.isGameStarted) {
                 this.startGame();
             }
@@ -226,17 +244,23 @@ export class BreakoutGame {
             
             // Only move paddle if we've started dragging
             if (hasStartedDragging) {
-                const touchX = touch.clientX; // Use full screen width
+                const touchX = touch.clientX;
                 
-                // Map screen position to game coordinates
-                // Use the full window width for better control
-                const screenWidth = window.innerWidth;
-                const gameX = (touchX / screenWidth) * BASE_GAME_WIDTH;
+                // Get the canvas element and its position
+                const canvas = this.app.view as HTMLCanvasElement;
+                const rect = canvas.getBoundingClientRect();
+                
+                // Calculate touch position relative to the canvas
+                const relativeX = touchX - rect.left;
+                
+                // Convert from scaled canvas coordinates to game coordinates
+                const scale = rect.width / BASE_GAME_WIDTH;
+                const gameX = relativeX / scale;
                 
                 // Position paddle so touch point maps to paddle center
                 const paddleX = gameX - this.currentPaddleWidth / 2;
                 
-                // Keep paddle within bounds
+                // Clamp paddle to game bounds
                 const clampedX = Math.max(0, Math.min(BASE_GAME_WIDTH - this.currentPaddleWidth, paddleX));
                 const paddleY = BASE_GAME_HEIGHT - PADDLE_HEIGHT - 10;
                 this.paddle.setPosition(clampedX, paddleY);
