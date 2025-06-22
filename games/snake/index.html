@@ -18,7 +18,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             min-height: 100vh;
             overflow: hidden;
             touch-action: none; /* Prevent zooming on mobile */
@@ -49,18 +49,19 @@
         .top-bar .game-title {
             margin: 0;
             font-size: clamp(18px, 4vw, 22px);
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
         }
         
         #gameContainer {
             position: relative;
-
+            border: 1px solid rgba(255, 255, 255, 0.4);
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-            max-width: calc(100vw - 20px);
-            max-height: calc(70vh - 20px);
-            margin: 10px;
             overflow: hidden;
-            width: fit-content;
-            height: fit-content;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
         }
         
         #gameContainer canvas {
@@ -78,15 +79,15 @@
             font-weight: bold;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
             text-align: center;
-            margin: 10px 0;
             display: flex;
             justify-content: center;
-            gap: 30px;
+            gap: 10px;
+            margin-bottom: 5px;
         }
         
         #gameUI div {
             background: rgba(0, 0, 0, 0.5);
-            padding: 8px 16px;
+            padding: 5px 10px;
             border-radius: 8px;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
@@ -172,17 +173,63 @@
         /* Mobile-specific styles */
         @media (max-width: 768px) {
             body {
-                padding: 5px;
+                padding-top: 50px;
+                justify-content: flex-start;
             }
             
-            #gameContainer {
-                border-width: 2px;
-                margin: 5px;
+            .top-bar {
+                padding: 8px 15px;
+            }
+            
+            .top-bar .game-title {
+                font-size: 18px;
+            }
+            
+            .button-container button {
+                padding: 6px 10px;
+                font-size: 11px;
+                min-height: 32px;
             }
             
             #gameUI {
                 font-size: 14px;
-                padding: 3px 8px;
+                gap: 8px;
+                margin-bottom: 8px;
+            }
+            
+            #gameUI div {
+                padding: 4px 8px;
+            }
+        }
+        
+        /* Extra small screens */
+        @media (max-width: 480px) {
+            body {
+                padding-top: 45px;
+            }
+            
+            .top-bar {
+                padding: 6px 12px;
+            }
+            
+            .top-bar .game-title {
+                font-size: 16px;
+            }
+            
+            .button-container button {
+                padding: 5px 8px;
+                font-size: 10px;
+                min-height: 28px;
+            }
+            
+            #gameUI {
+                font-size: 12px;
+                gap: 6px;
+                margin-bottom: 6px;
+            }
+            
+            #gameUI div {
+                padding: 3px 6px;
             }
         }
         
@@ -202,9 +249,9 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/arcade/assets/snake-FedGEJd8.js"></script>
+  <script type="module" crossorigin src="/arcade/assets/snake-CtXS91I5.js"></script>
   <link rel="modulepreload" crossorigin href="/arcade/assets/modulepreload-polyfill-B5Qt9EMX.js">
-  <link rel="modulepreload" crossorigin href="/arcade/assets/HTMLText-Dcivl2sH.js">
+  <link rel="modulepreload" crossorigin href="/arcade/assets/HTMLText-BdaxDQUN.js">
 </head>
 <body>
     <div class="top-bar">
