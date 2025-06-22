@@ -32,27 +32,6 @@
             text-align: center;
         }
         
-        .top-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 100;
-            backdrop-filter: blur(10px);
-        }
-        
-        .top-bar .game-title {
-            margin: 0;
-            font-size: clamp(18px, 4vw, 22px);
-            color: white;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-        }
-        
         #gameContainer {
             position: relative;
             border: 1px solid rgba(255, 255, 255, 0.4);
@@ -146,49 +125,11 @@
             background: #7f8c8d;
         }
         
-        .button-container {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .button-container button {
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            padding: 8px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-            min-height: 36px;
-            transition: all 0.2s ease;
-            font-weight: 500;
-        }
-        
-        .button-container button:hover {
-            background: rgba(255, 255, 255, 0.25);
-            border-color: rgba(255, 255, 255, 0.6);
-            transform: translateY(-1px);
-        }
-        
         /* Mobile-specific styles */
         @media (max-width: 768px) {
             body {
                 padding-top: 50px;
                 justify-content: flex-start;
-            }
-            
-            .top-bar {
-                padding: 8px 15px;
-            }
-            
-            .top-bar .game-title {
-                font-size: 18px;
-            }
-            
-            .button-container button {
-                padding: 6px 10px;
-                font-size: 11px;
-                min-height: 32px;
             }
             
             #gameUI {
@@ -206,20 +147,6 @@
         @media (max-width: 480px) {
             body {
                 padding-top: 45px;
-            }
-            
-            .top-bar {
-                padding: 6px 12px;
-            }
-            
-            .top-bar .game-title {
-                font-size: 16px;
-            }
-            
-            .button-container button {
-                padding: 5px 8px;
-                font-size: 10px;
-                min-height: 28px;
             }
             
             #gameUI {
@@ -249,18 +176,14 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/arcade/assets/snake-C9SH6Fkb.js"></script>
+  <script type="module" crossorigin src="/arcade/assets/snake-Bc1JgUHD.js"></script>
   <link rel="modulepreload" crossorigin href="/arcade/assets/modulepreload-polyfill-YP0FEG5d.js">
-  <link rel="modulepreload" crossorigin href="/arcade/assets/HTMLText-CtDhAK7t.js">
+  <link rel="modulepreload" crossorigin href="/arcade/assets/game-top-bar-CMqa59EH.js">
+  <link rel="modulepreload" crossorigin href="/arcade/assets/HTMLText-BW6zNa31.js">
+  <link rel="modulepreload" crossorigin href="/arcade/assets/device-detection-DiiT1QW1.js">
 </head>
 <body>
-    <div class="top-bar">
-        <div class="game-title">🐍 Snake</div>
-        <div class="button-container">
-            <button id="pauseButton" onclick="togglePause()">⏸️ Pause</button>
-            <button id="backToMenu" onclick="returnToMainMenu()">← Exit</button>
-        </div>
-    </div>
+    <game-top-bar title="🐍 Snake" show-pause show-menu></game-top-bar>
     <div class="mobile-instructions">Swipe to control the snake</div>
     <div id="gameUI">
         <div>🍎 <span id="score">0</span></div>
@@ -279,6 +202,6 @@
             <button class="secondary" onclick="returnToMainMenu()">Exit to Main Menu</button>
         </div>
     </div>
-    
+    
 </body>
 </html> 
