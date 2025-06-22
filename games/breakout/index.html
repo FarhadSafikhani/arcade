@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Breakout Game - Arcade Collection</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #2c3e50;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        #gameContainer {
+            position: relative;
+            border: 3px solid #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        #gameUI {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            z-index: 10;
+        }
+        
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+            z-index: 20;
+        }
+        
+        #pauseMenu {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+            z-index: 20;
+        }
+        
+        #gameOver h2, #pauseMenu h2 {
+            margin: 0 0 10px 0;
+            color: #ff6b6b;
+        }
+        
+        #pauseMenu h2 {
+            color: #4ecdc4;
+        }
+        
+        #gameOver button, #pauseMenu button {
+            background: #4ecdc4;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        
+        #gameOver button:hover, #pauseMenu button:hover {
+            background: #45b7aa;
+        }
+        
+        #gameOver button.secondary, #pauseMenu button.secondary {
+            background: #95a5a6;
+        }
+        
+        #gameOver button.secondary:hover, #pauseMenu button.secondary:hover {
+            background: #7f8c8d;
+        }
+        
+        #backToMenu {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 15;
+        }
+        
+        #backToMenu:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+        
+        .game-title {
+            color: white;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+    </style>
+  <script type="module" crossorigin src="/arcade/assets/breakout-DH9sbvKR.js"></script>
+  <link rel="modulepreload" crossorigin href="/arcade/assets/modulepreload-polyfill-B5Qt9EMX.js">
+  <link rel="modulepreload" crossorigin href="/arcade/assets/HTMLText-Kq75Vpr2.js">
+</head>
+<body>
+    <div class="game-title">🎾 Breakout</div>
+    <button id="backToMenu" onclick="returnToMainMenu()">← Back to Menu</button>
+    <div id="gameContainer">
+        <div id="gameUI">
+            <div>Score: <span id="score">0</span></div>
+            <div>Lives: <span id="lives">3</span></div>
+            <div>Level: <span id="level">1</span></div>
+        </div>
+        <div id="gameOver">
+            <h2>Game Over!</h2>
+            <p>Final Score: <span id="finalScore">0</span></p>
+            <button onclick="restartGame()">Play Again</button>
+            <button class="secondary" onclick="returnToMainMenu()">Main Menu</button>
+        </div>
+        <div id="pauseMenu">
+            <h2>Game Paused</h2>
+            <button onclick="resumeGame()">Resume</button>
+            <button class="secondary" onclick="returnToMainMenu()">Exit to Main Menu</button>
+        </div>
+    </div>
+    
+</body>
+</html> 

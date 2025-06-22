@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcade Collection</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        #mainMenu {
+            text-align: center;
+            color: white;
+            max-width: 800px;
+            padding: 20px;
+        }
+        
+        #mainMenu h1 {
+            font-size: 48px;
+            margin-bottom: 40px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+        
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .game-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            backdrop-filter: blur(10px);
+        }
+        
+        .game-button:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .game-button.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .game-button.disabled:hover {
+            transform: none;
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: none;
+        }
+        
+        .game-icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .game-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .game-description {
+            font-size: 14px;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+    </style>
+  <script type="module" crossorigin src="/arcade/assets/main-DbhJpmVV.js"></script>
+  <link rel="modulepreload" crossorigin href="/arcade/assets/modulepreload-polyfill-B5Qt9EMX.js">
+</head>
+<body>
+    <div id="mainMenu">
+        <h1>🎮 Arcade Collection</h1>
+        <div id="gameGrid" class="game-grid">
+            <!-- Game buttons will be generated here -->
+        </div>
+    </div>
+    
+</body>
+</html> 
