@@ -5,21 +5,70 @@ import { Brick } from './brick';
 import { PowerUp, PowerUpType } from './powerup';
 import { ParticleSystem } from './particle';
 
-// Game constants
-export const GAME_WIDTH = 800;
-export const GAME_HEIGHT = 600;
-export const PADDLE_WIDTH = 100;
-export const PADDLE_HEIGHT = 20;
-export const BALL_RADIUS = 8;
-export const BRICK_HEIGHT = 30;
-export const BRICK_ROWS = 5;
-export const BRICK_COLS = 10;
-export const BRICK_PADDING = 1;
-export const INITIAL_BALL_VELOCITY = 8;
-export const POWERUP_DROP_CHANCE = 0.1; // 10% chance
+// Responsive game constants
+const getGameDimensions = () => {
+    // 1. Get window dimensions and calculate max workable space
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    const maxWorkableWidth = windowWidth - 40; // 20px padding on each side
+    const maxWorkableHeight = windowHeight - 150; // More conservative - leave more space for UI
+    
+    // 2. Determine base game dimensions
+    const baseGameWidth = 900;
+    const baseGameHeight = 600;
+    
+    // 3. Calculate scale to fit within available space
+    const scaleX = maxWorkableWidth / baseGameWidth;
+    const scaleY = maxWorkableHeight / baseGameHeight;
+    const scale = Math.min(scaleX, scaleY, 1); // Don't scale up, only down
+    
+    // 4. Calculate final game dimensions
+    const gameWidth = baseGameWidth * scale;
+    const gameHeight = baseGameHeight * scale;
+    
+    return {
+        gameWidth: Math.floor(gameWidth),
+        gameHeight: Math.floor(gameHeight),
+        scale
+    };
+};
 
-// Calculate brick width dynamically
-export const BRICK_WIDTH = (GAME_WIDTH - (BRICK_COLS + 1) * BRICK_PADDING) / BRICK_COLS;
+// Game constants - will be set dynamically
+let GAME_WIDTH: number;
+let GAME_HEIGHT: number;
+let GAME_SCALE: number;
+let PADDLE_WIDTH: number;
+let PADDLE_HEIGHT: number;
+let BALL_RADIUS: number;
+let BRICK_WIDTH: number;
+let BRICK_HEIGHT: number;
+let BRICK_ROWS: number;
+let BRICK_COLS: number;
+let BRICK_PADDING: number;
+let INITIAL_BALL_VELOCITY: number;
+let POWERUP_DROP_CHANCE: number;
+
+// Initialize game constants based on screen size
+const initializeGameConstants = () => {
+    const dimensions = getGameDimensions();
+    GAME_WIDTH = dimensions.gameWidth;
+    GAME_HEIGHT = dimensions.gameHeight;
+    GAME_SCALE = dimensions.scale;
+    
+    // Scale all game elements proportionally
+    PADDLE_WIDTH = Math.floor(100 * GAME_SCALE);
+    PADDLE_HEIGHT = Math.floor(20 * GAME_SCALE);
+    BALL_RADIUS = Math.floor(8 * GAME_SCALE);
+    BRICK_HEIGHT = Math.floor(30 * GAME_SCALE);
+    BRICK_ROWS = 5;
+    BRICK_COLS = 10;
+    BRICK_PADDING = Math.floor(1 * GAME_SCALE);
+    INITIAL_BALL_VELOCITY = Math.floor(8 * GAME_SCALE);
+    POWERUP_DROP_CHANCE = 0.1; // 10% chance
+    
+    // Calculate brick width dynamically
+    BRICK_WIDTH = (GAME_WIDTH - (BRICK_COLS + 1) * BRICK_PADDING) / BRICK_COLS;
+};
 
 export class BreakoutGame {
     private app: Application;
@@ -124,6 +173,26 @@ export class BreakoutGame {
                     event.preventDefault();
                     this.togglePause();
                     break;
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    event.preventDefault();
+                    if (!this.isPaused) {
+                        const newX = Math.max(0, this.paddle.x - 20);
+                        const paddleY = GAME_HEIGHT - PADDLE_HEIGHT - 10;
+                        this.paddle.setPosition(newX, paddleY);
+                    }
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    event.preventDefault();
+                    if (!this.isPaused) {
+                        const newX = Math.min(GAME_WIDTH - this.currentPaddleWidth, this.paddle.x + 20);
+                        const paddleY = GAME_HEIGHT - PADDLE_HEIGHT - 10;
+                        this.paddle.setPosition(newX, paddleY);
+                    }
+                    break;
             }
         };
 
@@ -134,11 +203,20 @@ export class BreakoutGame {
             const canvas = this.app.view as HTMLCanvasElement;
             const rect = canvas.getBoundingClientRect();
             const mouseX = mouseEvent.clientX - rect.left;
-            const paddleX = mouseX - PADDLE_WIDTH / 2;
+            
+            // Scale mouse position to game coordinates
+            const scaleX = GAME_WIDTH / rect.width;
+            const gameX = mouseX * scaleX;
+            
+            // Position paddle so mouse is at center of paddle
+            const paddleX = gameX - this.currentPaddleWidth / 2;
             
             // Keep paddle within bounds
-            const clampedX = Math.max(0, Math.min(GAME_WIDTH - PADDLE_WIDTH, paddleX));
-            this.paddle.setPosition(clampedX, GAME_HEIGHT - PADDLE_HEIGHT - 10);
+            const clampedX = Math.max(0, Math.min(GAME_WIDTH - this.currentPaddleWidth, paddleX));
+            
+            // Position paddle at bottom of visible canvas area
+            const paddleY = GAME_HEIGHT - PADDLE_HEIGHT - 10;
+            this.paddle.setPosition(clampedX, paddleY);
         };
 
         const handleMouseClick = (event: Event) => {
@@ -149,16 +227,63 @@ export class BreakoutGame {
             }
         };
 
+        // Touch handling for mobile
+        let isDragging = false;
+        
+        const handleTouchStart = (event: TouchEvent) => {
+            if (this.isGameOver || this.isPaused) return;
+            
+            isDragging = true;
+            event.preventDefault();
+            
+            if (!this.isGameStarted) {
+                this.startGame();
+            }
+        };
+
+        const handleTouchMove = (event: TouchEvent) => {
+            if (!isDragging || this.isGameOver || this.isPaused) return;
+            
+            event.preventDefault();
+            
+            const touch = event.touches[0];
+            const canvas = this.app.view as HTMLCanvasElement;
+            const rect = canvas.getBoundingClientRect();
+            const touchX = touch.clientX - rect.left;
+            
+            // Scale touch position to game coordinates
+            const scaleX = GAME_WIDTH / rect.width;
+            const gameX = touchX * scaleX;
+            
+            // Position paddle so touch point is at center of paddle
+            const paddleX = gameX - this.currentPaddleWidth / 2;
+            
+            // Keep paddle within bounds
+            const clampedX = Math.max(0, Math.min(GAME_WIDTH - this.currentPaddleWidth, paddleX));
+            const paddleY = GAME_HEIGHT - PADDLE_HEIGHT - 10;
+            this.paddle.setPosition(clampedX, paddleY);
+        };
+
+        const handleTouchEnd = (event: TouchEvent) => {
+            isDragging = false;
+        };
+
         document.addEventListener('keydown', handleKeydown);
         const canvas = this.app.view as HTMLCanvasElement;
         canvas.addEventListener('mousemove', handleMouseMove);
         canvas.addEventListener('click', handleMouseClick);
+        canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+        canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+        canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
         
         // Store the handler so we can remove it later
         this.removeInputHandler = () => {
             document.removeEventListener('keydown', handleKeydown);
             canvas.removeEventListener('mousemove', handleMouseMove);
             canvas.removeEventListener('click', handleMouseClick);
+            canvas.removeEventListener('touchstart', handleTouchStart);
+            canvas.removeEventListener('touchmove', handleTouchMove);
+            canvas.removeEventListener('touchend', handleTouchEnd);
         };
     }
 
@@ -346,7 +471,7 @@ export class BreakoutGame {
         }
     }
 
-    private togglePause(): void {
+    togglePause(): void {
         this.isPaused = !this.isPaused;
         
         if (this.isPaused) {
@@ -507,6 +632,9 @@ let app: Application | null = null;
 
 // Initialize the game when the page loads
 async function initGame() {
+    // Initialize game constants based on screen size
+    initializeGameConstants();
+    
     // Create PIXI application
     app = new Application({
         width: GAME_WIDTH,
@@ -519,7 +647,25 @@ async function initGame() {
     // Add canvas to game container
     const gameContainer = document.getElementById('gameContainer');
     if (gameContainer) {
-        gameContainer.appendChild(app.view as HTMLCanvasElement);
+        const canvas = app.view as HTMLCanvasElement;
+        // Set CSS dimensions to match the app dimensions (not the canvas buffer size)
+        canvas.style.width = `${GAME_WIDTH}px`;
+        canvas.style.height = `${GAME_HEIGHT}px`;
+        canvas.style.maxWidth = '100%';
+        canvas.style.maxHeight = '100%';
+        gameContainer.appendChild(canvas);
+        
+        console.log('Breakout dimensions:', {
+            gameWidth: GAME_WIDTH,
+            gameHeight: GAME_HEIGHT,
+            scale: GAME_SCALE,
+            canvasWidth: canvas.width,
+            canvasHeight: canvas.height,
+            styleWidth: canvas.style.width,
+            styleHeight: canvas.style.height,
+            containerWidth: gameContainer.offsetWidth,
+            containerHeight: gameContainer.offsetHeight
+        });
     }
 
     // Create and initialize game
@@ -542,6 +688,7 @@ declare global {
         restartGame: () => void;
         returnToMainMenu: () => void;
         resumeGame: () => void;
+        togglePause: () => void;
     }
 }
 
@@ -552,12 +699,18 @@ window.restartGame = () => {
 };
 
 window.returnToMainMenu = () => {
-    window.location.href = '/';
+    window.location.href = '/arcade/';
 };
 
 window.resumeGame = () => {
     if (game) {
         game.resume();
+    }
+};
+
+window.togglePause = () => {
+    if (game) {
+        game.togglePause();
     }
 };
 
