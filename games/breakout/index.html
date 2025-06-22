@@ -71,16 +71,13 @@
         
         #gameContainer {
             position: relative;
-            border-radius: 5px;
-            border: 1px solid #fff;
+            border: 1px solid rgba(255, 255, 255, 0.4);
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-            max-width: calc(100vw - 20px);
-            max-height: calc(80vh - 20px);
-            margin: 10px;
+
             overflow: hidden;
-            width: fit-content;
-            height: fit-content;
-            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             box-sizing: border-box;
         }
         
@@ -99,15 +96,15 @@
             font-weight: bold;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
             text-align: center;
-            margin: 10px 0;
             display: flex;
             justify-content: center;
-            gap: 30px;
+            gap: 10px;
+            margin-bottom: 10px;
         }
         
         #gameUI div {
             background: rgba(0, 0, 0, 0.5);
-            padding: 8px 16px;
+            padding: 5px 10px;
             border-radius: 8px;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
@@ -166,7 +163,7 @@
             background: #7f8c8d;
         }
         
-        /* Mobile-specific styles */
+        /* Mobile-specific styles
         @media (max-width: 768px) {
             body {
                 padding: 5px;
@@ -185,9 +182,9 @@
             #gameUI div {
                 padding: 6px 12px;
             }
-        }
+        } */
     </style>
-  <script type="module" crossorigin src="/arcade/assets/breakout-BzUFG1Ae.js"></script>
+  <script type="module" crossorigin src="/arcade/assets/breakout-GXy5j8jB.js"></script>
   <link rel="modulepreload" crossorigin href="/arcade/assets/modulepreload-polyfill-B5Qt9EMX.js">
   <link rel="modulepreload" crossorigin href="/arcade/assets/HTMLText-BdaxDQUN.js">
 </head>
@@ -199,11 +196,13 @@
             <button id="backToMenu" onclick="returnToMainMenu()">← Exit</button>
         </div>
     </div>
+
     <div id="gameUI">
         <div>💥 <span id="score">0</span></div>
         <div>❤️ <span id="lives">3</span></div>
         <div>🏆 <span id="level">1</span></div>
     </div>
+
     <div id="gameContainer">
         <div id="gameOver">
             <h2>Game Over!</h2>
