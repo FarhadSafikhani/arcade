@@ -53,13 +53,14 @@
         
         #gameContainer {
             position: relative;
-            border: 3px solid #fff;
-            border-radius: 10px;
+
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
             max-width: calc(100vw - 20px);
             max-height: calc(70vh - 20px);
             margin: 10px;
             overflow: hidden;
+            width: fit-content;
+            height: fit-content;
         }
         
         #gameContainer canvas {
@@ -68,20 +69,26 @@
             max-height: 100%;
             width: auto;
             height: auto;
+            object-fit: contain;
         }
         
         #gameUI {
-            position: absolute;
-            top: 10px;
-            left: 10px;
             color: white;
-            font-size: clamp(14px, 3vw, 18px);
+            font-size: clamp(16px, 4vw, 20px);
             font-weight: bold;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-            z-index: 10;
+            text-align: center;
+            margin: 10px 0;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+        }
+        
+        #gameUI div {
             background: rgba(0, 0, 0, 0.5);
-            padding: 5px 10px;
-            border-radius: 5px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         #gameOver, #pauseMenu {
@@ -195,7 +202,7 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/arcade/assets/snake-C-512__e.js"></script>
+  <script type="module" crossorigin src="/arcade/assets/snake-FedGEJd8.js"></script>
   <link rel="modulepreload" crossorigin href="/arcade/assets/modulepreload-polyfill-B5Qt9EMX.js">
   <link rel="modulepreload" crossorigin href="/arcade/assets/HTMLText-Dcivl2sH.js">
 </head>
@@ -208,11 +215,11 @@
         </div>
     </div>
     <div class="mobile-instructions">Swipe to control the snake</div>
+    <div id="gameUI">
+        <div>🍎 <span id="score">0</span></div>
+        <div>🏆 <span id="highScore">0</span></div>
+    </div>
     <div id="gameContainer">
-        <div id="gameUI">
-            <div>Score: <span id="score">0</span></div>
-            <div>High Score: <span id="highScore">0</span></div>
-        </div>
         <div id="gameOver">
             <h2>Game Over!</h2>
             <p>Final Score: <span id="finalScore">0</span></p>
