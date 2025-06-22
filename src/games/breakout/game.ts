@@ -4,6 +4,7 @@ import { Ball } from './ball';
 import { Brick } from './brick';
 import { PowerUp, PowerUpType } from './powerup';
 import { ParticleSystem } from './particle';
+import { isTouchDevice } from '../../shared/utils/device-detection';
 
 // Game constants - fixed base dimensions
 const BASE_GAME_WIDTH = 900;
@@ -15,11 +16,14 @@ const BRICK_HEIGHT = 30;
 const BRICK_ROWS = 5;
 const BRICK_COLS = 10;
 const BRICK_PADDING = 1;
-const INITIAL_BALL_VELOCITY = 8;
+const BASE_BALL_VELOCITY = 8;
 const POWERUP_DROP_CHANCE = 0.1; // 10% chance
 
 // Calculate brick width to fit perfectly
 const BRICK_WIDTH = (BASE_GAME_WIDTH - (BRICK_COLS + 1) * BRICK_PADDING) / BRICK_COLS;
+
+// Get device-adjusted ball velocity
+const INITIAL_BALL_VELOCITY = isTouchDevice() ? BASE_BALL_VELOCITY * 0.7 : BASE_BALL_VELOCITY;
 
 // Responsive scaling function
 const getGameDimensions = () => {

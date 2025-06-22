@@ -1,6 +1,7 @@
 import { Application, Container, Graphics } from 'pixi.js';
 import { Snake } from './snake';
 import { Food } from './food';
+import { isTouchDevice } from '../../shared/utils/device-detection';
 
 // Game constants - base dimensions that will be flipped based on screen orientation
 const BASE_DIMENSIONS = {
@@ -8,6 +9,10 @@ const BASE_DIMENSIONS = {
     portrait: { width: 400, height: 600 }
 };
 const GRID_SIZE = 40; // 40 on large screen space, 5
+
+// Base game speed and device-adjusted speed
+const BASE_GAME_SPEED = 250; // milliseconds between moves
+const GAME_SPEED = isTouchDevice() ? BASE_GAME_SPEED * 1.5 : BASE_GAME_SPEED; // 50% slower on touch devices
 
 // Function to determine game dimensions based on screen orientation
 const getGameDimensions = () => {
@@ -44,7 +49,7 @@ export class SnakeGame {
     private food!: Food;
     private score: number = 0;
     private highScore: number = 0;
-    private gameSpeed: number = 150; // milliseconds between moves
+    private gameSpeed: number = GAME_SPEED; // milliseconds between moves
     private lastMoveTime: number = 0;
     private isGameOver: boolean = false;
     private isPaused: boolean = false;
@@ -398,7 +403,7 @@ export class SnakeGame {
 
     restart(): void { 
         this.score = 0;
-        this.gameSpeed = 150;
+        this.gameSpeed = GAME_SPEED;
         this.isGameOver = false;
         this.isPaused = false;
         this.isWaitingToStart = true;
