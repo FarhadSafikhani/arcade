@@ -5,69 +5,37 @@ import { Brick } from './brick';
 import { PowerUp, PowerUpType } from './powerup';
 import { ParticleSystem } from './particle';
 
-// Responsive game constants
+// Game constants - fixed base dimensions
+const BASE_GAME_WIDTH = 900;
+const BASE_GAME_HEIGHT = 500;
+const PADDLE_WIDTH = 100;
+const PADDLE_HEIGHT = 20;
+const BALL_RADIUS = 10;
+const BRICK_HEIGHT = 30;
+const BRICK_ROWS = 5;
+const BRICK_COLS = 10;
+const BRICK_PADDING = 1;
+const INITIAL_BALL_VELOCITY = 8;
+const POWERUP_DROP_CHANCE = 0.1; // 10% chance
+
+// Calculate brick width to fit perfectly
+const BRICK_WIDTH = (BASE_GAME_WIDTH - (BRICK_COLS + 1) * BRICK_PADDING) / BRICK_COLS;
+
+// Responsive scaling function
 const getGameDimensions = () => {
-    // 1. Get window dimensions and calculate max workable space
     const windowWidth = window.innerWidth;
-    const windowHeight = window.innerHeight;
-    const maxWorkableWidth = windowWidth - 40; // 20px padding on each side
-    const maxWorkableHeight = windowHeight - 150; // More conservative - leave more space for UI
+    const windowHeight = window.innerHeight - 120; // Account for top bar and margins
     
-    // 2. Determine base game dimensions
-    const baseGameWidth = 900;
-    const baseGameHeight = 600;
-    
-    // 3. Calculate scale to fit within available space
-    const scaleX = maxWorkableWidth / baseGameWidth;
-    const scaleY = maxWorkableHeight / baseGameHeight;
-    const scale = Math.min(scaleX, scaleY, 1); // Don't scale up, only down
-    
-    // 4. Calculate final game dimensions
-    const gameWidth = baseGameWidth * scale;
-    const gameHeight = baseGameHeight * scale;
+    // Calculate scale to fit within available space while maintaining aspect ratio
+    const scaleX = windowWidth / BASE_GAME_WIDTH;
+    const scaleY = windowHeight / BASE_GAME_HEIGHT;
+    const scale = Math.min(scaleX, scaleY);
     
     return {
-        gameWidth: Math.floor(gameWidth),
-        gameHeight: Math.floor(gameHeight),
+        gameWidth: BASE_GAME_WIDTH,
+        gameHeight: BASE_GAME_HEIGHT,
         scale
     };
-};
-
-// Game constants - will be set dynamically
-let GAME_WIDTH: number;
-let GAME_HEIGHT: number;
-let GAME_SCALE: number;
-let PADDLE_WIDTH: number;
-let PADDLE_HEIGHT: number;
-let BALL_RADIUS: number;
-let BRICK_WIDTH: number;
-let BRICK_HEIGHT: number;
-let BRICK_ROWS: number;
-let BRICK_COLS: number;
-let BRICK_PADDING: number;
-let INITIAL_BALL_VELOCITY: number;
-let POWERUP_DROP_CHANCE: number;
-
-// Initialize game constants based on screen size
-const initializeGameConstants = () => {
-    const dimensions = getGameDimensions();
-    GAME_WIDTH = dimensions.gameWidth;
-    GAME_HEIGHT = dimensions.gameHeight;
-    GAME_SCALE = dimensions.scale;
-    
-    // Scale all game elements proportionally
-    PADDLE_WIDTH = Math.floor(100 * GAME_SCALE);
-    PADDLE_HEIGHT = Math.floor(20 * GAME_SCALE);
-    BALL_RADIUS = Math.floor(8 * GAME_SCALE);
-    BRICK_HEIGHT = Math.floor(30 * GAME_SCALE);
-    BRICK_ROWS = 5;
-    BRICK_COLS = 10;
-    BRICK_PADDING = Math.floor(1 * GAME_SCALE);
-    INITIAL_BALL_VELOCITY = Math.floor(8 * GAME_SCALE);
-    POWERUP_DROP_CHANCE = 0.1; // 10% chance
-    
-    // Calculate brick width dynamically
-    BRICK_WIDTH = (GAME_WIDTH - (BRICK_COLS + 1) * BRICK_PADDING) / BRICK_COLS;
 };
 
 export class BreakoutGame {
@@ -118,14 +86,14 @@ export class BreakoutGame {
         this.updateUI();
         
         // Position game objects at center
-        this.paddle.setPosition(GAME_WIDTH / 2 - this.currentPaddleWidth / 2, GAME_HEIGHT - PADDLE_HEIGHT - 10);
+        this.paddle.setPosition(BASE_GAME_WIDTH / 2 - this.currentPaddleWidth / 2, BASE_GAME_HEIGHT - PADDLE_HEIGHT - 10);
         this.resetBall();
     }
 
     private createBackground(): void {
         const background = new Graphics();
         background.beginFill(0x34495e);
-        background.drawRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        background.drawRect(0, 0, BASE_GAME_WIDTH, BASE_GAME_HEIGHT);
         background.endFill();
         
         this.gameContainer.addChild(background);
@@ -133,7 +101,7 @@ export class BreakoutGame {
         // Create safety net (initially hidden)
         this.safetyNet = new Graphics();
         this.safetyNet.beginFill(0x2ecc71, 0.7);
-        this.safetyNet.drawRect(0, GAME_HEIGHT - 5, GAME_WIDTH, 5);
+        this.safetyNet.drawRect(0, BASE_GAME_HEIGHT - 5, BASE_GAME_WIDTH, 5);
         this.safetyNet.endFill();
         this.safetyNet.visible = false;
         this.gameContainer.addChild(this.safetyNet);
@@ -179,7 +147,7 @@ export class BreakoutGame {
                     event.preventDefault();
                     if (!this.isPaused) {
                         const newX = Math.max(0, this.paddle.x - 20);
-                        const paddleY = GAME_HEIGHT - PADDLE_HEIGHT - 10;
+                        const paddleY = BASE_GAME_HEIGHT - PADDLE_HEIGHT - 10;
                         this.paddle.setPosition(newX, paddleY);
                     }
                     break;
@@ -188,8 +156,8 @@ export class BreakoutGame {
                 case 'D':
                     event.preventDefault();
                     if (!this.isPaused) {
-                        const newX = Math.min(GAME_WIDTH - this.currentPaddleWidth, this.paddle.x + 20);
-                        const paddleY = GAME_HEIGHT - PADDLE_HEIGHT - 10;
+                        const newX = Math.min(BASE_GAME_WIDTH - this.currentPaddleWidth, this.paddle.x + 20);
+                        const paddleY = BASE_GAME_HEIGHT - PADDLE_HEIGHT - 10;
                         this.paddle.setPosition(newX, paddleY);
                     }
                     break;
@@ -205,17 +173,17 @@ export class BreakoutGame {
             const mouseX = mouseEvent.clientX - rect.left;
             
             // Scale mouse position to game coordinates
-            const scaleX = GAME_WIDTH / rect.width;
+            const scaleX = BASE_GAME_WIDTH / rect.width;
             const gameX = mouseX * scaleX;
             
             // Position paddle so mouse is at center of paddle
             const paddleX = gameX - this.currentPaddleWidth / 2;
             
             // Keep paddle within bounds
-            const clampedX = Math.max(0, Math.min(GAME_WIDTH - this.currentPaddleWidth, paddleX));
+            const clampedX = Math.max(0, Math.min(BASE_GAME_WIDTH - this.currentPaddleWidth, paddleX));
             
             // Position paddle at bottom of visible canvas area
-            const paddleY = GAME_HEIGHT - PADDLE_HEIGHT - 10;
+            const paddleY = BASE_GAME_HEIGHT - PADDLE_HEIGHT - 10;
             this.paddle.setPosition(clampedX, paddleY);
         };
 
@@ -252,15 +220,15 @@ export class BreakoutGame {
             const touchX = touch.clientX - rect.left;
             
             // Scale touch position to game coordinates
-            const scaleX = GAME_WIDTH / rect.width;
+            const scaleX = BASE_GAME_WIDTH / rect.width;
             const gameX = touchX * scaleX;
             
             // Position paddle so touch point is at center of paddle
             const paddleX = gameX - this.currentPaddleWidth / 2;
             
             // Keep paddle within bounds
-            const clampedX = Math.max(0, Math.min(GAME_WIDTH - this.currentPaddleWidth, paddleX));
-            const paddleY = GAME_HEIGHT - PADDLE_HEIGHT - 10;
+            const clampedX = Math.max(0, Math.min(BASE_GAME_WIDTH - this.currentPaddleWidth, paddleX));
+            const paddleY = BASE_GAME_HEIGHT - PADDLE_HEIGHT - 10;
             this.paddle.setPosition(clampedX, paddleY);
         };
 
@@ -293,7 +261,7 @@ export class BreakoutGame {
     }
 
     private resetBall(): void {
-        this.ball.setPosition(GAME_WIDTH / 2, GAME_HEIGHT - PADDLE_HEIGHT - 30);
+        this.ball.setPosition(BASE_GAME_WIDTH / 2, BASE_GAME_HEIGHT - PADDLE_HEIGHT - 30);
         this.ball.setVelocity(0, 0);
         this.isGameStarted = false;
     }
@@ -308,7 +276,7 @@ export class BreakoutGame {
             // Ball follows paddle when not started
             this.ball.setPosition(
                 this.paddle.x + this.currentPaddleWidth / 2,
-                GAME_HEIGHT - PADDLE_HEIGHT - 30
+                BASE_GAME_HEIGHT - PADDLE_HEIGHT - 30
             );
         }
         
@@ -326,8 +294,8 @@ export class BreakoutGame {
         if (ballBounds.left <= 0) {
             this.ball.setPosition(this.ball.radius, this.ball.y);
             this.ball.reverseX();
-        } else if (ballBounds.right >= GAME_WIDTH) {
-            this.ball.setPosition(GAME_WIDTH - this.ball.radius, this.ball.y);
+        } else if (ballBounds.right >= BASE_GAME_WIDTH) {
+            this.ball.setPosition(BASE_GAME_WIDTH - this.ball.radius, this.ball.y);
             this.ball.reverseX();
         }
         
@@ -337,10 +305,10 @@ export class BreakoutGame {
         }
         
         // Check if ball is out of bounds (bottom)
-        if (ballBounds.top >= GAME_HEIGHT) {
+        if (ballBounds.top >= BASE_GAME_HEIGHT) {
             if (this.safetyNetActive) {
                 // Safety net catches the ball
-                this.ball.setPosition(this.ball.x, GAME_HEIGHT - this.ball.radius - 5);
+                this.ball.setPosition(this.ball.x, BASE_GAME_HEIGHT - this.ball.radius - 5);
                 this.ball.reverseY();
                 this.safetyNetActive = false;
                 this.safetyNet.visible = false;
@@ -536,7 +504,7 @@ export class BreakoutGame {
         
         // Reset ball and paddle
         this.resetBall();
-        this.paddle.setPosition(GAME_WIDTH / 2 - this.currentPaddleWidth / 2, GAME_HEIGHT - PADDLE_HEIGHT - 10);
+        this.paddle.setPosition(BASE_GAME_WIDTH / 2 - this.currentPaddleWidth / 2, BASE_GAME_HEIGHT - PADDLE_HEIGHT - 10);
         this.paddle.resize(this.currentPaddleWidth);
         
         this.updateUI();
@@ -580,7 +548,7 @@ export class BreakoutGame {
             powerUp.update();
             
             // Check if power-up is out of bounds
-            if (powerUp.isOutOfBounds(GAME_HEIGHT)) {
+            if (powerUp.isOutOfBounds(BASE_GAME_HEIGHT)) {
                 this.powerUps.splice(i, 1);
                 this.gameContainer.removeChild(powerUp.container);
                 continue;
@@ -630,41 +598,64 @@ export class BreakoutGame {
 let game: BreakoutGame | null = null;
 let app: Application | null = null;
 
+// Function to update canvas scaling on resize
+function updateCanvasScaling() {
+    if (!app) return;
+    
+    const dimensions = getGameDimensions();
+    const canvas = app.view as HTMLCanvasElement;
+    
+    // Update canvas CSS dimensions
+    canvas.style.width = `${BASE_GAME_WIDTH * dimensions.scale}px`;
+    canvas.style.height = `${BASE_GAME_HEIGHT * dimensions.scale}px`;
+    
+    console.log('Canvas resized:', {
+        scale: dimensions.scale,
+        scaledWidth: BASE_GAME_WIDTH * dimensions.scale,
+        scaledHeight: BASE_GAME_HEIGHT * dimensions.scale,
+        styleWidth: canvas.style.width,
+        styleHeight: canvas.style.height
+    });
+}
+
 // Initialize the game when the page loads
 async function initGame() {
-    // Initialize game constants based on screen size
-    initializeGameConstants();
+    // Get dimensions and scale
+    const dimensions = getGameDimensions();
     
-    // Create PIXI application
+    // Create PIXI application with base dimensions
     app = new Application({
-        width: GAME_WIDTH,
-        height: GAME_HEIGHT,
+        width: BASE_GAME_WIDTH,
+        height: BASE_GAME_HEIGHT,
         backgroundColor: 0x2c3e50,
         antialias: true,
         resolution: window.devicePixelRatio || 1,
     });
 
-    // Add canvas to game container
+    // Add canvas to game container with proper scaling
     const gameContainer = document.getElementById('gameContainer');
     if (gameContainer) {
         const canvas = app.view as HTMLCanvasElement;
-        // Set CSS dimensions to match the app dimensions (not the canvas buffer size)
-        canvas.style.width = `${GAME_WIDTH}px`;
-        canvas.style.height = `${GAME_HEIGHT}px`;
+        
+        // Apply scaling through CSS transform
+        canvas.style.width = `${BASE_GAME_WIDTH * dimensions.scale}px`;
+        canvas.style.height = `${BASE_GAME_HEIGHT * dimensions.scale}px`;
         canvas.style.maxWidth = '100%';
         canvas.style.maxHeight = '100%';
+        canvas.style.objectFit = 'contain';
+        
         gameContainer.appendChild(canvas);
         
         console.log('Breakout dimensions:', {
-            gameWidth: GAME_WIDTH,
-            gameHeight: GAME_HEIGHT,
-            scale: GAME_SCALE,
+            baseWidth: BASE_GAME_WIDTH,
+            baseHeight: BASE_GAME_HEIGHT,
+            scale: dimensions.scale,
+            scaledWidth: BASE_GAME_WIDTH * dimensions.scale,
+            scaledHeight: BASE_GAME_HEIGHT * dimensions.scale,
             canvasWidth: canvas.width,
             canvasHeight: canvas.height,
             styleWidth: canvas.style.width,
-            styleHeight: canvas.style.height,
-            containerWidth: gameContainer.offsetWidth,
-            containerHeight: gameContainer.offsetHeight
+            styleHeight: canvas.style.height
         });
     }
 
@@ -674,6 +665,9 @@ async function initGame() {
 
     // Set up game loop
     app.ticker.add(gameLoop);
+    
+    // Add resize handler
+    window.addEventListener('resize', updateCanvasScaling);
 }
 
 function gameLoop(delta: number) {
