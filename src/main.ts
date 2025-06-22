@@ -1,30 +1,22 @@
-import { Application, Assets, Sprite, Container, Graphics, Text, TextStyle } from 'pixi.js';
-import { Game } from './Game';
+import { Application } from 'pixi.js';
+import { GameManager } from './game.manager';
 
 // Make functions globally available
 declare global {
     interface Window {
         restartGame: () => void;
-        startGame: () => void;
+        returnToMenu: () => void;
     }
 }
 
 let app: Application;
-let game: Game;
-let gameStarted: boolean = false;
+let gameManager: GameManager;
 
 async function init() {
-    // Calculate game dimensions based on grid settings
-    const GRID_SIZE = 50;
-    const GRID_WIDTH = 20;
-    const GRID_HEIGHT = 20;
-    const GAME_WIDTH = GRID_WIDTH * GRID_SIZE;  // 900
-    const GAME_HEIGHT = GRID_HEIGHT * GRID_SIZE; // 750
-    
-    // Create the PIXI Application with dynamic sizing
+    // Create the PIXI Application with menu dimensions
     app = new Application({
-        width: GAME_WIDTH,
-        height: GAME_HEIGHT,
+        width: 1000,
+        height: 800,
         backgroundColor: 0x2c3e50,
         antialias: true,
         resolution: window.devicePixelRatio || 1,
@@ -36,14 +28,20 @@ async function init() {
         gameContainer.appendChild(app.view as HTMLCanvasElement);
     }
 
+    // Initialize game manager
+    gameManager = new GameManager(app);
+
+    // Start the game loop
+    app.ticker.add(gameLoop);
+
     // Handle window resize
     window.addEventListener('resize', onResize);
     onResize();
 }
 
 function gameLoop(delta: number) {
-    if (game && gameStarted) {
-        game.update(delta);
+    if (gameManager) {
+        gameManager.update(delta);
     }
 }
 
@@ -52,55 +50,28 @@ function onResize() {
         const gameContainer = document.getElementById('gameContainer');
         if (gameContainer) {
             const containerRect = gameContainer.getBoundingClientRect();
-            const GAME_WIDTH = 30 * 30;  // GRID_WIDTH * GRID_SIZE = 900
-            const GAME_HEIGHT = 25 * 30; // GRID_HEIGHT * GRID_SIZE = 750
-            
             const scale = Math.min(
-                containerRect.width / GAME_WIDTH,
-                containerRect.height / GAME_HEIGHT
+                containerRect.width / 1000,
+                containerRect.height / 800
             );
             
-            app.renderer.resize(GAME_WIDTH * scale, GAME_HEIGHT * scale);
+            app.renderer.resize(1000 * scale, 800 * scale);
             app.stage.scale.set(scale);
         }
     }
 }
 
-// Global start game function
-window.startGame = async () => {
-    if (!gameStarted) {
-        // Hide start menu
-        const startMenu = document.getElementById('startMenu');
-        if (startMenu) {
-            startMenu.style.display = 'none';
-        }
-        
-        // Show UI
-        const ui = document.getElementById('ui');
-        if (ui) {
-            ui.style.display = 'block';
-        }
-        
-        // Initialize the game
-        game = new Game(app);
-        await game.init();
-        
-        // Start the game loop
-        app.ticker.add(gameLoop);
-        
-        gameStarted = true;
+// Global restart function
+window.restartGame = () => {
+    if (gameManager) {
+        gameManager.restartCurrentGame();
     }
 };
 
-// Global restart function
-window.restartGame = () => {
-    if (game) {
-        game.restart();
-        // Ensure game over modal is hidden
-        const gameOverElement = document.getElementById('gameOver');
-        if (gameOverElement) {
-            gameOverElement.style.display = 'none';
-        }
+// Global return to menu function
+window.returnToMenu = () => {
+    if (gameManager) {
+        gameManager.returnToMenu();
     }
 };
 

@@ -1,8 +1,15 @@
 import { Application, Container, Graphics, Text, TextStyle } from 'pixi.js';
-import { Snake } from './Snake';
-import { Food } from './Food';
+import { Snake } from './snake';
+import { Food } from './food';
 
-export class Game {
+// Game constants - single source of truth
+export const GRID_SIZE = 30;
+export const GRID_WIDTH = 30;
+export const GRID_HEIGHT = 25;
+export const GAME_WIDTH = GRID_WIDTH * GRID_SIZE;
+export const GAME_HEIGHT = GRID_HEIGHT * GRID_SIZE;
+
+export class SnakeGame {
     private app: Application;
     private gameContainer: Container;
     private snake: Snake;
@@ -13,16 +20,18 @@ export class Game {
     private lastMoveTime: number = 0;
     private isGameOver: boolean = false;
     private isPaused: boolean = false;
+    private onGameOver: (score: number) => void;
 
     // Game constants
-    private readonly GRID_SIZE = 30;
-    private readonly GRID_WIDTH = 30;
-    private readonly GRID_HEIGHT = 25;
-    private readonly GAME_WIDTH = this.GRID_WIDTH * this.GRID_SIZE;
-    private readonly GAME_HEIGHT = this.GRID_HEIGHT * this.GRID_SIZE;
+    private readonly GRID_SIZE = GRID_SIZE;
+    private readonly GRID_WIDTH = GRID_WIDTH;
+    private readonly GRID_HEIGHT = GRID_HEIGHT;
+    private readonly GAME_WIDTH = GAME_WIDTH;
+    private readonly GAME_HEIGHT = GAME_HEIGHT;
 
-    constructor(app: Application) {
+    constructor(app: Application, onGameOver: (score: number) => void) {
         this.app = app;
+        this.onGameOver = onGameOver;
         this.gameContainer = new Container();
         this.app.stage.addChild(this.gameContainer);
         
@@ -49,6 +58,9 @@ export class Game {
         // Set up input handling
         this.setupInput();
         
+        // Initialize UI
+        this.updateUI();
+        
         // Game container is now exactly the right size, no centering needed
     }
 
@@ -73,7 +85,7 @@ export class Game {
     }
 
     private setupInput(): void {
-        document.addEventListener('keydown', (event) => {
+        const handleKeydown = (event: KeyboardEvent) => {
             if (this.isGameOver) return;
             
             switch (event.key) {
@@ -102,12 +114,22 @@ export class Game {
                     this.snake.setDirection('right');
                     break;
                 case ' ':
+                case 'Escape':
                     event.preventDefault();
                     this.togglePause();
                     break;
             }
-        });
+        };
+
+        document.addEventListener('keydown', handleKeydown);
+        
+        // Store the handler so we can remove it later
+        this.removeInputHandler = () => {
+            document.removeEventListener('keydown', handleKeydown);
+        };
     }
+
+    private removeInputHandler?: () => void;
 
     update(delta: number): void {
         if (this.isGameOver || this.isPaused) return;
@@ -169,13 +191,8 @@ export class Game {
             this.updateUI();
         }
         
-        // Show game over screen
-        const gameOverElement = document.getElementById('gameOver');
-        const finalScoreElement = document.getElementById('finalScore');
-        if (gameOverElement && finalScoreElement) {
-            finalScoreElement.textContent = this.score.toString();
-            gameOverElement.style.display = 'block';
-        }
+        // Call the callback to notify the main game manager
+        this.onGameOver(this.score);
     }
 
     private togglePause(): void {
@@ -183,11 +200,30 @@ export class Game {
     }
 
     private updateUI(): void {
-        const scoreElement = document.getElementById('score');
-        const highScoreElement = document.getElementById('highScore');
+        const gameUI = document.getElementById('gameUI');
+        
+        if (!gameUI) {
+            return;
+        }
+        
+        // Create UI if it doesn't exist
+        if (!gameUI.querySelector('.snake-ui')) {
+            gameUI.innerHTML = `
+                <div class="snake-ui">
+                    <div>Score: <span id="snake-score">0</span></div>
+                    <div>High Score: <span id="snake-high-score">0</span></div>
+                </div>
+            `;
+        }
+        
+        const scoreElement = document.getElementById('snake-score');
+        const highScoreElement = document.getElementById('snake-high-score');
         
         if (scoreElement) scoreElement.textContent = this.score.toString();
         if (highScoreElement) highScoreElement.textContent = this.highScore.toString();
+        
+        // Ensure the UI is visible
+        gameUI.style.display = 'block';
     }
 
     restart(): void {
@@ -205,6 +241,15 @@ export class Game {
         const gameOverElement = document.getElementById('gameOver');
         if (gameOverElement) {
             gameOverElement.style.display = 'none';
+        }
+    }
+
+    destroy(): void {
+        if (this.removeInputHandler) {
+            this.removeInputHandler();
+        }
+        if (this.gameContainer && this.gameContainer.parent) {
+            this.gameContainer.parent.removeChild(this.gameContainer);
         }
     }
 } 
