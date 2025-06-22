@@ -12,7 +12,7 @@
     {
       "id": "breakout",
       "name": "Breakout",
-      "description": "Coming soon...",
+      "description": "Classic brick-breaking arcade game",
       "icon": "🎾",
       "color": "#f39c12",
       "available": true,

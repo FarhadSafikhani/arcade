@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snake Game - Arcade Collection</title>
+    <title>Breakout Game - Arcade Collection</title>
     <style>
         body {
             margin: 0;
@@ -123,12 +123,13 @@
     </style>
 </head>
 <body>
-    <div class="game-title">🐍 Snake </div>
+    <div class="game-title">🎾 Breakout</div>
     <button id="backToMenu" onclick="returnToMainMenu()">← Back to Menu</button>
     <div id="gameContainer">
         <div id="gameUI">
             <div>Score: <span id="score">0</span></div>
-            <div>High Score: <span id="highScore">0</span></div>
+            <div>Lives: <span id="lives">3</span></div>
+            <div>Level: <span id="level">1</span></div>
         </div>
         <div id="gameOver">
             <h2>Game Over!</h2>
@@ -143,6 +144,6 @@
         </div>
     </div>
     
-    <script type="module" src="/src/games/snake/game.ts"></script>
+    <script type="module" src="/src/games/breakout/game.ts"></script>
 </body>
 </html> 
