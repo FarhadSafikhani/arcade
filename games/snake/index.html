@@ -2,12 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Snake Game - Arcade Collection</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+        
         body {
             margin: 0;
             padding: 0;
+            padding-top: 60px; /* Space for top bar */
             background: #2c3e50;
             font-family: 'Arial', sans-serif;
             display: flex;
@@ -16,6 +21,34 @@
             justify-content: center;
             min-height: 100vh;
             overflow: hidden;
+            touch-action: none; /* Prevent zooming on mobile */
+        }
+        
+        .game-title {
+            color: white;
+            font-size: clamp(20px, 5vw, 24px);
+            margin: 10px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            text-align: center;
+        }
+        
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        
+        .top-bar .game-title {
+            margin: 0;
+            font-size: clamp(18px, 4vw, 22px);
         }
         
         #gameContainer {
@@ -23,6 +56,18 @@
             border: 3px solid #fff;
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            max-width: calc(100vw - 20px);
+            max-height: calc(70vh - 20px);
+            margin: 10px;
+            overflow: hidden;
+        }
+        
+        #gameContainer canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
         }
         
         #gameUI {
@@ -30,42 +75,37 @@
             top: 10px;
             left: 10px;
             color: white;
-            font-size: 18px;
+            font-size: clamp(14px, 3vw, 18px);
             font-weight: bold;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
             z-index: 10;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
         }
         
-        #gameOver {
+        #gameOver, #pauseMenu {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.9);
             color: white;
-            padding: 20px;
+            padding: clamp(15px, 4vw, 20px);
             border-radius: 10px;
             text-align: center;
             display: none;
             z-index: 20;
-        }
-        
-        #pauseMenu {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            display: none;
-            z-index: 20;
+            min-width: 250px;
+            max-width: 90vw;
         }
         
         #gameOver h2, #pauseMenu h2 {
             margin: 0 0 10px 0;
+            font-size: clamp(18px, 4vw, 24px);
+        }
+        
+        #gameOver h2 {
             color: #ff6b6b;
         }
         
@@ -77,11 +117,13 @@
             background: #4ecdc4;
             border: none;
             color: white;
-            padding: 10px 20px;
+            padding: clamp(8px, 2vw, 10px) clamp(15px, 3vw, 20px);
             border-radius: 5px;
             cursor: pointer;
-            font-size: 16px;
-            margin: 10px 5px;
+            font-size: clamp(14px, 3vw, 16px);
+            margin: 5px;
+            min-height: 44px; /* Touch target size */
+            min-width: 80px;
         }
         
         #gameOver button:hover, #pauseMenu button:hover {
@@ -96,38 +138,76 @@
             background: #7f8c8d;
         }
         
-        #backToMenu {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.7);
+        .button-container {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .button-container button {
+            background: rgba(255, 255, 255, 0.15);
             color: white;
-            border: none;
-            padding: 10px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 8px 12px;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 14px;
-            z-index: 15;
+            font-size: 12px;
+            min-height: 36px;
+            transition: all 0.2s ease;
+            font-weight: 500;
         }
         
-        #backToMenu:hover {
-            background: rgba(0, 0, 0, 0.9);
+        .button-container button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.6);
+            transform: translateY(-1px);
         }
         
-        .game-title {
+        /* Mobile-specific styles */
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
+            }
+            
+            #gameContainer {
+                border-width: 2px;
+                margin: 5px;
+            }
+            
+            #gameUI {
+                font-size: 14px;
+                padding: 3px 8px;
+            }
+        }
+        
+        /* Instructions for mobile */
+        .mobile-instructions {
             color: white;
-            font-size: 24px;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            font-size: clamp(12px, 2.5vw, 14px);
+            text-align: center;
+            margin: 10px 0;
+            opacity: 0.8;
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-instructions {
+                display: block;
+            }
         }
     </style>
-  <script type="module" crossorigin src="/arcade/assets/snake-1Z79W_2t.js"></script>
+  <script type="module" crossorigin src="/arcade/assets/snake-C-512__e.js"></script>
   <link rel="modulepreload" crossorigin href="/arcade/assets/modulepreload-polyfill-B5Qt9EMX.js">
-  <link rel="modulepreload" crossorigin href="/arcade/assets/HTMLText-Kq75Vpr2.js">
+  <link rel="modulepreload" crossorigin href="/arcade/assets/HTMLText-Dcivl2sH.js">
 </head>
 <body>
-    <div class="game-title">🐍 Snake </div>
-    <button id="backToMenu" onclick="returnToMainMenu()">← Back to Menu</button>
+    <div class="top-bar">
+        <div class="game-title">🐍 Snake</div>
+        <div class="button-container">
+            <button id="pauseButton" onclick="togglePause()">⏸️ Pause</button>
+            <button id="backToMenu" onclick="returnToMainMenu()">← Exit</button>
+        </div>
+    </div>
+    <div class="mobile-instructions">Swipe to control the snake</div>
     <div id="gameContainer">
         <div id="gameUI">
             <div>Score: <span id="score">0</span></div>
