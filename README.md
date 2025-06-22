@@ -12,4 +12,6 @@ npm run dev
 npm run build
 npm run preview
 
+#to deploy to GH Pages on https://farhadsafikhani.github.io/arcade/
+npm run deploy
 
