@@ -2,70 +2,134 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Memory Game - Arcade Collection</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+        
         body {
             margin: 0;
             padding: 0;
+            padding-top: 60px; /* Space for top bar */
             background: #2c3e50;
             font-family: 'Arial', sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             min-height: 100vh;
             overflow: hidden;
+            touch-action: none; /* Prevent zooming on mobile */
+        }
+        
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        
+        .top-bar .game-title {
+            margin: 0;
+            font-size: clamp(18px, 4vw, 22px);
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+        
+        .button-container {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .button-container button {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            min-height: 36px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        
+        .button-container button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.6);
+            transform: translateY(-1px);
         }
         
         #gameContainer {
             position: relative;
-            border: 3px solid #fff;
-            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+        
+        #gameContainer canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
         }
         
         #gameUI {
-            position: absolute;
-            top: 10px;
-            left: 10px;
             color: white;
-            font-size: 18px;
+            font-size: clamp(16px, 4vw, 20px);
             font-weight: bold;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-            z-index: 10;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 5px;
         }
         
-        #gameOver {
+        #gameUI div {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        #gameOver, #pauseMenu {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.9);
             color: white;
-            padding: 20px;
+            padding: clamp(15px, 4vw, 20px);
             border-radius: 10px;
             text-align: center;
             display: none;
             z-index: 20;
-        }
-        
-        #pauseMenu {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            display: none;
-            z-index: 20;
+            min-width: 250px;
+            max-width: 90vw;
         }
         
         #gameOver h2, #pauseMenu h2 {
             margin: 0 0 10px 0;
+            font-size: clamp(18px, 4vw, 24px);
+        }
+        
+        #gameOver h2 {
             color: #ff6b6b;
         }
         
@@ -77,11 +141,13 @@
             background: #4ecdc4;
             border: none;
             color: white;
-            padding: 10px 20px;
+            padding: clamp(8px, 2vw, 10px) clamp(15px, 3vw, 20px);
             border-radius: 5px;
             cursor: pointer;
-            font-size: 16px;
-            margin: 10px 5px;
+            font-size: clamp(14px, 3vw, 16px);
+            margin: 5px;
+            min-height: 44px; /* Touch target size */
+            min-width: 80px;
         }
         
         #gameOver button:hover, #pauseMenu button:hover {
@@ -96,41 +162,103 @@
             background: #7f8c8d;
         }
         
-        #backToMenu {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            z-index: 15;
+        /* Disable hover effects on touch devices */
+        @media (hover: none) and (pointer: coarse) {
+            .button-container button:hover {
+                background: rgba(255, 255, 255, 0.15);
+                border-color: rgba(255, 255, 255, 0.4);
+                transform: none;
+            }
+            
+            #gameOver button:hover, #pauseMenu button:hover {
+                background: #4ecdc4;
+            }
+            
+            #gameOver button.secondary:hover, #pauseMenu button.secondary:hover {
+                background: #95a5a6;
+            }
         }
         
-        #backToMenu:hover {
-            background: rgba(0, 0, 0, 0.9);
+        /* Mobile-specific styles */
+        @media (max-width: 768px) {
+            body {
+                padding-top: 50px;
+                justify-content: flex-start;
+            }
+            
+            .top-bar {
+                padding: 8px 15px;
+            }
+            
+            .top-bar .game-title {
+                font-size: 18px;
+            }
+            
+            .button-container button {
+                padding: 6px 10px;
+                font-size: 11px;
+                min-height: 32px;
+            }
+            
+            #gameUI {
+                font-size: 14px;
+                gap: 8px;
+                margin-bottom: 8px;
+            }
+            
+            #gameUI div {
+                padding: 4px 8px;
+            }
         }
         
-        .game-title {
-            color: white;
-            font-size: 24px;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        /* Extra small screens */
+        @media (max-width: 480px) {
+            body {
+                padding-top: 45px;
+            }
+            
+            .top-bar {
+                padding: 6px 12px;
+            }
+            
+            .top-bar .game-title {
+                font-size: 16px;
+            }
+            
+            .button-container button {
+                padding: 5px 8px;
+                font-size: 10px;
+                min-height: 28px;
+            }
+            
+            #gameUI {
+                font-size: 12px;
+                gap: 6px;
+                margin-bottom: 6px;
+            }
+            
+            #gameUI div {
+                padding: 3px 6px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="game-title">👀 Memory Game</div>
-    <button id="backToMenu" onclick="returnToMainMenu()">← Back to Menu</button>
-    <div id="gameContainer">
-        <div id="gameUI">
-            <div>Moves: <span id="moves">0</span></div>
-            <div>Pairs Found: <span id="pairs">0</span></div>
-            <div>Time: <span id="time">00:00</span></div>
+    <div class="top-bar">
+        <div class="game-title">👀 Memory</div>
+        <div class="button-container">
+            <button id="pauseButton" onclick="togglePause()">⏸️ Pause</button>
+            <button id="backToMenu" onclick="returnToMainMenu()">← Exit</button>
         </div>
+    </div>
+
+    <div id="gameUI">
+        <div>🔄 <span id="moves">0</span></div>
+        <div>🎯 <span id="pairs">0</span></div>
+        <div>⏱️ <span id="time">00:00</span></div>
+    </div>
+
+    <div id="gameContainer">
         <div id="gameOver">
             <h2>Congratulations!</h2>
             <p>You found all pairs!</p>

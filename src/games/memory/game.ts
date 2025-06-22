@@ -1,14 +1,59 @@
 import { Application, Container, Graphics, Text, TextStyle } from 'pixi.js';
 import { Card } from './card';
 
-// Game constants
-export const GAME_WIDTH = 800;
-export const GAME_HEIGHT = 600;
-export const CARD_WIDTH = 80;
-export const CARD_HEIGHT = 100;
-export const GRID_ROWS = 4;
-export const GRID_COLS = 6;
-export const CARD_PADDING = 10;
+// Game constants - fixed base dimensions
+const BASE_GAME_WIDTH = 800;
+const BASE_GAME_HEIGHT = 600;
+const GRID_ROWS = 4;
+const GRID_COLS = 6;
+const CARD_ASPECT_RATIO = 0.8; // Width to height ratio (4:5)
+const CARD_SPACING = 10; // Fixed spacing between cards
+
+// Calculate optimal card size to fit all cards in the canvas
+const calculateCardSize = () => {
+    // Use almost all available space with minimal margin
+    const margin = 20; // Very minimal margin
+    const availableWidth = BASE_GAME_WIDTH - margin * 2;
+    const availableHeight = BASE_GAME_HEIGHT - margin * 2;
+    
+    // Calculate card size based on width constraint
+    const cardWidthFromWidth = (availableWidth - (GRID_COLS - 1) * CARD_SPACING) / GRID_COLS;
+    const cardHeightFromWidth = cardWidthFromWidth / CARD_ASPECT_RATIO;
+    
+    // Calculate card size based on height constraint
+    const cardHeightFromHeight = (availableHeight - (GRID_ROWS - 1) * CARD_SPACING) / GRID_ROWS;
+    const cardWidthFromHeight = cardHeightFromHeight * CARD_ASPECT_RATIO;
+    
+    // Use the smaller of the two to ensure everything fits
+    const cardWidth = Math.min(cardWidthFromWidth, cardWidthFromHeight);
+    const cardHeight = cardWidth / CARD_ASPECT_RATIO;
+    
+    return {
+        cardWidth: Math.floor(cardWidth),
+        cardHeight: Math.floor(cardHeight),
+        cardPadding: CARD_SPACING
+    };
+};
+
+// Get card dimensions
+const CARD_DIMENSIONS = calculateCardSize();
+
+// Responsive scaling function
+const getGameDimensions = () => {
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight - 120; // Account for top bar and margins
+    
+    // Calculate scale to fit within available space while maintaining aspect ratio
+    const scaleX = windowWidth / BASE_GAME_WIDTH;
+    const scaleY = windowHeight / BASE_GAME_HEIGHT;
+    const scale = Math.min(scaleX, scaleY);
+    
+    return {
+        gameWidth: BASE_GAME_WIDTH,
+        gameHeight: BASE_GAME_HEIGHT,
+        scale
+    };
+};
 
 // Emoji pairs for the cards
 const ALL_EMOJIS = [
@@ -84,7 +129,7 @@ export class MemoryGame {
     private createBackground(): void {
         const background = new Graphics();
         background.beginFill(0x34495e);
-        background.drawRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        background.drawRect(0, 0, BASE_GAME_WIDTH, BASE_GAME_HEIGHT);
         background.endFill();
         
         this.gameContainer.addChild(background);
@@ -96,8 +141,8 @@ export class MemoryGame {
             const emoji = EMOJI_PAIRS[i];
             
             // Create two cards with the same emoji
-            const card1 = new Card(CARD_WIDTH, CARD_HEIGHT, emoji, i * 2);
-            const card2 = new Card(CARD_WIDTH, CARD_HEIGHT, emoji, i * 2 + 1);
+            const card1 = new Card(CARD_DIMENSIONS.cardWidth, CARD_DIMENSIONS.cardHeight, emoji, i * 2);
+            const card2 = new Card(CARD_DIMENSIONS.cardWidth, CARD_DIMENSIONS.cardHeight, emoji, i * 2 + 1);
             
             this.cards.push(card1, card2);
             this.gameContainer.addChild(card1.container);
@@ -114,15 +159,16 @@ export class MemoryGame {
     }
 
     private positionCards(): void {
-        const startX = (GAME_WIDTH - (GRID_COLS * (CARD_WIDTH + CARD_PADDING) - CARD_PADDING)) / 2;
-        const startY = (GAME_HEIGHT - (GRID_ROWS * (CARD_HEIGHT + CARD_PADDING) - CARD_PADDING)) / 2;
+        const { gameWidth, gameHeight, scale } = getGameDimensions();
+        const startX = (gameWidth - (GRID_COLS * (CARD_DIMENSIONS.cardWidth + CARD_DIMENSIONS.cardPadding) - CARD_DIMENSIONS.cardPadding)) / 2;
+        const startY = (gameHeight - (GRID_ROWS * (CARD_DIMENSIONS.cardHeight + CARD_DIMENSIONS.cardPadding) - CARD_DIMENSIONS.cardPadding)) / 2;
         
         for (let i = 0; i < this.cards.length; i++) {
             const row = Math.floor(i / GRID_COLS);
             const col = i % GRID_COLS;
             
-            const x = startX + col * (CARD_WIDTH + CARD_PADDING);
-            const y = startY + row * (CARD_HEIGHT + CARD_PADDING);
+            const x = startX + col * (CARD_DIMENSIONS.cardWidth + CARD_DIMENSIONS.cardPadding);
+            const y = startY + row * (CARD_DIMENSIONS.cardHeight + CARD_DIMENSIONS.cardPadding);
             
             this.cards[i].setPosition(x, y);
         }
@@ -240,7 +286,7 @@ export class MemoryGame {
         }
     }
 
-    private togglePause(): void {
+    togglePause(): void {
         this.isPaused = !this.isPaused;
         
         if (this.isPaused) {
@@ -340,21 +386,65 @@ export class MemoryGame {
 let game: MemoryGame | null = null;
 let app: Application | null = null;
 
+// Function to update canvas scaling on resize
+function updateCanvasScaling() {
+    if (!app) return;
+    
+    const dimensions = getGameDimensions();
+    const canvas = app.view as HTMLCanvasElement;
+    
+    // Update canvas CSS dimensions
+    canvas.style.width = `${BASE_GAME_WIDTH * dimensions.scale}px`;
+    canvas.style.height = `${BASE_GAME_HEIGHT * dimensions.scale}px`;
+    
+    console.log('Memory canvas resized:', {
+        scale: dimensions.scale,
+        scaledWidth: BASE_GAME_WIDTH * dimensions.scale,
+        scaledHeight: BASE_GAME_HEIGHT * dimensions.scale,
+        styleWidth: canvas.style.width,
+        styleHeight: canvas.style.height
+    });
+}
+
 // Initialize the game when the page loads
 async function initGame() {
-    // Create PIXI application
+    // Get dimensions and scale
+    const dimensions = getGameDimensions();
+    
+    // Create PIXI application with base dimensions
     app = new Application({
-        width: GAME_WIDTH,
-        height: GAME_HEIGHT,
+        width: BASE_GAME_WIDTH,
+        height: BASE_GAME_HEIGHT,
         backgroundColor: 0x2c3e50,
         antialias: true,
         resolution: window.devicePixelRatio || 1,
     });
 
-    // Add canvas to game container
+    // Add canvas to game container with proper scaling
     const gameContainer = document.getElementById('gameContainer');
     if (gameContainer) {
-        gameContainer.appendChild(app.view as HTMLCanvasElement);
+        const canvas = app.view as HTMLCanvasElement;
+        
+        // Apply scaling through CSS transform
+        canvas.style.width = `${BASE_GAME_WIDTH * dimensions.scale}px`;
+        canvas.style.height = `${BASE_GAME_HEIGHT * dimensions.scale}px`;
+        canvas.style.maxWidth = '100%';
+        canvas.style.maxHeight = '100%';
+        canvas.style.objectFit = 'contain';
+        
+        gameContainer.appendChild(canvas);
+        
+        console.log('Memory dimensions:', {
+            baseWidth: BASE_GAME_WIDTH,
+            baseHeight: BASE_GAME_HEIGHT,
+            scale: dimensions.scale,
+            scaledWidth: BASE_GAME_WIDTH * dimensions.scale,
+            scaledHeight: BASE_GAME_HEIGHT * dimensions.scale,
+            canvasWidth: canvas.width,
+            canvasHeight: canvas.height,
+            styleWidth: canvas.style.width,
+            styleHeight: canvas.style.height
+        });
     }
 
     // Create and initialize game
@@ -363,6 +453,9 @@ async function initGame() {
 
     // Set up game loop
     app.ticker.add(gameLoop);
+    
+    // Add resize handler
+    window.addEventListener('resize', updateCanvasScaling);
 }
 
 function gameLoop(delta: number) {
@@ -377,6 +470,7 @@ declare global {
         restartGame: () => void;
         returnToMainMenu: () => void;
         resumeGame: () => void;
+        togglePause: () => void;
         onCardClick: (card: any) => void;
     }
 }
@@ -388,12 +482,18 @@ window.restartGame = () => {
 };
 
 window.returnToMainMenu = () => {
-    window.location.href = '/';
+    window.location.href = '/arcade/';
 };
 
 window.resumeGame = () => {
     if (game) {
         game.resume();
+    }
+};
+
+window.togglePause = () => {
+    if (game) {
+        game.togglePause();
     }
 };
 

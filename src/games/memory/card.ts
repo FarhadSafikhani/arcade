@@ -23,6 +23,9 @@ export class Card {
         this.container.eventMode = 'static';
         this.container.cursor = 'pointer';
         
+        // Set pivot to center for proper hover scaling
+        this.container.pivot.set(width / 2, height / 2);
+        
         this.createCard();
         this.setupInteraction();
     }
@@ -72,14 +75,15 @@ export class Card {
         });
         
         this.container.on('pointerout', () => {
-            if (!this.isFlipped && !this.isMatched) {
+            if (!this.isFlipped && !this.isMatched && !this.isAnimating) {
                 this.container.scale.set(1.0);
             }
         });
     }
 
     public setPosition(x: number, y: number): void {
-        this.container.position.set(x, y);
+        // Adjust position to account for center pivot
+        this.container.position.set(x + this.width / 2, y + this.height / 2);
     }
 
     public flip(): void {
@@ -113,7 +117,7 @@ export class Card {
         const animate = () => {
             this.container.scale.x += 0.2;
             if (this.container.scale.x >= 1) {
-                this.container.scale.x = 1;
+                this.container.scale.set(1.0, 1.0); // Ensure both x and y are set to 1.0
                 this.isAnimating = false;
             } else {
                 requestAnimationFrame(animate);
@@ -143,7 +147,7 @@ export class Card {
         const animate = () => {
             this.container.scale.x += 0.2;
             if (this.container.scale.x >= 1) {
-                this.container.scale.x = 1;
+                this.container.scale.set(1.0, 1.0); // Ensure both x and y are set to 1.0
                 this.isAnimating = false;
             } else {
                 requestAnimationFrame(animate);
