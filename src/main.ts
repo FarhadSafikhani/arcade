@@ -1,79 +1,79 @@
 import { Application } from 'pixi.js';
-import { GameManager } from './game.manager';
 
-// Make functions globally available
+// Game configuration interface
+interface GameConfig {
+    id: string;
+    name: string;
+    description: string;
+    icon: string;
+    color: string;
+    available: boolean;
+    entryPoint: string;
+}
+
+interface GamesConfig {
+    games: GameConfig[];
+}
+
+// Global functions for game control
 declare global {
     interface Window {
-        restartGame: () => void;
-        returnToMenu: () => void;
+        startGame: (gameId: string) => void;
+        returnToMainMenu: () => void;
     }
 }
-
-let app: Application;
-let gameManager: GameManager;
 
 async function init() {
-    // Create the PIXI Application with menu dimensions
-    app = new Application({
-        width: 1000,
-        height: 800,
-        backgroundColor: 0x2c3e50,
-        antialias: true,
-        resolution: window.devicePixelRatio || 1,
-    });
-
-    // Add the canvas to the DOM
-    const gameContainer = document.getElementById('gameContainer');
-    if (gameContainer) {
-        gameContainer.appendChild(app.view as HTMLCanvasElement);
-    }
-
-    // Initialize game manager
-    gameManager = new GameManager(app);
-
-    // Start the game loop
-    app.ticker.add(gameLoop);
-
-    // Handle window resize
-    window.addEventListener('resize', onResize);
-    onResize();
-}
-
-function gameLoop(delta: number) {
-    if (gameManager) {
-        gameManager.update(delta);
+    try {
+        // Load games configuration
+        const response = await fetch('/games-config.json');
+        const config: GamesConfig = await response.json();
+        
+        // Generate menu buttons
+        generateMenuButtons(config.games);
+        
+        // Set up global functions
+        window.startGame = startGame;
+        window.returnToMainMenu = returnToMainMenu;
+        
+    } catch (error) {
+        console.error('Failed to initialize:', error);
     }
 }
 
-function onResize() {
-    if (app) {
-        const gameContainer = document.getElementById('gameContainer');
-        if (gameContainer) {
-            const containerRect = gameContainer.getBoundingClientRect();
-            const scale = Math.min(
-                containerRect.width / 1000,
-                containerRect.height / 800
-            );
-            
-            app.renderer.resize(1000 * scale, 800 * scale);
-            app.stage.scale.set(scale);
+function generateMenuButtons(games: GameConfig[]) {
+    const gameGrid = document.getElementById('gameGrid');
+    if (!gameGrid) return;
+    
+    gameGrid.innerHTML = '';
+    
+    games.forEach(game => {
+        const button = document.createElement('div');
+        button.className = `game-button ${game.available ? '' : 'disabled'}`;
+        button.style.borderColor = game.available ? game.color : 'rgba(255, 255, 255, 0.3)';
+        
+        button.innerHTML = `
+            <span class="game-icon">${game.icon} ${game.name}</span>
+            <div class="game-description">${game.description}</div>
+        `;
+        
+        if (game.available) {
+            button.addEventListener('click', () => startGame(game.id));
         }
-    }
+        
+        gameGrid.appendChild(button);
+    });
 }
 
-// Global restart function
-window.restartGame = () => {
-    if (gameManager) {
-        gameManager.restartCurrentGame();
-    }
-};
+function startGame(gameId: string) {
+    // Navigate to the game page
+    window.location.href = `/games/${gameId}/index.html`;
+}
 
-// Global return to menu function
-window.returnToMenu = () => {
-    if (gameManager) {
-        gameManager.returnToMenu();
-    }
-};
+function returnToMainMenu() {
+    // Navigate back to main menu
+    window.location.href = '/';
+}
 
-// Initialize the game when the page loads
+// Initialize when page loads
 window.addEventListener('load', init); 

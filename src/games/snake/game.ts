@@ -3,24 +3,24 @@ import { Snake } from './snake';
 import { Food } from './food';
 
 // Game constants - single source of truth
-export const GRID_SIZE = 30;
-export const GRID_WIDTH = 30;
-export const GRID_HEIGHT = 25;
+export const GRID_SIZE = 50;
+export const GRID_WIDTH = 20;
+export const GRID_HEIGHT = 20;
 export const GAME_WIDTH = GRID_WIDTH * GRID_SIZE;
 export const GAME_HEIGHT = GRID_HEIGHT * GRID_SIZE;
 
 export class SnakeGame {
     private app: Application;
     private gameContainer: Container;
-    private snake: Snake;
-    private food: Food;
+    private snake!: Snake;
+    private food!: Food;
     private score: number = 0;
     private highScore: number = 0;
     private gameSpeed: number = 150; // milliseconds between moves
     private lastMoveTime: number = 0;
     private isGameOver: boolean = false;
     private isPaused: boolean = false;
-    private onGameOver: (score: number) => void;
+    private removeInputHandler?: () => void;
 
     // Game constants
     private readonly GRID_SIZE = GRID_SIZE;
@@ -29,18 +29,16 @@ export class SnakeGame {
     private readonly GAME_WIDTH = GAME_WIDTH;
     private readonly GAME_HEIGHT = GAME_HEIGHT;
 
-    constructor(app: Application, onGameOver: (score: number) => void) {
+    constructor(app: Application) {
         this.app = app;
-        this.onGameOver = onGameOver;
         this.gameContainer = new Container();
         this.app.stage.addChild(this.gameContainer);
         
         // Load high score from localStorage
         this.highScore = parseInt(localStorage.getItem('snakeHighScore') || '0');
-        this.updateUI();
     }
 
-    async init(): Promise<void> {
+    async init(): Promise<void> { 
         // Create game background
         this.createBackground();
         
@@ -60,8 +58,6 @@ export class SnakeGame {
         
         // Initialize UI
         this.updateUI();
-        
-        // Game container is now exactly the right size, no centering needed
     }
 
     private createBackground(): void {
@@ -71,7 +67,7 @@ export class SnakeGame {
         background.endFill();
         
         // Draw grid lines
-        background.lineStyle(1, 0x2c3e50, 0.3);
+        background.lineStyle(1, 0x2c3e50, 1);
         for (let x = 0; x <= this.GRID_WIDTH; x++) {
             background.moveTo(x * this.GRID_SIZE, 0);
             background.lineTo(x * this.GRID_SIZE, this.GAME_HEIGHT);
@@ -128,8 +124,6 @@ export class SnakeGame {
             document.removeEventListener('keydown', handleKeydown);
         };
     }
-
-    private removeInputHandler?: () => void;
 
     update(delta: number): void {
         if (this.isGameOver || this.isPaused) return;
@@ -191,42 +185,53 @@ export class SnakeGame {
             this.updateUI();
         }
         
-        // Call the callback to notify the main game manager
-        this.onGameOver(this.score);
+        // Show game over screen
+        this.showGameOver();
+    }
+
+    private showGameOver(): void {
+        const gameOverElement = document.getElementById('gameOver');
+        const finalScoreElement = document.getElementById('finalScore');
+        
+        if (gameOverElement && finalScoreElement) {
+            finalScoreElement.textContent = this.score.toString();
+            gameOverElement.style.display = 'block';
+        }
     }
 
     private togglePause(): void {
         this.isPaused = !this.isPaused;
+        
+        if (this.isPaused) {
+            this.showPauseMenu();
+        } else {
+            this.hidePauseMenu();
+        }
+    }
+
+    private showPauseMenu(): void {
+        const pauseMenuElement = document.getElementById('pauseMenu');
+        if (pauseMenuElement) {
+            pauseMenuElement.style.display = 'block';
+        }
+    }
+
+    private hidePauseMenu(): void {
+        const pauseMenuElement = document.getElementById('pauseMenu');
+        if (pauseMenuElement) {
+            pauseMenuElement.style.display = 'none';
+        }
     }
 
     private updateUI(): void {
-        const gameUI = document.getElementById('gameUI');
-        
-        if (!gameUI) {
-            return;
-        }
-        
-        // Create UI if it doesn't exist
-        if (!gameUI.querySelector('.snake-ui')) {
-            gameUI.innerHTML = `
-                <div class="snake-ui">
-                    <div>Score: <span id="snake-score">0</span></div>
-                    <div>High Score: <span id="snake-high-score">0</span></div>
-                </div>
-            `;
-        }
-        
-        const scoreElement = document.getElementById('snake-score');
-        const highScoreElement = document.getElementById('snake-high-score');
+        const scoreElement = document.getElementById('score');
+        const highScoreElement = document.getElementById('highScore');
         
         if (scoreElement) scoreElement.textContent = this.score.toString();
         if (highScoreElement) highScoreElement.textContent = this.highScore.toString();
-        
-        // Ensure the UI is visible
-        gameUI.style.display = 'block';
     }
 
-    restart(): void {
+    restart(): void { 
         this.score = 0;
         this.gameSpeed = 150;
         this.isGameOver = false;
@@ -237,11 +242,19 @@ export class SnakeGame {
         this.spawnFood();
         this.updateUI();
         
-        // Ensure game over modal is hidden
+        // Hide game over modal
         const gameOverElement = document.getElementById('gameOver');
         if (gameOverElement) {
             gameOverElement.style.display = 'none';
         }
+        
+        // Hide pause menu
+        this.hidePauseMenu();
+    }
+
+    resume(): void {
+        this.isPaused = false;
+        this.hidePauseMenu();
     }
 
     destroy(): void {
@@ -252,4 +265,67 @@ export class SnakeGame {
             this.gameContainer.parent.removeChild(this.gameContainer);
         }
     }
-} 
+}
+
+// Global game instance
+let game: SnakeGame | null = null;
+let app: Application | null = null;
+
+// Initialize the game when the page loads
+async function initGame() {
+    // Create PIXI application
+    app = new Application({
+        width: GAME_WIDTH,
+        height: GAME_HEIGHT,
+        backgroundColor: 0x2c3e50,
+        antialias: true,
+        resolution: window.devicePixelRatio || 1,
+    });
+
+    // Add canvas to game container
+    const gameContainer = document.getElementById('gameContainer');
+    if (gameContainer) {
+        gameContainer.appendChild(app.view as HTMLCanvasElement);
+    }
+
+    // Create and initialize game
+    game = new SnakeGame(app);
+    await game.init();
+
+    // Set up game loop
+    app.ticker.add(gameLoop);
+}
+
+function gameLoop(delta: number) {
+    if (game) {
+        game.update(delta);
+    }
+}
+
+// Global functions for game control
+declare global {
+    interface Window {
+        restartGame: () => void;
+        returnToMainMenu: () => void;
+        resumeGame: () => void;
+    }
+}
+
+window.restartGame = () => {
+    if (game) {
+        game.restart();
+    }
+};
+
+window.returnToMainMenu = () => {
+    window.location.href = '/';
+};
+
+window.resumeGame = () => {
+    if (game) {
+        game.resume();
+    }
+};
+
+// Initialize when page loads
+window.addEventListener('load', initGame); 

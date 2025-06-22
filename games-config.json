@@ -1,0 +1,22 @@
+{
+  "games": [
+    {
+      "id": "snake",
+      "name": "Snake",
+      "description": "Classic snake game with modern graphics",
+      "icon": "🐍",
+      "color": "#2ecc71",
+      "available": true,
+      "entryPoint": "/games/snake/index.html"
+    },
+    {
+      "id": "breakout",
+      "name": "Breakout",
+      "description": "Coming soon...",
+      "icon": "🎾",
+      "color": "#f39c12",
+      "available": true,
+      "entryPoint": "/games/breakout/index.html"
+    }
+  ]
+} 
