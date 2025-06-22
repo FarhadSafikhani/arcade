@@ -654,14 +654,6 @@ function updateCanvasScaling() {
     // Update canvas CSS dimensions
     canvas.style.width = `${BASE_GAME_WIDTH * dimensions.scale}px`;
     canvas.style.height = `${BASE_GAME_HEIGHT * dimensions.scale}px`;
-    
-    console.log('Canvas resized:', {
-        scale: dimensions.scale,
-        scaledWidth: BASE_GAME_WIDTH * dimensions.scale,
-        scaledHeight: BASE_GAME_HEIGHT * dimensions.scale,
-        styleWidth: canvas.style.width,
-        styleHeight: canvas.style.height
-    });
 }
 
 // Initialize the game when the page loads
@@ -691,18 +683,6 @@ async function initGame() {
         canvas.style.objectFit = 'contain';
         
         gameContainer.appendChild(canvas);
-        
-        console.log('Breakout dimensions:', {
-            baseWidth: BASE_GAME_WIDTH,
-            baseHeight: BASE_GAME_HEIGHT,
-            scale: dimensions.scale,
-            scaledWidth: BASE_GAME_WIDTH * dimensions.scale,
-            scaledHeight: BASE_GAME_HEIGHT * dimensions.scale,
-            canvasWidth: canvas.width,
-            canvasHeight: canvas.height,
-            styleWidth: canvas.style.width,
-            styleHeight: canvas.style.height
-        });
     }
 
     // Create and initialize game

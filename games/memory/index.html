@@ -24,51 +24,6 @@
             touch-action: none; /* Prevent zooming on mobile */
         }
         
-        .top-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 100;
-            backdrop-filter: blur(10px);
-        }
-        
-        .top-bar .game-title {
-            margin: 0;
-            font-size: clamp(18px, 4vw, 22px);
-            color: white;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-        }
-        
-        .button-container {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .button-container button {
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            padding: 8px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-            min-height: 36px;
-            transition: all 0.2s ease;
-            font-weight: 500;
-        }
-        
-        .button-container button:hover {
-            background: rgba(255, 255, 255, 0.25);
-            border-color: rgba(255, 255, 255, 0.6);
-            transform: translateY(-1px);
-        }
-        
         #gameContainer {
             position: relative;
             border: 1px solid rgba(255, 255, 255, 0.4);
@@ -164,12 +119,6 @@
         
         /* Disable hover effects on touch devices */
         @media (hover: none) and (pointer: coarse) {
-            .button-container button:hover {
-                background: rgba(255, 255, 255, 0.15);
-                border-color: rgba(255, 255, 255, 0.4);
-                transform: none;
-            }
-            
             #gameOver button:hover, #pauseMenu button:hover {
                 background: #4ecdc4;
             }
@@ -184,20 +133,6 @@
             body {
                 padding-top: 50px;
                 justify-content: flex-start;
-            }
-            
-            .top-bar {
-                padding: 8px 15px;
-            }
-            
-            .top-bar .game-title {
-                font-size: 18px;
-            }
-            
-            .button-container button {
-                padding: 6px 10px;
-                font-size: 11px;
-                min-height: 32px;
             }
             
             #gameUI {
@@ -217,20 +152,6 @@
                 padding-top: 45px;
             }
             
-            .top-bar {
-                padding: 6px 12px;
-            }
-            
-            .top-bar .game-title {
-                font-size: 16px;
-            }
-            
-            .button-container button {
-                padding: 5px 8px;
-                font-size: 10px;
-                min-height: 28px;
-            }
-            
             #gameUI {
                 font-size: 12px;
                 gap: 6px;
@@ -244,13 +165,7 @@
     </style>
 </head>
 <body>
-    <div class="top-bar">
-        <div class="game-title">👀 Memory</div>
-        <div class="button-container">
-            <button id="pauseButton" onclick="togglePause()">⏸️ Pause</button>
-            <button id="backToMenu" onclick="returnToMainMenu()">← Exit</button>
-        </div>
-    </div>
+    <game-top-bar title="👀 Memory" show-pause show-menu></game-top-bar>
 
     <div id="gameUI">
         <div>🔄 <span id="moves">0</span></div>
@@ -274,6 +189,7 @@
         </div>
     </div>
     
+    <script type="module" src="/src/shared/components/game-top-bar.ts"></script>
     <script type="module" src="/src/games/memory/game.ts"></script>
 </body>
 </html> 

@@ -97,6 +97,7 @@ export class MemoryGame {
     private isPaused: boolean = false;
     private canFlip: boolean = true;
     private removeInputHandler?: () => void;
+    private removeTopBarHandler?: () => void;
     private gameStarted: boolean = false;
     private flipTimeout?: ReturnType<typeof setTimeout>;
 
@@ -119,6 +120,7 @@ export class MemoryGame {
         
         // Set up input handling
         this.setupInput();
+        this.setupTopBarEvents();
         
         // Initialize UI
         this.updateUI();
@@ -133,6 +135,24 @@ export class MemoryGame {
         background.endFill();
         
         this.gameContainer.addChild(background);
+    }
+
+    private setupTopBarEvents(): void {
+        const handleTopBarEvent = (event: Event) => {
+            if (event.type === 'pause') {
+                this.togglePause();
+            } else if (event.type === 'menu') {
+                this.returnToMainMenu();
+            }
+        };
+
+        document.addEventListener('pause', handleTopBarEvent);
+        document.addEventListener('menu', handleTopBarEvent);
+        
+        this.removeTopBarHandler = () => {
+            document.removeEventListener('pause', handleTopBarEvent);
+            document.removeEventListener('menu', handleTopBarEvent);
+        };
     }
 
     private createCards(): void {
@@ -373,12 +393,19 @@ export class MemoryGame {
         if (this.removeInputHandler) {
             this.removeInputHandler();
         }
+        if (this.removeTopBarHandler) {
+            this.removeTopBarHandler();
+        }
         if (this.flipTimeout) {
             clearTimeout(this.flipTimeout);
         }
         if (this.gameContainer && this.gameContainer.parent) {
             this.gameContainer.parent.removeChild(this.gameContainer);
         }
+    }
+
+    returnToMainMenu(): void {
+        window.location.href = '/arcade/';
     }
 }
 
@@ -396,14 +423,6 @@ function updateCanvasScaling() {
     // Update canvas CSS dimensions
     canvas.style.width = `${BASE_GAME_WIDTH * dimensions.scale}px`;
     canvas.style.height = `${BASE_GAME_HEIGHT * dimensions.scale}px`;
-    
-    console.log('Memory canvas resized:', {
-        scale: dimensions.scale,
-        scaledWidth: BASE_GAME_WIDTH * dimensions.scale,
-        scaledHeight: BASE_GAME_HEIGHT * dimensions.scale,
-        styleWidth: canvas.style.width,
-        styleHeight: canvas.style.height
-    });
 }
 
 // Initialize the game when the page loads
@@ -433,18 +452,6 @@ async function initGame() {
         canvas.style.objectFit = 'contain';
         
         gameContainer.appendChild(canvas);
-        
-        console.log('Memory dimensions:', {
-            baseWidth: BASE_GAME_WIDTH,
-            baseHeight: BASE_GAME_HEIGHT,
-            scale: dimensions.scale,
-            scaledWidth: BASE_GAME_WIDTH * dimensions.scale,
-            scaledHeight: BASE_GAME_HEIGHT * dimensions.scale,
-            canvasWidth: canvas.width,
-            canvasHeight: canvas.height,
-            styleWidth: canvas.style.width,
-            styleHeight: canvas.style.height
-        });
     }
 
     // Create and initialize game
@@ -482,7 +489,9 @@ window.restartGame = () => {
 };
 
 window.returnToMainMenu = () => {
-    window.location.href = '/arcade/';
+    if (game) {
+        game.returnToMainMenu();
+    }
 };
 
 window.resumeGame = () => {

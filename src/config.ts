@@ -4,7 +4,6 @@ export interface GameConfig {
     name: string;
     description: string;
     icon: string;
-    color: string;
     available: boolean;
     entryPoint: string;
 }
@@ -14,6 +13,7 @@ export interface GamesConfig {
 }
 
 // Game configurations
+// Set available: false to hide a game from the menu
 export const gamesConfig: GamesConfig = {
     games: [
         {
@@ -21,7 +21,6 @@ export const gamesConfig: GamesConfig = {
             name: "Snake",
             description: "Classic snake game",
             icon: "🐍",
-            color: "#2ecc71",
             available: true,
             entryPoint: "/games/snake/index.html"
         },
@@ -30,7 +29,6 @@ export const gamesConfig: GamesConfig = {
             name: "Breakout",
             description: "Classic brick-breaking arcade game",
             icon: "🎾",
-            color: "#f39c12",
             available: true,
             entryPoint: "/games/breakout/index.html"
         },
@@ -39,9 +37,17 @@ export const gamesConfig: GamesConfig = {
             name: "Memory",
             description: "Classic memory game",
             icon: "👀",
-            color: "#2ecc71",
             available: true,
             entryPoint: "/games/memory/index.html"
         }
+        // Example of a disabled game:
+        // {
+        //     id: "tetris",
+        //     name: "Tetris",
+        //     description: "Classic tetris game",
+        //     icon: "🧩",
+        //     available: false,
+        //     entryPoint: "/games/tetris/index.html"
+        // }
     ]
 }; 

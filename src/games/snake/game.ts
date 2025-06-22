@@ -487,11 +487,7 @@ function updateCanvasScaling() {
     
     // If orientation changed, log it but don't change the game
     if (currentOrientation !== newOrientation) {
-        console.log('Orientation changed but keeping current game orientation:', { 
-            current: currentOrientation ? 'landscape' : 'portrait',
-            new: newOrientation ? 'landscape' : 'portrait',
-            note: 'Game will use new orientation on restart'
-        });
+        // do something
     }
 }
 
@@ -522,18 +518,6 @@ async function initGame() {
         canvas.style.objectFit = 'contain';
         
         gameContainer.appendChild(canvas);
-        
-        console.log('Snake dimensions:', {
-            baseWidth: dimensions.gameWidth,
-            baseHeight: dimensions.gameHeight,
-            scale: dimensions.scale,
-            scaledWidth: dimensions.gameWidth * dimensions.scale,
-            scaledHeight: dimensions.gameHeight * dimensions.scale,
-            canvasWidth: canvas.width,
-            canvasHeight: canvas.height,
-            styleWidth: canvas.style.width,
-            styleHeight: canvas.style.height
-        });
     }
 
     // Create and initialize game
