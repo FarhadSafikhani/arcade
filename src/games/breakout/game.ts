@@ -57,6 +57,7 @@ export class BreakoutGame {
     private isPaused: boolean = false;
     private isGameStarted: boolean = false;
     private removeInputHandler?: () => void;
+    private removeTopBarHandler?: () => void;
     private currentPaddleWidth: number = PADDLE_WIDTH;
     private safetyNetActive: boolean = false;
     private safetyNet!: Graphics;
@@ -85,6 +86,7 @@ export class BreakoutGame {
         
         // Set up input handling
         this.setupInput();
+        this.setupTopBarEvents();
         
         // Initialize UI
         this.updateUI();
@@ -92,6 +94,24 @@ export class BreakoutGame {
         // Position game objects at center
         this.paddle.setPosition(BASE_GAME_WIDTH / 2 - this.currentPaddleWidth / 2, BASE_GAME_HEIGHT - PADDLE_HEIGHT - 10);
         this.resetBall();
+    }
+
+    private setupTopBarEvents(): void {
+        const handleTopBarEvent = (event: Event) => {
+            if (event.type === 'pause') {
+                this.togglePause();
+            } else if (event.type === 'menu') {
+                this.returnToMainMenu();
+            }
+        };
+
+        document.addEventListener('pause', handleTopBarEvent);
+        document.addEventListener('menu', handleTopBarEvent);
+        
+        this.removeTopBarHandler = () => {
+            document.removeEventListener('pause', handleTopBarEvent);
+            document.removeEventListener('menu', handleTopBarEvent);
+        };
     }
 
     private createBackground(): void {
@@ -564,6 +584,9 @@ export class BreakoutGame {
         if (this.removeInputHandler) {
             this.removeInputHandler();
         }
+        if (this.removeTopBarHandler) {
+            this.removeTopBarHandler();
+        }
         this.particleSystem.clear();
         if (this.gameContainer && this.gameContainer.parent) {
             this.gameContainer.parent.removeChild(this.gameContainer);
@@ -637,6 +660,10 @@ export class BreakoutGame {
         const newX = Math.max(0, Math.min(BASE_GAME_WIDTH - this.currentPaddleWidth, this.paddle.x + dx));
         const paddleY = BASE_GAME_HEIGHT - PADDLE_HEIGHT - 10;
         this.paddle.setPosition(newX, paddleY);
+    }
+
+    returnToMainMenu(): void {
+        window.location.href = '/arcade/';
     }
 }
 
@@ -719,7 +746,9 @@ window.restartGame = () => {
 };
 
 window.returnToMainMenu = () => {
-    window.location.href = '/arcade/';
+    if (game) {
+        game.returnToMainMenu();
+    }
 };
 
 window.resumeGame = () => {
