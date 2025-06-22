@@ -3,7 +3,7 @@
     {
       "id": "snake",
       "name": "Snake",
-      "description": "Classic snake game with modern graphics",
+      "description": "Classic snake game",
       "icon": "🐍",
       "color": "#2ecc71",
       "available": true,
@@ -17,6 +17,15 @@
       "color": "#f39c12",
       "available": true,
       "entryPoint": "/games/breakout/index.html"
+    },
+    {
+      "id": "memory",
+      "name": "Memory",
+      "description": "Classic memory game",
+      "icon": "👀",
+      "color": "#2ecc71",
+      "available": true,
+      "entryPoint": "/games/memory/index.html"
     }
   ]
 } 
