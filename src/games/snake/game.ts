@@ -2,12 +2,36 @@ import { Application, Container, Graphics, Text, TextStyle } from 'pixi.js';
 import { Snake } from './snake';
 import { Food } from './food';
 
-// Game constants - single source of truth
-export const GRID_SIZE = 50;
-export const GRID_WIDTH = 20;
-export const GRID_HEIGHT = 20;
-export const GAME_WIDTH = GRID_WIDTH * GRID_SIZE;
-export const GAME_HEIGHT = GRID_HEIGHT * GRID_SIZE;
+// Responsive game constants
+const getGameDimensions = () => {
+    // 1. Get window dimensions and calculate max workable space
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    const maxWorkableWidth = windowWidth - 40; // 20px padding on each side
+    const maxWorkableHeight = windowHeight - 200; // Leave space for UI
+    
+    // 2. Determine grid count based on screen size
+    const isMobile = windowWidth < 768;
+    const gridColumns = isMobile ? 10 : 20;
+    const gridRows = isMobile ? 15 : 20;
+    
+    // 3. Calculate grid size to fit within available space
+    const maxGridSizeFromWidth = maxWorkableWidth / gridColumns;
+    const maxGridSizeFromHeight = maxWorkableHeight / gridRows;
+    const gridSize = Math.floor(Math.min(maxGridSizeFromWidth, maxGridSizeFromHeight));
+    
+    // 4. Calculate final game dimensions
+    const gameWidth = gridColumns * gridSize;
+    const gameHeight = gridRows * gridSize;
+    
+    return {
+        gridSize,
+        gridWidth: gridColumns,
+        gridHeight: gridRows,
+        gameWidth,
+        gameHeight
+    };
+};
 
 export class SnakeGame {
     private app: Application;
@@ -21,18 +45,27 @@ export class SnakeGame {
     private isGameOver: boolean = false;
     private isPaused: boolean = false;
     private removeInputHandler?: () => void;
+    private removeTouchHandler?: () => void;
 
-    // Game constants
-    private readonly GRID_SIZE = GRID_SIZE;
-    private readonly GRID_WIDTH = GRID_WIDTH;
-    private readonly GRID_HEIGHT = GRID_HEIGHT;
-    private readonly GAME_WIDTH = GAME_WIDTH;
-    private readonly GAME_HEIGHT = GAME_HEIGHT;
+    // Game constants - will be set dynamically
+    private GRID_SIZE: number;
+    private GRID_WIDTH: number;
+    private GRID_HEIGHT: number;
+    private GAME_WIDTH: number;
+    private GAME_HEIGHT: number;
 
     constructor(app: Application) {
         this.app = app;
         this.gameContainer = new Container();
         this.app.stage.addChild(this.gameContainer);
+        
+        // Set dimensions based on screen size
+        const dimensions = getGameDimensions();
+        this.GRID_SIZE = dimensions.gridSize;
+        this.GRID_WIDTH = dimensions.gridWidth;
+        this.GRID_HEIGHT = dimensions.gridHeight;
+        this.GAME_WIDTH = dimensions.gameWidth;
+        this.GAME_HEIGHT = dimensions.gameHeight;
         
         // Load high score from localStorage
         this.highScore = parseInt(localStorage.getItem('snakeHighScore') || '0');
@@ -55,6 +88,7 @@ export class SnakeGame {
         
         // Set up input handling
         this.setupInput();
+        this.setupTouchControls();
         
         // Initialize UI
         this.updateUI();
@@ -122,6 +156,66 @@ export class SnakeGame {
         // Store the handler so we can remove it later
         this.removeInputHandler = () => {
             document.removeEventListener('keydown', handleKeydown);
+        };
+    }
+
+    private setupTouchControls(): void {
+        let startX = 0;
+        let startY = 0;
+        let isSwiping = false;
+        const minSwipeDistance = 30;
+
+        const handleTouchStart = (event: TouchEvent) => {
+            if (this.isGameOver) return;
+            
+            const touch = event.touches[0];
+            startX = touch.clientX;
+            startY = touch.clientY;
+            isSwiping = true;
+        };
+
+        const handleTouchMove = (event: TouchEvent) => {
+            if (!isSwiping) return;
+            event.preventDefault();
+        };
+
+        const handleTouchEnd = (event: TouchEvent) => {
+            if (!isSwiping) return;
+            
+            const touch = event.changedTouches[0];
+            const deltaX = touch.clientX - startX;
+            const deltaY = touch.clientY - startY;
+            
+            if (Math.abs(deltaX) > minSwipeDistance || Math.abs(deltaY) > minSwipeDistance) {
+                if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                    // Horizontal swipe
+                    if (deltaX > 0) {
+                        this.snake.setDirection('right');
+                    } else {
+                        this.snake.setDirection('left');
+                    }
+                } else {
+                    // Vertical swipe
+                    if (deltaY > 0) {
+                        this.snake.setDirection('down');
+                    } else {
+                        this.snake.setDirection('up');
+                    }
+                }
+            }
+            
+            isSwiping = false;
+        };
+
+        const canvas = this.app.view as HTMLCanvasElement;
+        canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+        canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+        canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+        
+        this.removeTouchHandler = () => {
+            canvas.removeEventListener('touchstart', handleTouchStart);
+            canvas.removeEventListener('touchmove', handleTouchMove);
+            canvas.removeEventListener('touchend', handleTouchEnd);
         };
     }
 
@@ -199,7 +293,7 @@ export class SnakeGame {
         }
     }
 
-    private togglePause(): void {
+    togglePause(): void {
         this.isPaused = !this.isPaused;
         
         if (this.isPaused) {
@@ -261,6 +355,9 @@ export class SnakeGame {
         if (this.removeInputHandler) {
             this.removeInputHandler();
         }
+        if (this.removeTouchHandler) {
+            this.removeTouchHandler();
+        }
         if (this.gameContainer && this.gameContainer.parent) {
             this.gameContainer.parent.removeChild(this.gameContainer);
         }
@@ -273,10 +370,13 @@ let app: Application | null = null;
 
 // Initialize the game when the page loads
 async function initGame() {
+    // Get dynamic dimensions
+    const dimensions = getGameDimensions();
+    
     // Create PIXI application
     app = new Application({
-        width: GAME_WIDTH,
-        height: GAME_HEIGHT,
+        width: dimensions.gameWidth,
+        height: dimensions.gameHeight,
         backgroundColor: 0x2c3e50,
         antialias: true,
         resolution: window.devicePixelRatio || 1,
@@ -308,6 +408,7 @@ declare global {
         restartGame: () => void;
         returnToMainMenu: () => void;
         resumeGame: () => void;
+        togglePause: () => void;
     }
 }
 
@@ -318,12 +419,18 @@ window.restartGame = () => {
 };
 
 window.returnToMainMenu = () => {
-    window.location.href = '/';
+    window.location.href = '/arcade/';
 };
 
 window.resumeGame = () => {
     if (game) {
         game.resume();
+    }
+};
+
+window.togglePause = () => {
+    if (game) {
+        game.togglePause();
     }
 };
 
