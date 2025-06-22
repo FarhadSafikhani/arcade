@@ -1,4 +1,3 @@
-import { Application } from 'pixi.js';
 import { gamesConfig, GameConfig } from './config';
 
 // Global functions for game control

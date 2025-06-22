@@ -51,6 +51,7 @@ export class SnakeGame {
     private isWaitingToStart: boolean = true;
     private removeInputHandler?: () => void;
     private removeTouchHandler?: () => void;
+    private removeTopBarHandler?: () => void;
     private gameDimensions: ReturnType<typeof getGameDimensions>;
 
     constructor(app: Application) {
@@ -88,6 +89,7 @@ export class SnakeGame {
         // Set up input handling
         this.setupInput();
         this.setupTouchControls();
+        this.setupTopBarEvents();
         this.setupStartScreen();
         
         // Initialize UI
@@ -112,6 +114,24 @@ export class SnakeGame {
         }
         
         this.gameContainer.addChild(background);
+    }
+
+    private setupTopBarEvents(): void {
+        const handleTopBarEvent = (event: Event) => {
+            if (event.type === 'pause') {
+                this.togglePause();
+            } else if (event.type === 'menu') {
+                this.returnToMainMenu();
+            }
+        };
+
+        document.addEventListener('pause', handleTopBarEvent);
+        document.addEventListener('menu', handleTopBarEvent);
+        
+        this.removeTopBarHandler = () => {
+            document.removeEventListener('pause', handleTopBarEvent);
+            document.removeEventListener('menu', handleTopBarEvent);
+        };
     }
 
     private setupInput(): void {
@@ -416,9 +436,16 @@ export class SnakeGame {
         if (this.removeTouchHandler) {
             this.removeTouchHandler();
         }
+        if (this.removeTopBarHandler) {
+            this.removeTopBarHandler();
+        }
         if (this.gameContainer && this.gameContainer.parent) {
             this.gameContainer.parent.removeChild(this.gameContainer);
         }
+    }
+
+    returnToMainMenu(): void {
+        window.location.href = '/arcade/';
     }
 }
 
@@ -538,7 +565,9 @@ window.restartGame = () => {
 };
 
 window.returnToMainMenu = () => {
-    window.location.href = '/arcade/';
+    if (game) {
+        game.returnToMainMenu();
+    }
 };
 
 window.resumeGame = () => {
