@@ -70,4 +70,11 @@ export class Brick {
             bottom: this.y + this.height
         };
     }
+
+    getColor(): number {
+        // Color gradient from red (5 health) to green (1 health)
+        const colors = [0x2ecc71, 0xf1c40f, 0xe67e22, 0xe74c3c, 0xc0392b]; // green, yellow, orange, red, dark red
+        const colorIndex = Math.max(0, this.health - 1);
+        return colors[colorIndex];
+    }
 } 

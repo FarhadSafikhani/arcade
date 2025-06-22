@@ -3,6 +3,7 @@ import { Paddle } from './paddle';
 import { Ball } from './ball';
 import { Brick } from './brick';
 import { PowerUp, PowerUpType } from './powerup';
+import { ParticleSystem } from './particle';
 
 // Game constants
 export const GAME_WIDTH = 800;
@@ -27,6 +28,7 @@ export class BreakoutGame {
     private ball!: Ball;
     private bricks: Brick[] = [];
     private powerUps: PowerUp[] = [];
+    private particleSystem: ParticleSystem;
     private score: number = 0;
     private lives: number = 3;
     private level: number = 1;
@@ -42,6 +44,7 @@ export class BreakoutGame {
         this.app = app;
         this.gameContainer = new Container();
         this.app.stage.addChild(this.gameContainer);
+        this.particleSystem = new ParticleSystem(this.gameContainer);
     }
 
     async init(): Promise<void> {
@@ -186,6 +189,9 @@ export class BreakoutGame {
         
         // Update power-ups
         this.updatePowerUps();
+        
+        // Update particles
+        this.particleSystem.update();
     }
 
     private checkCollisions(): void {
@@ -270,6 +276,15 @@ export class BreakoutGame {
                 // Hit the brick and check if it's destroyed
                 const isDestroyed = brick.hit();
                 if (isDestroyed) {
+                    // Create particle explosion at brick position
+                    const brickColor = brick.getColor();
+                    this.particleSystem.createExplosion(
+                        brick.x + BRICK_WIDTH / 2, 
+                        brick.y + BRICK_HEIGHT / 2, 
+                        brickColor, 
+                        12
+                    );
+                    
                     // Remove the brick if health reaches 0
                     this.bricks.splice(i, 1);
                     this.gameContainer.removeChild(brick.container);
@@ -376,6 +391,9 @@ export class BreakoutGame {
         this.safetyNetActive = false;
         this.safetyNet.visible = false;
         
+        // Clear particles
+        this.particleSystem.clear();
+        
         // Clear existing bricks
         this.bricks.forEach(brick => {
             this.gameContainer.removeChild(brick.container);
@@ -415,6 +433,7 @@ export class BreakoutGame {
         if (this.removeInputHandler) {
             this.removeInputHandler();
         }
+        this.particleSystem.clear();
         if (this.gameContainer && this.gameContainer.parent) {
             this.gameContainer.parent.removeChild(this.gameContainer);
         }

@@ -1,20 +1,23 @@
 {
-  "name": "arcade-snake",
+  "name": "arcade-collection",
   "version": "1.0.0",
-  "description": "A classic Snake game built with PixiJS",
+  "description": "A collection of classic arcade games built with PixiJS",
   "main": "index.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "serve": "vite preview"
+    
   },
   "keywords": [
-    "snake",
-    "game",
+    "arcade",
+    "games",
     "pixijs",
     "typescript",
-    "arcade"
+    "snake",
+    "breakout",
+    "memory"
   ],
   "author": "",
   "license": "MIT",

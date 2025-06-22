@@ -1,19 +1,5 @@
 import { Application } from 'pixi.js';
-
-// Game configuration interface
-interface GameConfig {
-    id: string;
-    name: string;
-    description: string;
-    icon: string;
-    color: string;
-    available: boolean;
-    entryPoint: string;
-}
-
-interface GamesConfig {
-    games: GameConfig[];
-}
+import { gamesConfig, GameConfig } from './config';
 
 // Global functions for game control
 declare global {
@@ -25,12 +11,8 @@ declare global {
 
 async function init() {
     try {
-        // Load games configuration
-        const response = await fetch('/games-config.json');
-        const config: GamesConfig = await response.json();
-        
-        // Generate menu buttons
-        generateMenuButtons(config.games);
+        // Generate menu buttons using imported config
+        generateMenuButtons(gamesConfig.games);
         
         // Set up global functions
         window.startGame = startGame;
