@@ -1,6 +1,7 @@
 # Arcade
 
-A classic Arcade
+Set of classic Arcade games, mostly vibe coded.
+
 
 ## Description
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arcade Collection</title>
+    <title>Vibe Arcade</title>
     <style>
         * {
             box-sizing: border-box;
@@ -153,15 +153,25 @@
                 box-shadow: none;
             }
         }
+
+        #version {
+            position: absolute;
+            bottom: 0px;
+            right: 0px;
+            font-size: 10px;
+            color: white;
+        }
     </style>
 </head>
 <body>
     <div id="mainMenu">
-        <h1>🎮 Arcade Collection</h1>
+        <h1>🎮 Vibe Arcade</h1>
         <div id="gameGrid" class="game-grid">
             <!-- Game buttons will be generated here -->
         </div>
     </div>
+
+    <div id="version">v1.0.3</div>
     
     <script type="module" src="/src/main.ts"></script>
 </body>

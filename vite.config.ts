@@ -1,12 +1,10 @@
 import { defineConfig } from 'vite'
 import { resolve } from 'path'
-import { ghPages } from 'vite-plugin-gh-pages'
 import obfuscator from 'rollup-plugin-obfuscator'
 
 export default defineConfig({
   base: '/arcade/',
   plugins: [
-    ghPages()
   ],
   server: {
     port: 3000,
