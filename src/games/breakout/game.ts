@@ -130,36 +130,15 @@ export class BreakoutGame {
             
             switch (event.key) {
                 case ' ':
+                case 'Enter':
                     event.preventDefault();
                     if (!this.isGameStarted) {
                         this.startGame();
-                    } else {
-                        this.togglePause();
                     }
                     break;
                 case 'Escape':
                     event.preventDefault();
                     this.togglePause();
-                    break;
-                case 'ArrowLeft':
-                case 'a':
-                case 'A':
-                    event.preventDefault();
-                    if (!this.isPaused) {
-                        const newX = Math.max(0, this.paddle.x - 20);
-                        const paddleY = BASE_GAME_HEIGHT - PADDLE_HEIGHT - 10;
-                        this.paddle.setPosition(newX, paddleY);
-                    }
-                    break;
-                case 'ArrowRight':
-                case 'd':
-                case 'D':
-                    event.preventDefault();
-                    if (!this.isPaused) {
-                        const newX = Math.min(BASE_GAME_WIDTH - this.currentPaddleWidth, this.paddle.x + 20);
-                        const paddleY = BASE_GAME_HEIGHT - PADDLE_HEIGHT - 10;
-                        this.paddle.setPosition(newX, paddleY);
-                    }
                     break;
             }
         };
@@ -168,21 +147,15 @@ export class BreakoutGame {
             if (this.isGameOver || this.isPaused) return;
             
             const mouseEvent = event as MouseEvent;
-            const canvas = this.app.view as HTMLCanvasElement;
-            const rect = canvas.getBoundingClientRect();
+            const rect = (this.app.view as HTMLCanvasElement).getBoundingClientRect();
             const mouseX = mouseEvent.clientX - rect.left;
             
-            // Scale mouse position to game coordinates
-            const scaleX = BASE_GAME_WIDTH / rect.width;
-            const gameX = mouseX * scaleX;
-            
-            // Position paddle so mouse is at center of paddle
+            // Map mouse position to game coordinates
+            const gameX = (mouseX / rect.width) * BASE_GAME_WIDTH;
             const paddleX = gameX - this.currentPaddleWidth / 2;
             
             // Keep paddle within bounds
             const clampedX = Math.max(0, Math.min(BASE_GAME_WIDTH - this.currentPaddleWidth, paddleX));
-            
-            // Position paddle at bottom of visible canvas area
             const paddleY = BASE_GAME_HEIGHT - PADDLE_HEIGHT - 10;
             this.paddle.setPosition(clampedX, paddleY);
         };
@@ -195,13 +168,28 @@ export class BreakoutGame {
             }
         };
 
-        // Touch handling for mobile
         let isDragging = false;
+        let hasStartedDragging = false; // Track if we've actually started dragging
+        let startTouchX = 0; // Store initial touch position
+        let startTouchY = 0;
+        const DRAG_THRESHOLD = 10; // Minimum pixels to move before starting drag
         
         const handleTouchStart = (event: TouchEvent) => {
             if (this.isGameOver || this.isPaused) return;
             
+            const touch = event.touches[0];
+            const touchY = touch.clientY;
+            
+            // Check if touch is in the game area (below the top bar)
+            // Top bar is typically around 60px, so we'll use 80px as a safe margin
+            if (touchY < 80) {
+                return; // Don't handle touches in the top bar area
+            }
+            
             isDragging = true;
+            hasStartedDragging = false; // Reset drag state
+            startTouchX = touch.clientX; // Store initial position
+            startTouchY = touch.clientY;
             event.preventDefault();
             
             if (!this.isGameStarted) {
@@ -212,27 +200,48 @@ export class BreakoutGame {
         const handleTouchMove = (event: TouchEvent) => {
             if (!isDragging || this.isGameOver || this.isPaused) return;
             
+            const touch = event.touches[0];
+            const touchY = touch.clientY;
+            
+            // Check if touch is in the game area
+            if (touchY < 80) {
+                return; // Don't handle touches in the top bar area
+            }
+            
             event.preventDefault();
             
-            const touch = event.touches[0];
-            const touchX = touch.clientX; // Use full screen width
+            // Calculate distance moved from initial touch
+            const deltaX = Math.abs(touch.clientX - startTouchX);
+            const deltaY = Math.abs(touch.clientY - startTouchY);
+            const totalDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
             
-            // Map screen position to game coordinates
-            // Use the full window width for better control
-            const screenWidth = window.innerWidth;
-            const gameX = (touchX / screenWidth) * BASE_GAME_WIDTH;
+            // Only start moving the paddle after we've moved beyond the threshold
+            if (!hasStartedDragging && totalDistance > DRAG_THRESHOLD) {
+                hasStartedDragging = true;
+            }
             
-            // Position paddle so touch point maps to paddle center
-            const paddleX = gameX - this.currentPaddleWidth / 2;
-            
-            // Keep paddle within bounds
-            const clampedX = Math.max(0, Math.min(BASE_GAME_WIDTH - this.currentPaddleWidth, paddleX));
-            const paddleY = BASE_GAME_HEIGHT - PADDLE_HEIGHT - 10;
-            this.paddle.setPosition(clampedX, paddleY);
+            // Only move paddle if we've started dragging
+            if (hasStartedDragging) {
+                const touchX = touch.clientX; // Use full screen width
+                
+                // Map screen position to game coordinates
+                // Use the full window width for better control
+                const screenWidth = window.innerWidth;
+                const gameX = (touchX / screenWidth) * BASE_GAME_WIDTH;
+                
+                // Position paddle so touch point maps to paddle center
+                const paddleX = gameX - this.currentPaddleWidth / 2;
+                
+                // Keep paddle within bounds
+                const clampedX = Math.max(0, Math.min(BASE_GAME_WIDTH - this.currentPaddleWidth, paddleX));
+                const paddleY = BASE_GAME_HEIGHT - PADDLE_HEIGHT - 10;
+                this.paddle.setPosition(clampedX, paddleY);
+            }
         };
 
         const handleTouchEnd = (event: TouchEvent) => {
             isDragging = false;
+            hasStartedDragging = false;
         };
 
         document.addEventListener('keydown', handleKeydown);
@@ -592,6 +601,14 @@ export class BreakoutGame {
                 }
                 break;
         }
+    }
+
+    private movePaddle(dx: number): void {
+        if (this.isGameOver || this.isPaused) return;
+        
+        const newX = Math.max(0, Math.min(BASE_GAME_WIDTH - this.currentPaddleWidth, this.paddle.x + dx));
+        const paddleY = BASE_GAME_HEIGHT - PADDLE_HEIGHT - 10;
+        this.paddle.setPosition(newX, paddleY);
     }
 }
 
