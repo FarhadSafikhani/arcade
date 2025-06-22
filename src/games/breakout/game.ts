@@ -215,15 +215,14 @@ export class BreakoutGame {
             event.preventDefault();
             
             const touch = event.touches[0];
-            const canvas = this.app.view as HTMLCanvasElement;
-            const rect = canvas.getBoundingClientRect();
-            const touchX = touch.clientX - rect.left;
+            const touchX = touch.clientX; // Use full screen width
             
-            // Scale touch position to game coordinates
-            const scaleX = BASE_GAME_WIDTH / rect.width;
-            const gameX = touchX * scaleX;
+            // Map screen position to game coordinates
+            // Use the full window width for better control
+            const screenWidth = window.innerWidth;
+            const gameX = (touchX / screenWidth) * BASE_GAME_WIDTH;
             
-            // Position paddle so touch point is at center of paddle
+            // Position paddle so touch point maps to paddle center
             const paddleX = gameX - this.currentPaddleWidth / 2;
             
             // Keep paddle within bounds
@@ -240,18 +239,20 @@ export class BreakoutGame {
         const canvas = this.app.view as HTMLCanvasElement;
         canvas.addEventListener('mousemove', handleMouseMove);
         canvas.addEventListener('click', handleMouseClick);
-        canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
-        canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
-        canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+        
+        // Add touch listeners to document for full screen control
+        document.addEventListener('touchstart', handleTouchStart, { passive: false });
+        document.addEventListener('touchmove', handleTouchMove, { passive: false });
+        document.addEventListener('touchend', handleTouchEnd, { passive: false });
         
         // Store the handler so we can remove it later
         this.removeInputHandler = () => {
             document.removeEventListener('keydown', handleKeydown);
             canvas.removeEventListener('mousemove', handleMouseMove);
             canvas.removeEventListener('click', handleMouseClick);
-            canvas.removeEventListener('touchstart', handleTouchStart);
-            canvas.removeEventListener('touchmove', handleTouchMove);
-            canvas.removeEventListener('touchend', handleTouchEnd);
+            document.removeEventListener('touchstart', handleTouchStart);
+            document.removeEventListener('touchmove', handleTouchMove);
+            document.removeEventListener('touchend', handleTouchEnd);
         };
     }
 

@@ -18,7 +18,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             min-height: 100vh;
             overflow: hidden;
             touch-action: none; /* Prevent zooming on mobile */
@@ -73,7 +73,6 @@
             position: relative;
             border: 1px solid rgba(255, 255, 255, 0.4);
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-
             overflow: hidden;
             display: flex;
             align-items: center;
@@ -99,7 +98,7 @@
             display: flex;
             justify-content: center;
             gap: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
         
         #gameUI div {
@@ -163,26 +162,68 @@
             background: #7f8c8d;
         }
         
-        /* Mobile-specific styles
+        /* Mobile-specific styles */
         @media (max-width: 768px) {
             body {
-                padding: 5px;
+                padding-top: 50px;
+                justify-content: flex-start;
             }
             
-            #gameContainer {
-                border-width: 2px;
-                margin: 5px;
+            .top-bar {
+                padding: 8px 15px;
+            }
+            
+            .top-bar .game-title {
+                font-size: 18px;
+            }
+            
+            .button-container button {
+                padding: 6px 10px;
+                font-size: 11px;
+                min-height: 32px;
             }
             
             #gameUI {
                 font-size: 14px;
-                gap: 15px;
+                gap: 8px;
+                margin-bottom: 8px;
             }
             
             #gameUI div {
+                padding: 4px 8px;
+            }
+        }
+        
+        /* Extra small screens */
+        @media (max-width: 480px) {
+            body {
+                padding-top: 45px;
+            }
+            
+            .top-bar {
                 padding: 6px 12px;
             }
-        } */
+            
+            .top-bar .game-title {
+                font-size: 16px;
+            }
+            
+            .button-container button {
+                padding: 5px 8px;
+                font-size: 10px;
+                min-height: 28px;
+            }
+            
+            #gameUI {
+                font-size: 12px;
+                gap: 6px;
+                margin-bottom: 6px;
+            }
+            
+            #gameUI div {
+                padding: 3px 6px;
+            }
+        }
     </style>
 </head>
 <body>
