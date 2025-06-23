@@ -61,6 +61,8 @@ export class BreakoutGame {
     private currentPaddleWidth: number = PADDLE_WIDTH;
     private safetyNetActive: boolean = false;
     private safetyNet!: Graphics;
+    private lastUpdateTime: number = 0;
+    private updateInterval: number = 1000 / 60; // 60 FPS equivalent in milliseconds
 
     constructor(app: Application) {
         this.app = app;
@@ -328,6 +330,13 @@ export class BreakoutGame {
 
     update(delta: number): void {
         if (this.isGameOver || this.isPaused) return;
+
+        // Time-based update for consistent game speed
+        const currentTime = performance.now();
+        if (currentTime - this.lastUpdateTime < this.updateInterval) {
+            return; // Skip update if not enough time has passed
+        }
+        this.lastUpdateTime = currentTime;
 
         if (this.isGameStarted) {
             this.balls.forEach(ball => ball.update());
