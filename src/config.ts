@@ -39,6 +39,14 @@ export const gamesConfig: GamesConfig = {
             icon: "👀",
             available: true,
             entryPoint: "/games/memory/index.html"
+        },
+        {
+            id: "archer",
+            name: "Archer",
+            description: "Physics-based archery game",
+            icon: "🏹",
+            available: true,
+            entryPoint: "/games/archer/index.html"
         }
         // Example of a disabled game:
         // {

@@ -34,7 +34,8 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         snake: resolve(__dirname, 'games/snake/index.html'),
         breakout: resolve(__dirname, 'games/breakout/index.html'),
-        memory: resolve(__dirname, 'games/memory/index.html')
+        memory: resolve(__dirname, 'games/memory/index.html'),
+        archer: resolve(__dirname, 'games/archer/index.html')
       },
       output: {
         chunkFileNames: 'assets/[name]-[hash].js',

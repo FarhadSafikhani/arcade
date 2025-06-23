@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Archer Game - Arcade Collection</title>
+    <link rel="stylesheet" href="/src/styles/main.css">
+    <link rel="stylesheet" href="/src/styles/archer.css">
+</head>
+<body class="game-page">
+    <game-top-bar title="🏹 Archer" show-pause show-menu></game-top-bar>
+    <div id="gameUI">
+        <div>🎯 <span id="score">0</span></div>
+        <div>🏆 <span id="highScore">0</span></div>
+        <div>🎯 <span id="targets">0</span></div>
+        <div>🔄 <span id="round">1</span></div>
+    </div>
+    <div id="gameContainer">
+        <div id="gameOver">
+            <h2>Game Over!</h2>
+            <p>Final Score: <span id="finalScore">0</span></p>
+            <p>Targets Hit: <span id="finalTargets">0</span></p>
+            <p>Rounds Completed: <span id="finalRounds">0</span></p>
+            <button onclick="restartGame()">Play Again</button>
+            <button class="secondary" onclick="returnToMainMenu()">Main Menu</button>
+        </div>
+        <div id="pauseMenu">
+            <h2>Game Paused</h2>
+            <button onclick="resumeGame()">Resume</button>
+            <button class="secondary" onclick="returnToMainMenu()">Exit to Main Menu</button>
+        </div>
+    </div>
+    
+    <script type="module" src="/src/shared/components/game-top-bar.ts"></script>
+    <script type="module" src="/src/games/archer/game.ts"></script>
+</body>
+</html> 
