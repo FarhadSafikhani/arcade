@@ -2,6 +2,11 @@ import { Container, Graphics } from 'pixi.js';
 import { Paddle } from './paddle';
 import { Brick } from './brick';
 
+export enum BallType {
+    NORMAL = 'normal',
+    BLUE = 'blue'
+}
+
 export class Ball {
     public container: Container;
     public x: number = 0;
@@ -9,20 +14,26 @@ export class Ball {
     public radius: number;
     public velocityX: number = 0;
     public velocityY: number = 0;
+    public type: BallType;
     private graphics!: Graphics;
 
-    constructor(radius: number) {
+    constructor(radius: number, type: BallType = BallType.NORMAL) {
         this.radius = radius;
+        this.type = type;
         this.container = new Container();
         
         // Create ball graphics
         this.graphics = new Graphics();
-        this.graphics.beginFill(0xffffff);
+        
+        // Set color based on ball type
+        const color = this.type === BallType.BLUE ? 0x3498db : 0xffffff;
+        this.graphics.beginFill(color);
         this.graphics.drawCircle(0, 0, radius);
         this.graphics.endFill();
         
         // Add border
-        this.graphics.lineStyle(2, 0x2c3e50, 0.8);
+        const borderColor = this.type === BallType.BLUE ? 0x2980b9 : 0x2c3e50;
+        this.graphics.lineStyle(2, borderColor, 0.8);
         this.graphics.drawCircle(0, 0, radius);
         
         this.container.addChild(this.graphics);

@@ -1,6 +1,6 @@
 import { Application, Container, Graphics, Text, TextStyle } from 'pixi.js';
 import { Paddle } from './paddle';
-import { Ball } from './ball';
+import { Ball, BallType } from './ball';
 import { Brick } from './brick';
 import { PowerUp, PowerUpType } from './powerup';
 import { ParticleSystem } from './particle';
@@ -16,8 +16,8 @@ const BRICK_HEIGHT = 30;
 const BRICK_ROWS = 5;
 const BRICK_COLS = 10;
 const BRICK_PADDING = 1;
-const BASE_BALL_VELOCITY = 8;
-const POWERUP_DROP_CHANCE = 0.1; // 10% chance
+const BASE_BALL_VELOCITY = 7;
+const POWERUP_DROP_CHANCE = .25;//0.1; // 10% chance
 
 // Calculate brick width to fit perfectly
 const BRICK_WIDTH = (BASE_GAME_WIDTH - (BRICK_COLS + 1) * BRICK_PADDING) / BRICK_COLS;
@@ -46,7 +46,7 @@ export class BreakoutGame {
     private app: Application;
     private gameContainer: Container;
     private paddle!: Paddle;
-    private ball!: Ball;
+    private balls: Ball[] = [];
     private bricks: Brick[] = [];
     private powerUps: PowerUp[] = [];
     private particleSystem: ParticleSystem;
@@ -76,24 +76,14 @@ export class BreakoutGame {
         // Initialize paddle
         this.paddle = new Paddle(PADDLE_WIDTH, PADDLE_HEIGHT);
         this.gameContainer.addChild(this.paddle.container);
-        
-        // Initialize ball
-        this.ball = new Ball(BALL_RADIUS);
-        this.gameContainer.addChild(this.ball.container);
-        
-        // Create bricks
+        this.paddle.setPosition(BASE_GAME_WIDTH / 2 - this.currentPaddleWidth / 2, BASE_GAME_HEIGHT - PADDLE_HEIGHT - 10);
+
         this.createBricks();
-        
-        // Set up input handling
         this.setupInput();
         this.setupTopBarEvents();
-        
-        // Initialize UI
         this.updateUI();
-        
-        // Position game objects at center
-        this.paddle.setPosition(BASE_GAME_WIDTH / 2 - this.currentPaddleWidth / 2, BASE_GAME_HEIGHT - PADDLE_HEIGHT - 10);
-        this.resetBall();
+ 
+        this.resetObjects();
     }
 
     private setupTopBarEvents(): void {
@@ -132,7 +122,7 @@ export class BreakoutGame {
     }
 
     private createBricks(): void {
-        const healths = [5, 4, 3, 2, 1]; // Red to green (top to bottom)
+        const healths = [4, 3, 2, 1, 1]; // Red to green (top to bottom)
         const startY = 50;
         
         for (let row = 0; row < BRICK_ROWS; row++) {
@@ -315,27 +305,39 @@ export class BreakoutGame {
 
     private startGame(): void {
         this.isGameStarted = true;
-        this.ball.setVelocity(0, -INITIAL_BALL_VELOCITY);
+        this.balls.forEach(ball => ball.setVelocity(0, -INITIAL_BALL_VELOCITY));
     }
 
-    private resetBall(): void {
-        this.ball.setPosition(BASE_GAME_WIDTH / 2, BASE_GAME_HEIGHT - PADDLE_HEIGHT - 30);
-        this.ball.setVelocity(0, 0);
+    private resetObjects(): void {
+        // Destroy all balls (both white and blue)
+        this.balls.forEach(ball => {
+            this.gameContainer.removeChild(ball.container);
+        });
+        this.balls = [];
+        
+        // Spawn a fresh white ball on the paddle
+        const newBall = new Ball(BALL_RADIUS, BallType.NORMAL);
+        this.balls.push(newBall);
+        this.gameContainer.addChild(newBall.container);
         this.isGameStarted = false;
+
+        this.currentPaddleWidth = PADDLE_WIDTH;
+        this.paddle.resize(this.currentPaddleWidth);
+        this.paddle.setPosition(BASE_GAME_WIDTH / 2 - this.currentPaddleWidth / 2, BASE_GAME_HEIGHT - PADDLE_HEIGHT - 10);
     }
 
     update(delta: number): void {
         if (this.isGameOver || this.isPaused) return;
 
         if (this.isGameStarted) {
-            this.ball.update();
+            this.balls.forEach(ball => ball.update());
             this.checkCollisions();
         } else {
             // Ball follows paddle when not started
-            this.ball.setPosition(
+            this.balls.forEach(ball => ball.setPosition(
                 this.paddle.x + this.currentPaddleWidth / 2,
                 BASE_GAME_HEIGHT - PADDLE_HEIGHT - 30
-            );
+            ));
         }
         
         // Update power-ups
@@ -346,116 +348,124 @@ export class BreakoutGame {
     }
 
     private checkCollisions(): void {
-        const ballBounds = this.ball.getBounds();
-        
-        // Check wall collisions with improved bounds checking
-        if (ballBounds.left <= 0) {
-            this.ball.setPosition(this.ball.radius, this.ball.y);
-            this.ball.reverseX();
-        } else if (ballBounds.right >= BASE_GAME_WIDTH) {
-            this.ball.setPosition(BASE_GAME_WIDTH - this.ball.radius, this.ball.y);
-            this.ball.reverseX();
-        }
-        
-        if (ballBounds.top <= 0) {
-            this.ball.setPosition(this.ball.x, this.ball.radius);
-            this.ball.reverseY();
-        }
-        
-        // Check if ball is out of bounds (bottom)
-        if (ballBounds.top >= BASE_GAME_HEIGHT) {
-            if (this.safetyNetActive) {
-                // Safety net catches the ball
-                this.ball.setPosition(this.ball.x, BASE_GAME_HEIGHT - this.ball.radius - 5);
-                this.ball.reverseY();
-                this.safetyNetActive = false;
-                this.safetyNet.visible = false;
-            } else {
-                // No safety net, lose a life
-                this.loseLife();
+        // Check each ball for collisions
+        for (let ballIndex = this.balls.length - 1; ballIndex >= 0; ballIndex--) {
+            const ball = this.balls[ballIndex];
+            const ballBounds = ball.getBounds();
+            
+            // Check wall collisions with improved bounds checking
+            if (ballBounds.left <= 0) {
+                ball.setPosition(ball.radius, ball.y);
+                ball.reverseX();
+            } else if (ballBounds.right >= BASE_GAME_WIDTH) {
+                ball.setPosition(BASE_GAME_WIDTH - ball.radius, ball.y);
+                ball.reverseX();
             }
-            return;
-        }
-        
-        // Check paddle collision
-        if (this.ball.checkCollisionWithPaddle(this.paddle)) {
-            // Ensure ball is above paddle before reversing
-            if (this.ball.y > this.paddle.y) {
-                this.ball.setPosition(this.ball.x, this.paddle.y - this.ball.radius);
-                this.ball.reverseY();
-                
-                // Calculate where the ball hit the paddle (0 = left edge, 1 = right edge)
-                const hitPoint = (this.ball.x - this.paddle.x) / this.currentPaddleWidth;
-                const centerPoint = 0.5;
-                
-                // Calculate velocity multiplier based on distance from center
-                // Center (0.5) = 100% speed, edges (0 or 1) = 200% speed
-                const distanceFromCenter = Math.abs(hitPoint - centerPoint);
-                const velocityMultiplier = 1 + distanceFromCenter; // 1.0 to 2.0
-                
-                // Set new velocity with angle and speed adjustment
-                const newSpeed = INITIAL_BALL_VELOCITY * velocityMultiplier;
-                const angle = (hitPoint - centerPoint) * 0.8; // -0.4 to 0.4 radians
-                
-                this.ball.setVelocityAndAngle(newSpeed, angle);
+            
+            if (ballBounds.top <= 0) {
+                ball.setPosition(ball.x, ball.radius);
+                ball.reverseY();
             }
-        }
-        
-        // Check brick collisions
-        for (let i = this.bricks.length - 1; i >= 0; i--) {
-            const brick = this.bricks[i];
-            if (this.ball.checkCollisionWithBrick(brick)) {
-                // Determine which side of the brick was hit
-                const ballBounds = this.ball.getBounds();
-                const brickBounds = brick.getBounds();
-                
-                // Calculate overlap on each axis
-                const overlapX = Math.min(ballBounds.right - brickBounds.left, brickBounds.right - ballBounds.left);
-                const overlapY = Math.min(ballBounds.bottom - brickBounds.top, brickBounds.bottom - ballBounds.top);
-                
-                // Bounce based on which overlap is smaller (indicating which side was hit)
-                if (overlapX < overlapY) {
-                    // Hit from left or right side
-
-                    this.ball.reverseX();
+            
+            // Check if ball is out of bounds (bottom)
+            if (ballBounds.top >= BASE_GAME_HEIGHT) {
+                if (ball.type === BallType.BLUE) {
+                    // Blue balls don't reduce health, just remove them
+                    this.gameContainer.removeChild(ball.container);
+                    this.balls.splice(ballIndex, 1);
+                } else if (this.safetyNetActive) {
+                    // Safety net catches the ball
+                    ball.setPosition(ball.x, BASE_GAME_HEIGHT - ball.radius - 5);
+                    ball.reverseY();
+                    this.safetyNetActive = false;
+                    this.safetyNet.visible = false;
                 } else {
-                    // Hit from top or bottom side
-
-                    this.ball.reverseY();
+                    // No safety net, lose a life and remove the ball
+                    this.gameContainer.removeChild(ball.container);
+                    this.balls.splice(ballIndex, 1);
+                    this.loseLife();
                 }
-                
-                // Hit the brick and check if it's destroyed
-                const isDestroyed = brick.hit();
-                if (isDestroyed) {
-                    // Create particle explosion at brick position
-                    const brickColor = brick.getColor();
-                    this.particleSystem.createExplosion(
-                        brick.x + BRICK_WIDTH / 2, 
-                        brick.y + BRICK_HEIGHT / 2, 
-                        brickColor, 
-                        12
-                    );
+                continue;
+            }
+            
+            // Check paddle collision
+            if (ball.checkCollisionWithPaddle(this.paddle)) {
+                // Ensure ball is above paddle before reversing
+                if (ball.y > this.paddle.y) {
+                    ball.setPosition(ball.x, this.paddle.y - ball.radius);
+                    ball.reverseY();
                     
-                    // Remove the brick if health reaches 0
-                    this.bricks.splice(i, 1);
-                    this.gameContainer.removeChild(brick.container);
+                    // Calculate where the ball hit the paddle (0 = left edge, 1 = right edge)
+                    const hitPoint = (ball.x - this.paddle.x) / this.currentPaddleWidth;
+                    const centerPoint = 0.5;
                     
-                    // Chance to spawn power-up
-                    if (Math.random() < POWERUP_DROP_CHANCE) {
-                        this.spawnPowerUp(brick.x + BRICK_WIDTH / 2, brick.y + BRICK_HEIGHT);
+                    // Calculate velocity multiplier based on distance from center
+                    // Center (0.5) = 100% speed, edges (0 or 1) = 200% speed
+                    const distanceFromCenter = Math.abs(hitPoint - centerPoint);
+                    const velocityMultiplier = 1 + distanceFromCenter; // 1.0 to 2.0
+                    
+                    // Set new velocity with angle and speed adjustment
+                    const newSpeed = INITIAL_BALL_VELOCITY * velocityMultiplier;
+                    const angle = (hitPoint - centerPoint) * 0.8; // -0.4 to 0.4 radians
+                    
+                    ball.setVelocityAndAngle(newSpeed, angle);
+                }
+            }
+            
+            // Check brick collisions
+            for (let i = this.bricks.length - 1; i >= 0; i--) {
+                const brick = this.bricks[i];
+                if (ball.checkCollisionWithBrick(brick)) {
+                    // Determine which side of the brick was hit
+                    const ballBounds = ball.getBounds();
+                    const brickBounds = brick.getBounds();
+                    
+                    // Calculate overlap on each axis
+                    const overlapX = Math.min(ballBounds.right - brickBounds.left, brickBounds.right - ballBounds.left);
+                    const overlapY = Math.min(ballBounds.bottom - brickBounds.top, brickBounds.bottom - ballBounds.top);
+                    
+                    // Bounce based on which overlap is smaller (indicating which side was hit)
+                    if (overlapX < overlapY) {
+                        // Hit from left or right side
+                        ball.reverseX();
+                    } else {
+                        // Hit from top or bottom side
+                        ball.reverseY();
                     }
+                    
+                    // Hit the brick and check if it's destroyed
+                    const isDestroyed = brick.hit();
+                    if (isDestroyed) {
+                        // Create particle explosion at brick position
+                        const brickColor = brick.getColor();
+                        this.particleSystem.createExplosion(
+                            brick.x + BRICK_WIDTH / 2, 
+                            brick.y + BRICK_HEIGHT / 2, 
+                            brickColor, 
+                            12
+                        );
+                        
+                        // Remove the brick if health reaches 0
+                        this.bricks.splice(i, 1);
+                        this.gameContainer.removeChild(brick.container);
+                        
+                        // Chance to spawn power-up
+                        if (Math.random() < POWERUP_DROP_CHANCE) {
+                            this.spawnPowerUp(brick.x + BRICK_WIDTH / 2, brick.y + BRICK_HEIGHT);
+                        }
+                    }
+                    
+                    this.score += 10;
+                    this.updateUI();
+                    
+                    // Check if all bricks are destroyed
+                    if (this.bricks.length === 0) {
+                        this.nextLevel();
+                    }
+                    
+                    // Only destroy one brick per collision
+                    break;
                 }
-                
-                this.score += 10;
-                this.updateUI();
-                
-                // Check if all bricks are destroyed
-                if (this.bricks.length === 0) {
-                    this.nextLevel();
-                }
-                
-                // Only destroy one brick per collision
-                break;
             }
         }
     }
@@ -465,21 +475,25 @@ export class BreakoutGame {
         this.updateUI();
         
         // Reset paddle to original size
-        this.currentPaddleWidth = PADDLE_WIDTH;
-        this.paddle.resize(this.currentPaddleWidth);
+
+
+        this.resetObjects();
         
         if (this.lives <= 0) {
             this.gameOver();
-        } else {
-            this.resetBall();
-        }
+            return;
+        } 
+        
+
+        
+        
     }
 
     private nextLevel(): void {
         this.level++;
         this.updateUI();
         this.createBricks();
-        this.resetBall();
+        this.resetObjects();
     }
 
     private gameOver(): void {
@@ -545,6 +559,12 @@ export class BreakoutGame {
         // Clear particles
         this.particleSystem.clear();
         
+        // Clear existing balls
+        this.balls.forEach(ball => {
+            this.gameContainer.removeChild(ball.container);
+        });
+        this.balls = [];
+        
         // Clear existing bricks
         this.bricks.forEach(brick => {
             this.gameContainer.removeChild(brick.container);
@@ -561,9 +581,7 @@ export class BreakoutGame {
         this.createBricks();
         
         // Reset ball and paddle
-        this.resetBall();
-        this.paddle.setPosition(BASE_GAME_WIDTH / 2 - this.currentPaddleWidth / 2, BASE_GAME_HEIGHT - PADDLE_HEIGHT - 10);
-        this.paddle.resize(this.currentPaddleWidth);
+        this.resetObjects();
         
         this.updateUI();
         
@@ -588,6 +606,15 @@ export class BreakoutGame {
             this.removeTopBarHandler();
         }
         this.particleSystem.clear();
+        
+        // Clear all balls
+        this.balls.forEach(ball => {
+            if (ball.container.parent) {
+                ball.container.parent.removeChild(ball.container);
+            }
+        });
+        this.balls = [];
+        
         if (this.gameContainer && this.gameContainer.parent) {
             this.gameContainer.parent.removeChild(this.gameContainer);
         }
@@ -595,7 +622,7 @@ export class BreakoutGame {
 
     private spawnPowerUp(x: number, y: number): void {
         // Randomly choose power-up type
-        const powerUpTypes = [PowerUpType.PADDLE_INCREASE, PowerUpType.PADDLE_DECREASE, PowerUpType.EXTRA_LIFE];
+        const powerUpTypes = [PowerUpType.PADDLE_INCREASE, PowerUpType.PADDLE_DECREASE, PowerUpType.EXTRA_LIFE, PowerUpType.BLUE_BALL];
         const randomType = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
         
         const powerUp = new PowerUp(randomType, x, y);
@@ -650,6 +677,17 @@ export class BreakoutGame {
                     this.safetyNetActive = true;
                     this.safetyNet.visible = true;
                 }
+                break;
+            case PowerUpType.BLUE_BALL:
+                // Spawn a blue ball from the paddle
+                const blueBall = new Ball(BALL_RADIUS, BallType.BLUE);
+                blueBall.setPosition(
+                    this.paddle.x + this.currentPaddleWidth / 2,
+                    BASE_GAME_HEIGHT - PADDLE_HEIGHT - 30
+                );
+                blueBall.setVelocity(0, -INITIAL_BALL_VELOCITY);
+                this.balls.push(blueBall);
+                this.gameContainer.addChild(blueBall.container);
                 break;
         }
     }

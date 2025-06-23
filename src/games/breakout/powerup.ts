@@ -3,7 +3,8 @@ import { Container, Graphics, Text, TextStyle } from 'pixi.js';
 export enum PowerUpType {
     PADDLE_INCREASE = 'paddle_increase',
     PADDLE_DECREASE = 'paddle_decrease',
-    EXTRA_LIFE = 'extra_life'
+    EXTRA_LIFE = 'extra_life',
+    BLUE_BALL = 'blue_ball'
 }
 
 export class PowerUp {
@@ -47,6 +48,10 @@ export class PowerUp {
             case PowerUpType.EXTRA_LIFE:
                 color = 0xf39c12; // Orange
                 symbol = '♥';
+                break;
+            case PowerUpType.BLUE_BALL:
+                color = 0x3498db; // Blue
+                symbol = '●';
                 break;
         }
         
