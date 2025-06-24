@@ -1,6 +1,10 @@
 import { Application, Container, Graphics, Text, FederatedPointerEvent } from 'pixi.js';
 import { isTouchDevice } from '../../shared/utils/device-detection';
 
+// Game constants - fixed base dimensions
+const BASE_GAME_WIDTH = 1920;
+const BASE_GAME_HEIGHT = 1080;
+
 // Game constants
 const GRAVITY = 0.2;
 const MAX_POWER = 25;
@@ -8,6 +12,23 @@ const MIN_POWER = 2;
 const POWER_CHARGE_RATE = 0.3;
 
 const GROUND_HEIGHT = 50;
+
+// Responsive scaling function
+const getGameDimensions = () => {
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight - 120; // Account for top bar and margins
+    
+    // Calculate scale to fit within available space while maintaining aspect ratio
+    const scaleX = windowWidth / BASE_GAME_WIDTH;
+    const scaleY = windowHeight / BASE_GAME_HEIGHT;
+    const scale = Math.min(scaleX, scaleY);
+    
+    return {
+        gameWidth: BASE_GAME_WIDTH,
+        gameHeight: BASE_GAME_HEIGHT,
+        scale
+    };
+};
 
 // Box/platform class
 class Box {
@@ -237,7 +258,6 @@ export class ArcherGame {
     private removeTopBarHandler?: () => void;
     private powerMeter?: HTMLElement;
     private powerFill?: HTMLElement;
-    private powerLabel?: HTMLElement;
     private angleIndicator?: HTMLElement;
 
     constructor(app: Application) {
@@ -271,17 +291,12 @@ export class ArcherGame {
         this.powerFill.className = 'power-fill';
         this.powerMeter.appendChild(this.powerFill);
         
-        this.powerLabel = document.createElement('div');
-        this.powerLabel.className = 'power-label';
-        this.powerLabel.textContent = 'Power: 0%';
-        
         // Create angle indicator
         this.angleIndicator = document.createElement('div');
         this.angleIndicator.className = 'angle-indicator';
         this.angleIndicator.textContent = 'Angle: 45°';
         
         document.getElementById('gameContainer')?.appendChild(this.powerMeter);
-        document.getElementById('gameContainer')?.appendChild(this.powerLabel);
         document.getElementById('gameContainer')?.appendChild(this.angleIndicator);
     }
 
@@ -289,14 +304,14 @@ export class ArcherGame {
         const ground = new Graphics();
         ground.beginFill(0x8FBC8F);
         ground.lineStyle(2, 0x556B2F);
-        ground.drawRect(0, window.innerHeight - GROUND_HEIGHT - 120, window.innerWidth, GROUND_HEIGHT);
+        ground.drawRect(0, BASE_GAME_HEIGHT - GROUND_HEIGHT, BASE_GAME_WIDTH, GROUND_HEIGHT);
         ground.endFill();
         
         // Add some grass texture
         ground.lineStyle(1, 0x556B2F);
-        for (let i = 0; i < window.innerWidth; i += 20) {
-            ground.moveTo(i, window.innerHeight - GROUND_HEIGHT - 120);
-            ground.lineTo(i + 10, window.innerHeight - GROUND_HEIGHT - 130);
+        for (let i = 0; i < BASE_GAME_WIDTH; i += 20) {
+            ground.moveTo(i, BASE_GAME_HEIGHT - GROUND_HEIGHT);
+            ground.lineTo(i + 10, BASE_GAME_HEIGHT - GROUND_HEIGHT - 10);
         }
         
         this.app.stage.addChild(ground);
@@ -402,8 +417,8 @@ export class ArcherGame {
         if (this.powerFill) {
             this.powerFill.style.width = '0%';
         }
-        if (this.powerLabel) {
-            this.powerLabel.textContent = 'Power: 0%';
+        if (this.angleIndicator) {
+            this.angleIndicator.textContent = 'Angle: 45°';
         }
     }
 
@@ -418,10 +433,6 @@ export class ArcherGame {
             if (this.powerFill) {
                 const powerPercent = (this.currentPower / MAX_POWER) * 100;
                 this.powerFill.style.width = powerPercent + '%';
-            }
-            if (this.powerLabel) {
-                const powerPercent = Math.round((this.currentPower / MAX_POWER) * 100);
-                this.powerLabel.textContent = `Power: ${powerPercent}%`;
             }
         }
 
@@ -596,7 +607,6 @@ export class ArcherGame {
         // Reset UI
         this.updateUI();
         if (this.powerFill) this.powerFill.style.width = '0%';
-        if (this.powerLabel) this.powerLabel.textContent = 'Power: 0%';
         if (this.angleIndicator) this.angleIndicator.textContent = 'Angle: 45°';
         
         // Hide menus
@@ -632,7 +642,6 @@ export class ArcherGame {
         
         // Clean up UI elements
         if (this.powerMeter) this.powerMeter.remove();
-        if (this.powerLabel) this.powerLabel.remove();
         if (this.angleIndicator) this.angleIndicator.remove();
     }
 
@@ -649,7 +658,6 @@ export class ArcherGame {
 // Global functions for HTML buttons
 declare global {
     interface Window {
-        startArcherGame: () => void;
         restartGame: () => void;
         returnToMainMenu: () => void;
         resumeGame: () => void;
@@ -657,39 +665,64 @@ declare global {
     }
 }
 
-let game: ArcherGame;
+// Global game instance
+let game: ArcherGame | null = null;
+let app: Application | null = null;
+
+// Function to update canvas scaling on resize
+function updateCanvasScaling() {
+    if (!app) return;
+    
+    const dimensions = getGameDimensions();
+    const canvas = app.view as HTMLCanvasElement;
+    
+    // Update canvas CSS dimensions
+    canvas.style.width = `${BASE_GAME_WIDTH * dimensions.scale}px`;
+    canvas.style.height = `${BASE_GAME_HEIGHT * dimensions.scale}px`;
+}
 
 async function initGame() {
-    const app = new Application({
-        width: window.innerWidth,
-        height: window.innerHeight - 120,
+    // Get dimensions and scale
+    const dimensions = getGameDimensions();
+    
+    // Create PIXI application with base dimensions
+    app = new Application({
+        width: BASE_GAME_WIDTH,
+        height: BASE_GAME_HEIGHT,
         backgroundColor: 0x87CEEB,
+        antialias: true,
         resolution: window.devicePixelRatio || 1,
     });
 
+    // Add canvas to game container with proper scaling
     const gameContainer = document.getElementById('gameContainer');
     if (gameContainer) {
-        gameContainer.appendChild(app.view as HTMLCanvasElement);
+        const canvas = app.view as HTMLCanvasElement;
+        
+        // Apply scaling through CSS transform
+        canvas.style.width = `${BASE_GAME_WIDTH * dimensions.scale}px`;
+        canvas.style.height = `${BASE_GAME_HEIGHT * dimensions.scale}px`;
+        canvas.style.maxWidth = '100%';
+        canvas.style.maxHeight = '100%';
+        canvas.style.objectFit = 'contain';
+        
+        gameContainer.appendChild(canvas);
     }
 
+    // Create and initialize game
     game = new ArcherGame(app);
     await game.init();
 
     // Start game loop
     app.ticker.add((delta) => {
-        game.update(delta);
+        if (game) {
+            game.update(delta);
+        }
     });
-
-    // Handle window resize
-    window.addEventListener('resize', () => {
-        app.renderer.resize(window.innerWidth, window.innerHeight - 120);
-    });
+    
+    // Add resize handler
+    window.addEventListener('resize', updateCanvasScaling);
 }
-
-// Set up global functions
-window.startArcherGame = () => {
-    if (game) game.startGame();
-};
 
 window.restartGame = () => {
     if (game) game.restart();
