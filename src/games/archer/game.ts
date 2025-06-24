@@ -84,19 +84,19 @@ class Projectile {
         this.graphics = new Graphics();
         
         // Arrow shaft (pointing to the right)
-        this.graphics.lineStyle(4, 0x8B4513);
+        this.graphics.lineStyle(4, 0xFF8C00); // Bright orange shaft
         this.graphics.moveTo(0, 0);
-        this.graphics.lineTo(20, 0);
+        this.graphics.lineTo(30, 0);
         
         // Arrow head (pointing to the right)
-        this.graphics.beginFill(0x654321);
-        this.graphics.moveTo(20, -4);
-        this.graphics.lineTo(20, 4);
-        this.graphics.lineTo(28, 0);
+        this.graphics.beginFill(0xFF8C00); // Bright orange arrowhead
+        this.graphics.moveTo(30, -4);
+        this.graphics.lineTo(30, 4);
+        this.graphics.lineTo(38, 0);
         this.graphics.endFill();
         
         // Arrow fletching (at the back)
-        this.graphics.beginFill(0xFFD700);
+        this.graphics.beginFill(0xFF8C00); // Bright orange fletching
         this.graphics.drawRect(-3, -2, 6, 4);
         this.graphics.endFill();
         
@@ -206,57 +206,91 @@ class Target {
 // Simple archer class
 class SimpleArcher {
     container: Container;
-    circle: Graphics;
-    arrow: Graphics;
+    bodyContainer: Container;
     arrowContainer: Container;
+    circle: Graphics;
+    bowArrow: Projectile | null = null;
 
     constructor() {
         this.container = new Container();
         // Position in center of base game dimensions
         this.container.position.set(BASE_GAME_WIDTH / 2, BASE_GAME_HEIGHT / 2);
         
-        // Create circle
+        // Create body container (doesn't rotate)
+        this.bodyContainer = new Container();
+        
+        // Create circle (head)
         this.circle = new Graphics();
         this.circle.beginFill(0x000000);
         this.circle.drawCircle(0, 0, 20);
         this.circle.endFill();
         
-        // Create arrow container for positioning
+        // Create body line
+        const body = new Graphics();
+        body.lineStyle(4, 0x000000);
+        body.moveTo(0, 20);
+        body.lineTo(0, 55);
+        
+        // Create legs
+        const leftLeg = new Graphics();
+        leftLeg.lineStyle(4, 0x000000);
+        leftLeg.moveTo(0, 50);
+        leftLeg.lineTo(-10, 80);
+        
+        const rightLeg = new Graphics();
+        rightLeg.lineStyle(4, 0x000000);
+        rightLeg.moveTo(0, 50);
+        rightLeg.lineTo(10, 80);
+        
+        // Create arrow container for positioning (rotates with aim)
         this.arrowContainer = new Container();
         
-        // Create arrow (same as projectile arrow)
-        this.arrow = new Graphics();
+        // Create bow arrow using Projectile class
+        this.bowArrow = new Projectile(0, 0, 0, 0);
+        this.bowArrow.active = false; // Disable physics while on bow
+        this.arrowContainer.addChild(this.bowArrow.container);
         
-        // Arrow shaft (pointing to the right)
-        this.arrow.lineStyle(4, 0x8B4513);
-        this.arrow.moveTo(0, 0);
-        this.arrow.lineTo(30, 0);
-        
-        // Arrow head (pointing to the right)
-        this.arrow.beginFill(0x654321);
-        this.arrow.moveTo(30, -4);
-        this.arrow.lineTo(30, 4);
-        this.arrow.lineTo(38, 0);
-        this.arrow.endFill();
-        
-        // Arrow fletching (at the back)
-        this.arrow.beginFill(0xFFD700);
-        this.arrow.drawRect(-3, -2, 6, 4);
-        this.arrow.endFill();
-        
-        this.arrowContainer.addChild(this.arrow);
-        this.container.addChild(this.circle);
+        this.bodyContainer.addChild(this.circle);
+        this.bodyContainer.addChild(body);
+        this.bodyContainer.addChild(leftLeg);
+        this.bodyContainer.addChild(rightLeg);
+        this.container.addChild(this.bodyContainer);
         this.container.addChild(this.arrowContainer);
     }
 
     updateAngle(angle: number): void {
-        this.container.rotation = angle;
+        // Only rotate the arrow container, not the body
+        this.arrowContainer.rotation = angle;
     }
 
     updateArrowPosition(power: number, maxPower: number): void {
+        if (!this.bowArrow) return;
+        
         // Pull arrow back based on power (0 = fully back, 1 = ready to fire)
         const pullbackDistance = (power / maxPower) * 20; // Pull back up to 20px
-        this.arrowContainer.x = -pullbackDistance;
+        
+        // Calculate pullback direction based on current rotation
+        const pullbackX = -Math.cos(this.arrowContainer.rotation) * pullbackDistance;
+        const pullbackY = -Math.sin(this.arrowContainer.rotation) * pullbackDistance;
+        
+        this.arrowContainer.x = pullbackX;
+        this.arrowContainer.y = pullbackY;
+    }
+
+    getBowArrow(): Projectile | null {
+        return this.bowArrow;
+    }
+
+    clearBowArrow(): void {
+        this.bowArrow = null;
+    }
+
+    createNewBowArrow(): void {
+        this.bowArrow = new Projectile(0, 0, 0, 0);
+        this.bowArrow.active = false; // Disable physics while on bow
+        this.arrowContainer.addChild(this.bowArrow.container);
+        // Reset arrow position
+        this.updateArrowPosition(0, MAX_POWER);
     }
 
     destroy(): void {
@@ -423,18 +457,37 @@ export class ArcherGame {
     private shoot(): void {
         if (!this.isAiming || !this.powerCharging) return;
         
+        // Check if we have a bow arrow to shoot
+        const bowArrow = this.simpleArcher.getBowArrow();
+        if (!bowArrow) {
+            return;
+        }
+        
         this.isAiming = false;
         this.powerCharging = false;
 
-        const projectile = new Projectile(
-            this.simpleArcher.container.x,
-            this.simpleArcher.container.y,
-            this.currentAngle,
-            this.currentPower
-        );
+        // Remove from bow container
+        this.simpleArcher.arrowContainer.removeChild(bowArrow.container);
         
-        this.projectiles.push(projectile);
-        this.app.stage.addChild(projectile.container);
+        // Set up the projectile with current position, angle, and power
+        bowArrow.x = this.simpleArcher.container.x;
+        bowArrow.y = this.simpleArcher.container.y;
+        bowArrow.vx = Math.cos(this.currentAngle) * this.currentPower;
+        bowArrow.vy = Math.sin(this.currentAngle) * this.currentPower;
+        bowArrow.active = true; // Enable physics
+        
+        // Update visual position and rotation
+        bowArrow.container.position.set(bowArrow.x, bowArrow.y);
+        bowArrow.container.rotation = this.currentAngle;
+        
+        this.projectiles.push(bowArrow);
+        this.app.stage.addChild(bowArrow.container);
+        
+        // Clear the bow arrow (so getBowArrow() returns null)
+        this.simpleArcher.clearBowArrow();
+        
+        // Create new bow arrow (commented out for testing)
+        this.simpleArcher.createNewBowArrow();
         
         // Reset power
         this.currentPower = 0;
@@ -445,8 +498,6 @@ export class ArcherGame {
             this.angleIndicator.textContent = 'Angle: 45°';
         }
         
-        // Reset arrow position
-        this.simpleArcher.updateArrowPosition(0, MAX_POWER);
     }
 
     update(deltaTime: number): void {
