@@ -3,13 +3,11 @@ import { isTouchDevice } from '../../shared/utils/device-detection';
 
 // Game constants
 const GRAVITY = 0.2;
-const MAX_POWER = 15;
+const MAX_POWER = 25;
 const MIN_POWER = 2;
-const POWER_CHARGE_RATE = 0.1;
-const TARGET_SPAWN_RATE = 3000; // milliseconds
-const TARGET_LIFETIME = 8000; // milliseconds
+const POWER_CHARGE_RATE = 0.3;
+
 const GROUND_HEIGHT = 50;
-const BOW_POSITION = { x: 100, y: GROUND_HEIGHT + 20 }; // 20px above ground
 
 // Box/platform class
 class Box {
@@ -55,7 +53,7 @@ class Projectile {
         this.x = x;
         this.y = y;
         this.vx = Math.cos(angle) * power;
-        this.vy = -Math.sin(angle) * power;
+        this.vy = Math.sin(angle) * power;
         
         // Create arrow container
         this.container = new Container();
@@ -65,21 +63,21 @@ class Projectile {
         // Create arrow graphics
         this.graphics = new Graphics();
         
-        // Arrow shaft
+        // Arrow shaft (pointing to the right)
         this.graphics.lineStyle(4, 0x8B4513);
         this.graphics.moveTo(0, 0);
-        this.graphics.lineTo(0, 20);
+        this.graphics.lineTo(20, 0);
         
-        // Arrow head
+        // Arrow head (pointing to the right)
         this.graphics.beginFill(0x654321);
-        this.graphics.moveTo(-4, 0);
-        this.graphics.lineTo(4, 0);
-        this.graphics.lineTo(0, -8);
+        this.graphics.moveTo(20, -4);
+        this.graphics.lineTo(20, 4);
+        this.graphics.lineTo(28, 0);
         this.graphics.endFill();
         
-        // Arrow fletching
+        // Arrow fletching (at the back)
         this.graphics.beginFill(0xFFD700);
-        this.graphics.drawRect(-3, 18, 6, 4);
+        this.graphics.drawRect(-3, -2, 6, 4);
         this.graphics.endFill();
         
         this.container.addChild(this.graphics);
@@ -385,13 +383,13 @@ export class ArcherGame {
         this.isAiming = false;
         this.powerCharging = false;
         
-        // Create projectile from circle center
-        const circleX = BOW_POSITION.x;
-        const circleY = window.innerHeight - GROUND_HEIGHT - 120 - 50;
+        // Create projectile from archer's position (center of circle)
+        const archerX = window.innerWidth / 2;
+        const archerY = window.innerHeight / 2;
         
         const projectile = new Projectile(
-            circleX,
-            circleY,
+            archerX,
+            archerY,
             this.currentAngle,
             this.currentPower
         );
