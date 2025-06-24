@@ -9,8 +9,7 @@ const BASE_GAME_HEIGHT = 1080;
 const GRAVITY = 0.2;
 const MAX_POWER = 25;
 const MIN_POWER = 2;
-const POWER_CHARGE_RATE = 0.3;
-
+const POWER_CHARGE_RATE = 0.75;
 const GROUND_HEIGHT = 50;
 
 // Responsive scaling function
@@ -37,7 +36,7 @@ class Box {
 
     constructor(x: number, y: number, width: number, height: number) {
         this.container = new Container();
-        this.container.position.set(x, window.innerHeight - y - height - 120);
+        this.container.position.set(x, BASE_GAME_HEIGHT - y - height);
         
         this.graphics = new Graphics();
         this.graphics.beginFill(0x8B4513);
@@ -116,16 +115,20 @@ class Projectile {
 
         // Update visual position
         this.container.position.set(this.x, this.y);
+        
+        // Update rotation to point in direction of travel
+        const travelAngle = Math.atan2(this.vy, this.vx);
+        this.container.rotation = travelAngle;
 
         // Check if hit ground
-        if (this.y >= window.innerHeight - GROUND_HEIGHT - 120) {
+        if (this.y >= BASE_GAME_HEIGHT - GROUND_HEIGHT) {
             this.active = false;
             this.container.destroy();
             return false;
         }
 
         // Check if out of bounds
-        if (this.x > window.innerWidth || this.x < 0 || this.y < 0) {
+        if (this.x > BASE_GAME_WIDTH || this.x < 0 || this.y < 0) {
             this.active = false;
             this.container.destroy();
             return false;
@@ -204,12 +207,13 @@ class Target {
 class SimpleArcher {
     container: Container;
     circle: Graphics;
-    line: Graphics;
+    arrow: Graphics;
+    arrowContainer: Container;
 
     constructor() {
         this.container = new Container();
-        // Position in center of screen for debugging
-        this.container.position.set(window.innerWidth / 2, window.innerHeight / 2);
+        // Position in center of base game dimensions
+        this.container.position.set(BASE_GAME_WIDTH / 2, BASE_GAME_HEIGHT / 2);
         
         // Create circle
         this.circle = new Graphics();
@@ -217,18 +221,42 @@ class SimpleArcher {
         this.circle.drawCircle(0, 0, 20);
         this.circle.endFill();
         
-        // Create red line pointing right
-        this.line = new Graphics();
-        this.line.lineStyle(3, 0xFF0000);
-        this.line.moveTo(0, 0);
-        this.line.lineTo(30, 0);
+        // Create arrow container for positioning
+        this.arrowContainer = new Container();
         
+        // Create arrow (same as projectile arrow)
+        this.arrow = new Graphics();
+        
+        // Arrow shaft (pointing to the right)
+        this.arrow.lineStyle(4, 0x8B4513);
+        this.arrow.moveTo(0, 0);
+        this.arrow.lineTo(30, 0);
+        
+        // Arrow head (pointing to the right)
+        this.arrow.beginFill(0x654321);
+        this.arrow.moveTo(30, -4);
+        this.arrow.lineTo(30, 4);
+        this.arrow.lineTo(38, 0);
+        this.arrow.endFill();
+        
+        // Arrow fletching (at the back)
+        this.arrow.beginFill(0xFFD700);
+        this.arrow.drawRect(-3, -2, 6, 4);
+        this.arrow.endFill();
+        
+        this.arrowContainer.addChild(this.arrow);
         this.container.addChild(this.circle);
-        this.container.addChild(this.line);
+        this.container.addChild(this.arrowContainer);
     }
 
     updateAngle(angle: number): void {
         this.container.rotation = angle;
+    }
+
+    updateArrowPosition(power: number, maxPower: number): void {
+        // Pull arrow back based on power (0 = fully back, 1 = ready to fire)
+        const pullbackDistance = (power / maxPower) * 20; // Pull back up to 20px
+        this.arrowContainer.x = -pullbackDistance;
     }
 
     destroy(): void {
@@ -239,7 +267,7 @@ class SimpleArcher {
 export class ArcherGame {
     private app: Application;
     private gameContainer: Container;
-    private bow: SimpleArcher;
+    private simpleArcher: SimpleArcher;
     private projectiles: Projectile[] = [];
     private targets: Target[] = [];
     private boxes: Box[] = [];
@@ -269,8 +297,8 @@ export class ArcherGame {
         this.highScore = parseInt(localStorage.getItem('archerHighScore') || '0');
         
         // Initialize bow and add to stage
-        this.bow = new SimpleArcher();
-        this.app.stage.addChild(this.bow.container);
+        this.simpleArcher = new SimpleArcher();
+        this.app.stage.addChild(this.simpleArcher.container);
     }
 
     async init(): Promise<void> {
@@ -374,8 +402,8 @@ export class ArcherGame {
     }
 
     private updateAim(clientX: number, clientY: number): void {
-        const centerX = window.innerWidth / 2;
-        const centerY = window.innerHeight / 2;
+        const centerX = BASE_GAME_WIDTH / 2;
+        const centerY = BASE_GAME_HEIGHT / 2;
         
         const dx = clientX - centerX;
         const dy = clientY - centerY;
@@ -384,7 +412,7 @@ export class ArcherGame {
         this.currentAngle = Math.atan2(dy, dx);
         
         // Update circle rotation
-        this.bow.updateAngle(this.currentAngle);
+        this.simpleArcher.updateAngle(this.currentAngle);
         
         // Update angle indicator
         if (this.angleIndicator) {
@@ -397,14 +425,10 @@ export class ArcherGame {
         
         this.isAiming = false;
         this.powerCharging = false;
-        
-        // Create projectile from archer's position (center of circle)
-        const archerX = window.innerWidth / 2;
-        const archerY = window.innerHeight / 2;
-        
+
         const projectile = new Projectile(
-            archerX,
-            archerY,
+            this.simpleArcher.container.x,
+            this.simpleArcher.container.y,
             this.currentAngle,
             this.currentPower
         );
@@ -420,6 +444,9 @@ export class ArcherGame {
         if (this.angleIndicator) {
             this.angleIndicator.textContent = 'Angle: 45°';
         }
+        
+        // Reset arrow position
+        this.simpleArcher.updateArrowPosition(0, MAX_POWER);
     }
 
     update(deltaTime: number): void {
@@ -434,6 +461,9 @@ export class ArcherGame {
                 const powerPercent = (this.currentPower / MAX_POWER) * 100;
                 this.powerFill.style.width = powerPercent + '%';
             }
+            
+            // Update arrow position (pull back as power increases)
+            this.simpleArcher.updateArrowPosition(this.currentPower, MAX_POWER);
         }
 
         // Update projectiles
@@ -446,24 +476,29 @@ export class ArcherGame {
                     const target = this.targets[i];
                     if (target.checkCollision(projectile)) {
                         // Hit target!
+                        // Temporarily disabled - score and target tracking
+                        /*
                         this.score += target.points;
                         this.targetsHit++;
                         this.currentRound++;
-                        target.destroy();
-                        this.targets.splice(i, 1);
+                        */
+                        //target.destroy();
+                        //this.targets.splice(i, 1);
                         projectile.destroy();
-                        this.updateUI();
+                        // this.updateUI();
                         
                         // Check if game is over (10 rounds)
+                        /*
                         if (this.currentRound > 10) {
                             this.gameOver();
                             return false;
                         }
+                        */
                         
-                        // Spawn new target for next round
-                        setTimeout(() => {
-                            this.spawnTarget();
-                        }, 1000); // 1 second delay between rounds
+                        // // Spawn new target for next round
+                        // setTimeout(() => {
+                        //     this.spawnTarget();
+                        // }, 1000); // 1 second delay between rounds
                         
                         return false;
                     }
@@ -473,10 +508,10 @@ export class ArcherGame {
             return isActive;
         });
 
-        // Spawn initial target if none exists
-        if (this.targets.length === 0 && !this.isWaitingToStart) {
-            this.spawnTarget();
-        }
+        // // Spawn initial target if none exists
+        // if (this.targets.length === 0 && !this.isWaitingToStart) {
+        //     this.spawnTarget();
+        // }
     }
 
     private spawnTarget(): void {
@@ -493,14 +528,14 @@ export class ArcherGame {
         let targetY: number;
         let platform: Box | undefined = undefined;
 
-        const minX = window.innerWidth / 2 + 100;
-        const maxX = window.innerWidth - 100;
+        const minX = BASE_GAME_WIDTH / 2 + 100;
+        const maxX = BASE_GAME_WIDTH - 100;
 
         if (placeOnBox) {
             const boxWidth = Math.random() * 100 + 50;
             const boxHeight = Math.random() * 150 + 50;
             const boxX = Math.random() * (maxX - minX - boxWidth) + minX;
-            const boxY = window.innerHeight - GROUND_HEIGHT - 120 - boxHeight;
+            const boxY = BASE_GAME_HEIGHT - GROUND_HEIGHT - boxHeight;
             
             platform = new Box(boxX, boxY, boxWidth, boxHeight);
             this.app.stage.addChild(platform.container);
@@ -510,7 +545,7 @@ export class ArcherGame {
             targetY = boxY - 30; // 30 is target radius
         } else {
             targetX = Math.random() * (maxX - minX) + minX;
-            targetY = window.innerHeight - GROUND_HEIGHT - 120 - 30; // 30 is target radius
+            targetY = BASE_GAME_HEIGHT - GROUND_HEIGHT - 30; // 30 is target radius
         }
 
         const target = new Target(targetX, targetY, 30, platform);
@@ -545,6 +580,8 @@ export class ArcherGame {
     }
 
     private updateUI(): void {
+        // Temporarily disabled - score, high score, targets, and round tracking
+        /*
         const scoreElement = document.getElementById('score');
         const highScoreElement = document.getElementById('highScore');
         const targetsElement = document.getElementById('targets');
@@ -554,6 +591,7 @@ export class ArcherGame {
         if (highScoreElement) highScoreElement.textContent = this.highScore.toString();
         if (targetsElement) targetsElement.textContent = this.targetsHit.toString();
         if (roundElement) roundElement.textContent = this.currentRound.toString();
+        */
     }
 
     togglePause(): void {
@@ -590,9 +628,12 @@ export class ArcherGame {
         this.boxes = [];
         
         // Reset game state
+        // Temporarily disabled - score and target tracking
+        /*
         this.score = 0;
         this.targetsHit = 0;
         this.currentRound = 1;
+        */
         this.isGameOver = false;
         this.isPaused = false;
         this.isWaitingToStart = false;
@@ -602,10 +643,13 @@ export class ArcherGame {
         this.powerCharging = false;
         
         // Reset bow
-        this.bow.updateAngle(this.currentAngle);
+        this.simpleArcher.updateAngle(this.currentAngle);
+        
+        // Reset arrow position
+        this.simpleArcher.updateArrowPosition(0, MAX_POWER);
         
         // Reset UI
-        this.updateUI();
+        // this.updateUI();
         if (this.powerFill) this.powerFill.style.width = '0%';
         if (this.angleIndicator) this.angleIndicator.textContent = 'Angle: 45°';
         
@@ -638,7 +682,7 @@ export class ArcherGame {
         this.projectiles.forEach(projectile => projectile.destroy());
         this.targets.forEach(target => target.destroy());
         this.boxes.forEach(box => box.destroy());
-        this.bow.destroy();
+        this.simpleArcher.destroy();
         
         // Clean up UI elements
         if (this.powerMeter) this.powerMeter.remove();
