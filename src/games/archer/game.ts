@@ -7,7 +7,7 @@ const BASE_GAME_HEIGHT = 1080;
 
 // Game constants
 const GRAVITY = 0.2;
-const MAX_POWER = 25;
+const MAX_POWER = 35;
 const MIN_POWER = 2;
 const POWER_CHARGE_RATE = 0.75;
 const GROUND_HEIGHT = 50;
@@ -68,6 +68,7 @@ class Projectile {
     active: boolean = true;
     container: Container;
     graphics: Graphics;
+    length: number = 50;
 
     constructor(x: number, y: number, angle: number, power: number) {
         this.x = x;
@@ -86,13 +87,13 @@ class Projectile {
         // Arrow shaft (pointing to the right)
         this.graphics.lineStyle(4, 0xFF8C00); // Bright orange shaft
         this.graphics.moveTo(0, 0);
-        this.graphics.lineTo(30, 0);
+        this.graphics.lineTo(this.length, 0);
         
         // Arrow head (pointing to the right)
         this.graphics.beginFill(0xFF8C00); // Bright orange arrowhead
-        this.graphics.moveTo(30, -4);
-        this.graphics.lineTo(30, 4);
-        this.graphics.lineTo(38, 0);
+        this.graphics.moveTo(this.length, -4);
+        this.graphics.lineTo(this.length, 4);
+        this.graphics.lineTo(this.length + 8, 0);
         this.graphics.endFill();
         
         // Arrow fletching (at the back)
@@ -210,14 +211,47 @@ class SimpleArcher {
     arrowContainer: Container;
     circle: Graphics;
     bowArrow: Projectile | null = null;
+    bowHand: Graphics;
+
+    bowRadius: number = 35;
 
     constructor() {
         this.container = new Container();
-        // Position in center of base game dimensions
-        this.container.position.set(BASE_GAME_WIDTH / 2, BASE_GAME_HEIGHT / 2);
+        // Position on ground, to the left of screen
+        this.container.position.set(200, BASE_GAME_HEIGHT - GROUND_HEIGHT - 90); // 90 is roughly the height of the archer
         
         // Create body container (doesn't rotate)
         this.bodyContainer = new Container();
+
+        // Create quiver (gray box at back)
+        const quiver = new Graphics();
+        quiver.beginFill(0x808080); // Gray color
+        quiver.drawRect(-30, 20, 18, 32); // 16x25 rectangle, moved left and up
+        quiver.endFill();
+        quiver.rotation = -.1;
+
+        //draw some arrows in the quiver
+        const quiverArrows = new Graphics();
+        quiverArrows.beginFill(0xFF8C00);
+        quiverArrows.drawRect(-30, 5, 4, 12); // Position relative to quiver
+        quiverArrows.endFill();
+        quiverArrows.rotation = -.1;
+        quiver.addChild(quiverArrows);
+
+        // Add 2 more arrows
+        const quiverArrow2 = new Graphics();
+        quiverArrow2.beginFill(0xFF8C00);
+        quiverArrow2.drawRect(-25, 5, 4, 12); // Second arrow
+        quiverArrow2.endFill();
+        quiverArrow2.rotation = -.1;
+        quiver.addChild(quiverArrow2);
+
+        const quiverArrow3 = new Graphics();
+        quiverArrow3.beginFill(0xFF8C00);
+        quiverArrow3.drawRect(-20, 5, 4, 12); // Third arrow
+        quiverArrow3.endFill();
+        quiverArrow3.rotation = -.1;
+        quiver.addChild(quiverArrow3);
         
         // Create circle (head)
         this.circle = new Graphics();
@@ -227,40 +261,74 @@ class SimpleArcher {
         
         // Create body line
         const body = new Graphics();
-        body.lineStyle(4, 0x000000);
+        body.lineStyle(8, 0x000000);
         body.moveTo(0, 20);
         body.lineTo(0, 55);
         
+        // Create hand holding the bow
+        this.bowHand = new Graphics();
+        this.bowHand.lineStyle(6, 0x000000);
+        this.bowHand.moveTo(0, 35); // Start from middle of body
+        this.bowHand.lineTo(35, 0); // Go to front center of bow (radius 35)
+        
         // Create legs
         const leftLeg = new Graphics();
-        leftLeg.lineStyle(4, 0x000000);
+        leftLeg.lineStyle(8, 0x000000);
         leftLeg.moveTo(0, 50);
-        leftLeg.lineTo(-10, 80);
+        leftLeg.lineTo(-10, 90);
         
         const rightLeg = new Graphics();
-        rightLeg.lineStyle(4, 0x000000);
+        rightLeg.lineStyle(8, 0x000000);
         rightLeg.moveTo(0, 50);
-        rightLeg.lineTo(10, 80);
+        rightLeg.lineTo(10, 90);
+        
+
         
         // Create arrow container for positioning (rotates with aim)
         this.arrowContainer = new Container();
+        this.arrowContainer.y = 15; // Move down closer to shoulders
+        
+        // Create bow (simple brown arch)
+        const bow = new Graphics();
+        bow.lineStyle(6, 0x8B4513); // Brown color
+        bow.arc(0, 0, this.bowRadius, -Math.PI/2, Math.PI/2, false); // Semi-circle arch from left to right
         
         // Create bow arrow using Projectile class
-        this.bowArrow = new Projectile(0, 0, 0, 0);
-        this.bowArrow.active = false; // Disable physics while on bow
-        this.arrowContainer.addChild(this.bowArrow.container);
+        this.createNewBowArrow();
         
+        this.bodyContainer.addChild(quiver);
         this.bodyContainer.addChild(this.circle);
         this.bodyContainer.addChild(body);
+        this.bodyContainer.addChild(this.bowHand);
         this.bodyContainer.addChild(leftLeg);
         this.bodyContainer.addChild(rightLeg);
         this.container.addChild(this.bodyContainer);
+        this.arrowContainer.addChild(bow);
         this.container.addChild(this.arrowContainer);
     }
 
     updateAngle(angle: number): void {
         // Only rotate the arrow container, not the body
         this.arrowContainer.rotation = angle;
+        
+        // Update hand position to point to bow center
+        this.updateHandPosition(angle);
+    }
+
+    updateHandPosition(angle: number): void {
+        // Clear the hand graphics
+        this.bowHand.clear();
+        
+        // Redraw the hand line from body to bow center
+        this.bowHand.lineStyle(6, 0x000000);
+        this.bowHand.moveTo(0, 35); // Start from middle of body
+        
+        // Calculate bow center position based on angle
+        // Account for arrowContainer's y offset of 15px
+        const bowCenterX = Math.cos(angle) * this.bowRadius;
+        const bowCenterY = Math.sin(angle) * this.bowRadius + 15; // Add the 15px offset
+        
+        this.bowHand.lineTo(bowCenterX, bowCenterY); // Go to bow center
     }
 
     updateArrowPosition(power: number, maxPower: number): void {
@@ -269,12 +337,10 @@ class SimpleArcher {
         // Pull arrow back based on power (0 = fully back, 1 = ready to fire)
         const pullbackDistance = (power / maxPower) * 20; // Pull back up to 20px
         
-        // Calculate pullback direction based on current rotation
-        const pullbackX = -Math.cos(this.arrowContainer.rotation) * pullbackDistance;
-        const pullbackY = -Math.sin(this.arrowContainer.rotation) * pullbackDistance;
-        
-        this.arrowContainer.x = pullbackX;
-        this.arrowContainer.y = pullbackY;
+        // Move the arrow graphics within the container, not the container itself
+        // This keeps the rotation center at the bow position
+        this.bowArrow.container.x = -pullbackDistance;
+        this.bowArrow.container.y = 0;
     }
 
     getBowArrow(): Projectile | null {
@@ -288,6 +354,7 @@ class SimpleArcher {
     createNewBowArrow(): void {
         this.bowArrow = new Projectile(0, 0, 0, 0);
         this.bowArrow.active = false; // Disable physics while on bow
+        this.bowArrow.container.x = 10; // Move arrow forward a bit
         this.arrowContainer.addChild(this.bowArrow.container);
         // Reset arrow position
         this.updateArrowPosition(0, MAX_POWER);
@@ -316,6 +383,10 @@ export class ArcherGame {
     private currentAngle: number = Math.PI / 4; // 45 degrees
     private currentPower: number = 0;
     private powerCharging: boolean = false;
+    private isDragging: boolean = false;
+    private dragStartX: number = 0;
+    private dragStartY: number = 0;
+    private maxDragDistance: number = 0;
     private removeInputHandler?: () => void;
     private removeTopBarHandler?: () => void;
     private powerMeter?: HTMLElement;
@@ -416,33 +487,111 @@ export class ArcherGame {
 
     private onPointerMove(event: FederatedPointerEvent): void {
         if (this.isGameOver || this.isPaused || this.isWaitingToStart) return;
+        
         this.updateAim(event.global.x, event.global.y);
+        
+        // Handle drag-to-charge mechanics
+        if (this.isDragging) {
+            const archerX = this.simpleArcher.container.x;
+            const archerY = this.simpleArcher.container.y;
+            
+            // Calculate distance from archer to drag start
+            const startDistanceFromArcher = Math.sqrt(
+                Math.pow(this.dragStartX - archerX, 2) + 
+                Math.pow(this.dragStartY - archerY, 2)
+            );
+            
+            // Calculate distance from archer to current mouse position
+            const currentDistanceFromArcher = Math.sqrt(
+                Math.pow(event.global.x - archerX, 2) + 
+                Math.pow(event.global.y - archerY, 2)
+            );
+            
+            // Calculate distance from drag start
+            const dragDistance = Math.sqrt(
+                Math.pow(event.global.x - this.dragStartX, 2) + 
+                Math.pow(event.global.y - this.dragStartY, 2)
+            );
+            
+            // Only charge if we've moved enough distance
+            if (dragDistance > 5) {
+                // Calculate the difference in distance from archer
+                const distanceChange = startDistanceFromArcher - currentDistanceFromArcher;
+                
+                // Base power on the distance change, not accumulating
+                if (distanceChange > 0) {
+                    // Moving toward archer - increase charge
+                    this.powerCharging = true;
+                    this.currentPower = Math.min(MAX_POWER, MIN_POWER + distanceChange * 0.05);
+                } else {
+                    // Moving away from archer - decrease charge
+                    this.powerCharging = false;
+                    this.currentPower = Math.max(MIN_POWER, MIN_POWER + distanceChange * 0.05);
+                }
+                
+                // Update power bar
+                if (this.powerFill) {
+                    const powerPercent = (this.currentPower / MAX_POWER) * 100;
+                    this.powerFill.style.width = powerPercent + '%';
+                }
+                
+                // Update arrow position
+                this.simpleArcher.updateArrowPosition(this.currentPower, MAX_POWER);
+            }
+        }
     }
 
     private onPointerDown(event: FederatedPointerEvent): void {
         if (this.isGameOver || this.isPaused || this.isWaitingToStart) return;
-        this.startCharging();
+        
+        this.isDragging = true;
+        this.dragStartX = event.global.x;
+        this.dragStartY = event.global.y;
+        this.maxDragDistance = 0;
+        this.isAiming = true;
+        this.powerCharging = false;
+        this.currentPower = MIN_POWER;
+        
+        // Initialize power bar
+        if (this.powerFill) {
+            const powerPercent = (this.currentPower / MAX_POWER) * 100;
+            this.powerFill.style.width = powerPercent + '%';
+        }
+        
+        // Initialize arrow position
+        this.simpleArcher.updateArrowPosition(this.currentPower, MAX_POWER);
     }
 
     private onPointerUp(event: FederatedPointerEvent): void {
         if (this.isGameOver || this.isPaused || this.isWaitingToStart) return;
-        this.shoot();
-    }
-
-    private startCharging(): void {
-        this.isAiming = true;
-        this.powerCharging = true;
-        this.currentPower = MIN_POWER;
+        
+        if (this.isDragging && this.powerCharging) {
+            this.shoot();
+        }
+        
+        this.isDragging = false;
+        this.isAiming = false;
+        this.powerCharging = false;
+        this.currentPower = 0;
+        
+        // Reset arrow position
+        this.simpleArcher.updateArrowPosition(0, MAX_POWER);
+        
+        // Reset UI
+        if (this.powerFill) {
+            this.powerFill.style.width = '0%';
+        }
     }
 
     private updateAim(clientX: number, clientY: number): void {
-        const centerX = BASE_GAME_WIDTH / 2;
-        const centerY = BASE_GAME_HEIGHT / 2;
+        // Get archer's actual position in screen coordinates
+        const archerX = this.simpleArcher.container.x;
+        const archerY = this.simpleArcher.container.y;
         
-        const dx = clientX - centerX;
-        const dy = clientY - centerY;
+        const dx = clientX - archerX;
+        const dy = clientY - archerY;
         
-        // Calculate angle from center to mouse
+        // Calculate angle from archer to mouse
         this.currentAngle = Math.atan2(dy, dx);
         
         // Update circle rotation
@@ -502,20 +651,6 @@ export class ArcherGame {
 
     update(deltaTime: number): void {
         if (this.isGameOver || this.isPaused || this.isWaitingToStart) return;
-
-        // Update power charging
-        if (this.powerCharging && this.currentPower < MAX_POWER) {
-            this.currentPower += POWER_CHARGE_RATE * deltaTime;
-            this.currentPower = Math.min(MAX_POWER, this.currentPower);
-            
-            if (this.powerFill) {
-                const powerPercent = (this.currentPower / MAX_POWER) * 100;
-                this.powerFill.style.width = powerPercent + '%';
-            }
-            
-            // Update arrow position (pull back as power increases)
-            this.simpleArcher.updateArrowPosition(this.currentPower, MAX_POWER);
-        }
 
         // Update projectiles
         this.projectiles = this.projectiles.filter(projectile => {
