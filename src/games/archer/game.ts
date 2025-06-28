@@ -28,6 +28,52 @@ const getGameDimensions = () => {
     };
 };
 
+// Stuck arrow class for arrows left behind
+class StuckArrow {
+    container: Container;
+    graphics: Graphics;
+    x: number;
+    y: number;
+    angle: number;
+
+    constructor(x: number, y: number, angle: number) {
+        this.x = x;
+        this.y = y;
+        this.angle = angle;
+        
+        // Create arrow container
+        this.container = new Container();
+        this.container.position.set(x, y);
+        this.container.rotation = angle;
+        
+        // Create arrow graphics
+        this.graphics = new Graphics();
+        
+        // Arrow shaft (pointing to the right)
+        this.graphics.lineStyle(4, 0xFF8C00); // Bright orange shaft
+        this.graphics.moveTo(0, 0);
+        this.graphics.lineTo(50, 0);
+        
+        // Arrow head (pointing to the right)
+        this.graphics.beginFill(0xFF8C00); // Bright orange arrowhead
+        this.graphics.moveTo(50, -4);
+        this.graphics.lineTo(50, 4);
+        this.graphics.lineTo(58, 0);
+        this.graphics.endFill();
+        
+        // Arrow fletching (at the back)
+        this.graphics.beginFill(0xFF8C00); // Bright orange fletching
+        this.graphics.drawRect(-3, -2, 6, 4);
+        this.graphics.endFill();
+        
+        this.container.addChild(this.graphics);
+    }
+
+    destroy(): void {
+        this.container.destroy();
+    }
+}
+
 // Box/platform class
 class Box {
     container: Container;
@@ -68,12 +114,14 @@ class Projectile {
     container: Container;
     graphics: Graphics;
     length: number = 50;
+    game: ArcherGame; // Reference to the game
 
-    constructor(x: number, y: number, angle: number, power: number) {
+    constructor(x: number, y: number, angle: number, power: number, game: ArcherGame) {
         this.x = x;
         this.y = y;
         this.vx = Math.cos(angle) * power;
         this.vy = Math.sin(angle) * power;
+        this.game = game;
         
         // Create arrow container
         this.container = new Container();
@@ -124,15 +172,29 @@ class Projectile {
         const travelAngle = Math.atan2(this.vy, this.vx);
         this.container.rotation = travelAngle;
 
+        // Check collision with targets
+        for (let i = this.game.targets.length - 1; i >= 0; i--) {
+            const target = this.game.targets[i];
+            if (target.checkCollision(this)) {
+                // Hit target! Calculate actual collision point and create arrow graphic
+                const collisionPoint = this.game.calculateCollisionPoint(this, target);
+                this.game.spawnStuckArrow(collisionPoint.x, collisionPoint.y, this.container.rotation);
+                
+                this.destroy();
+                return false;
+            }
+        }
+
         // Check if hit ground
         if (this.y >= BASE_GAME_HEIGHT - GROUND_HEIGHT) {
-            this.active = false;
-            this.container.destroy();
+            // Hit ground! Create stuck arrow using current rotation
+            this.game.spawnStuckArrow(this.x, BASE_GAME_HEIGHT - GROUND_HEIGHT, this.container.rotation);
+            this.destroy();
             return false;
         }
 
         // Check if out of bounds
-        if (this.x > BASE_GAME_WIDTH || this.x < 0 || this.y < 0) {
+        if (this.x > BASE_GAME_WIDTH || this.x < 0) {
             this.active = false;
             this.container.destroy();
             return false;
@@ -215,10 +277,12 @@ class SimpleArcher {
     circle: Graphics;
     bowArrow: Projectile | null = null;
     bowHand: Graphics;
+    game: ArcherGame;
 
     bowRadius: number = 35;
 
-    constructor() {
+    constructor(game: ArcherGame) {
+        this.game = game;
         this.container = new Container();
         // Position on ground, to the left of screen
         this.container.position.set(200, BASE_GAME_HEIGHT - GROUND_HEIGHT - 90); // 90 is roughly the height of the archer
@@ -355,7 +419,7 @@ class SimpleArcher {
     }
 
     createNewBowArrow(): void {
-        this.bowArrow = new Projectile(0, 0, 0, 0);
+        this.bowArrow = new Projectile(0, 0, 0, 0, this.game);
         this.bowArrow.active = false; // Disable physics while on bow
         this.bowArrow.container.x = 10; // Move arrow forward a bit
         this.arrowContainer.addChild(this.bowArrow.container);
@@ -369,12 +433,13 @@ class SimpleArcher {
 }
 
 export class ArcherGame {
-    private app: Application;
+    public app: Application;
     private gameContainer: Container;
     private simpleArcher: SimpleArcher;
-    private projectiles: Projectile[] = [];
-    private targets: Target[] = [];
+    public projectiles: Projectile[] = [];
+    public targets: Target[] = [];
     private boxes: Box[] = [];
+    private stuckArrows: StuckArrow[] = [];
     private score: number = 0;
     private highScore: number = 0;
     private targetsHit: number = 0;
@@ -407,7 +472,7 @@ export class ArcherGame {
         this.highScore = parseInt(localStorage.getItem('archerHighScore') || '0');
         
         // Initialize bow and add to stage
-        this.simpleArcher = new SimpleArcher();
+        this.simpleArcher = new SimpleArcher(this);
         this.app.stage.addChild(this.simpleArcher.container);
         
         // Initialize UI
@@ -586,24 +651,8 @@ export class ArcherGame {
             this.shoot();
         }
         
-        this.isDragging = false;
-        this.isAiming = false;
-        this.powerCharging = false;
-        this.currentPower = 0;
-        
-        // Clear trajectory line
-        if (this.trajectoryLine) {
-            this.trajectoryLine.destroy();
-            this.trajectoryLine = undefined;
-        }
-        
-        // Reset arrow position
-        this.simpleArcher.updateArrowPosition(0, MAX_POWER);
-        
-        // Reset UI
-        if (this.powerFill) {
-            this.powerFill.style.width = '0%';
-        }
+        // Reset aim state
+        this.resetAimState();
     }
 
     private updateAim(clientX: number, clientY: number): void {
@@ -763,7 +812,6 @@ export class ArcherGame {
         this.simpleArcher.arrowContainer.removeChild(bowArrow.container);
         
         // Calculate the actual arrow position in world coordinates
-        const archerContainer = this.simpleArcher.container;
         const arrowContainer = this.simpleArcher.arrowContainer;
         
         // Get the arrow's local position within the arrow container
@@ -793,14 +841,8 @@ export class ArcherGame {
         // Create new bow arrow (commented out for testing)
         this.simpleArcher.createNewBowArrow();
         
-        // Reset power
-        this.currentPower = 0;
-        if (this.powerFill) {
-            this.powerFill.style.width = '0%';
-        }
-        if (this.angleIndicator) {
-            this.angleIndicator.textContent = 'Angle: 45°';
-        }
+        // Reset aim state
+        this.resetAimState();
         
         // Update UI
         this.updateUI();
@@ -811,50 +853,14 @@ export class ArcherGame {
 
         // Update projectiles
         this.projectiles = this.projectiles.filter(projectile => {
-            const isActive = projectile.update(deltaTime);
-            
-            // Check collision with targets
-            if (isActive) {
-                for (let i = this.targets.length - 1; i >= 0; i--) {
-                    const target = this.targets[i];
-                    if (target.checkCollision(projectile)) {
-                        // Hit target!
-                        // Temporarily disabled - score and target tracking
-                        /*
-                        this.score += target.points;
-                        this.targetsHit++;
-                        this.currentRound++;
-                        */
-                        //target.destroy();
-                        //this.targets.splice(i, 1);
-                        projectile.destroy();
-                        // this.updateUI();
-                        
-                        // Check if game is over (10 rounds)
-                        /*
-                        if (this.currentRound > 10) {
-                            this.gameOver();
-                            return false;
-                        }
-                        */
-                        
-                        // // Spawn new target for next round
-                        // setTimeout(() => {
-                        //     this.spawnTarget();
-                        // }, 1000); // 1 second delay between rounds
-                        
-                        return false;
-                    }
-                }
-            }
-            
-            return isActive;
+            return projectile.update(deltaTime);
         });
+    }
 
-        // // Spawn initial target if none exists
-        // if (this.targets.length === 0 && !this.isWaitingToStart) {
-        //     this.spawnTarget();
-        // }
+    public spawnStuckArrow(x: number, y: number, rotation: number): void {
+        const stuckArrow = new StuckArrow(x, y, rotation);
+        this.stuckArrows.push(stuckArrow);
+        this.app.stage.addChild(stuckArrow.container);
     }
 
     private spawnTarget(): void {
@@ -866,7 +872,6 @@ export class ArcherGame {
         this.boxes.forEach(box => box.destroy());
         this.boxes = [];
         
-        const placeOnBox = Math.random() < 0.8;
         let targetX: number;
         let targetY: number;
         let platform: Box | undefined = undefined;
@@ -874,22 +879,19 @@ export class ArcherGame {
         const minX = BASE_GAME_WIDTH / 2 + 100;
         const maxX = BASE_GAME_WIDTH - 100;
 
-        if (placeOnBox) {
-            const boxWidth = Math.random() * 100 + 50;
-            const boxHeight = Math.random() * 150 + 50;
-            const boxX = Math.random() * (maxX - minX - boxWidth) + minX;
-            const boxY = BASE_GAME_HEIGHT - GROUND_HEIGHT - boxHeight; // Top of box at ground level
-            
-            platform = new Box(boxX, boxY, boxWidth, boxHeight);
-            this.app.stage.addChild(platform.container);
-            this.boxes.push(platform);
 
-            targetX = boxX + boxWidth / 2;
-            targetY = boxY - 30; // Target above the box
-        } else {
-            targetX = Math.random() * (maxX - minX) + minX;
-            targetY = BASE_GAME_HEIGHT - GROUND_HEIGHT - 30; // 30 is target radius
-        }
+        const boxWidth = Math.random() * 100 + 50;
+        const boxHeight = Math.random() * 150 + 50;
+        const boxX = Math.random() * (maxX - minX - boxWidth) + minX;
+        const boxY = BASE_GAME_HEIGHT - GROUND_HEIGHT - boxHeight; // Top of box at ground level
+        
+        platform = new Box(boxX, boxY, boxWidth, boxHeight);
+        this.app.stage.addChild(platform.container);
+        this.boxes.push(platform);
+
+        targetX = boxX + boxWidth / 2;
+        targetY = boxY - 30; // Target above the box
+
 
         const target = new Target(targetX, targetY, 30, platform);
         this.app.stage.addChild(target.container);
@@ -957,35 +959,26 @@ export class ArcherGame {
         this.projectiles.forEach(projectile => projectile.destroy());
         this.targets.forEach(target => target.destroy());
         this.boxes.forEach(box => box.destroy());
+        this.stuckArrows.forEach(stuckArrow => stuckArrow.destroy());
         this.projectiles = [];
         this.targets = [];
         this.boxes = [];
+        this.stuckArrows = [];
         
-        // Reset game state
-        // Temporarily disabled - score and target tracking
-        /*
-        this.score = 0;
-        this.targetsHit = 0;
-        this.currentRound = 1;
-        */
+
         this.isGameOver = false;
         this.isPaused = false;
         this.isWaitingToStart = false;
-        this.isAiming = false;
-        this.currentAngle = Math.PI / 4;
-        this.currentPower = 0;
-        this.powerCharging = false;
         this.arrowsRemaining = 10;
+        
+        // Reset aim state
+        this.resetAimState();
         
         // Reset bow
         this.simpleArcher.updateAngle(this.currentAngle);
         
-        // Reset arrow position
-        this.simpleArcher.updateArrowPosition(0, MAX_POWER);
-        
         // Reset UI
         this.updateUI();
-        if (this.powerFill) this.powerFill.style.width = '0%';
         
         // Hide menus
         const gameOver = document.getElementById('gameOver');
@@ -1004,23 +997,30 @@ export class ArcherGame {
     }
 
     destroy(): void {
-        // Clean up event listeners
+        // Remove input handlers
         if (this.removeInputHandler) {
             this.removeInputHandler();
         }
         if (this.removeTopBarHandler) {
             this.removeTopBarHandler();
         }
-        
-        // Clean up game objects
+
+        // Clear all game objects
         this.projectiles.forEach(projectile => projectile.destroy());
         this.targets.forEach(target => target.destroy());
         this.boxes.forEach(box => box.destroy());
-        this.simpleArcher.destroy();
+        this.stuckArrows.forEach(stuckArrow => stuckArrow.destroy());
         
-        // Clean up UI elements
-        if (this.powerMeter) this.powerMeter.remove();
-        if (this.angleIndicator) this.angleIndicator.remove();
+        // Clear trajectory line
+        if (this.trajectoryLine) {
+            this.trajectoryLine.destroy();
+        }
+
+        // Destroy archer
+        this.simpleArcher.destroy();
+
+        // Remove from stage
+        this.app.stage.removeChild(this.gameContainer);
     }
 
     returnToMainMenu(): void {
@@ -1030,6 +1030,73 @@ export class ArcherGame {
     startGame(): void {
         // This method is no longer needed since game starts immediately
         // Keeping it for compatibility with global functions
+    }
+
+    public calculateCollisionPoint(projectile: Projectile, target: Target): { x: number; y: number } {
+        // Get the previous position (before this frame's movement)
+        const prevX = projectile.x - projectile.vx;
+        const prevY = projectile.y - projectile.vy;
+        
+        // Calculate the actual collision point by interpolating between previous and current position
+        const targetCenterX = target.x;
+        const targetCenterY = target.y;
+        const targetRadius = target.radius;
+        
+        // Vector from previous position to current position
+        const dx = projectile.x - prevX;
+        const dy = projectile.y - prevY;
+        
+        // Vector from target center to previous position
+        const px = prevX - targetCenterX;
+        const py = prevY - targetCenterY;
+        
+        // Quadratic equation coefficients for line-circle intersection
+        const a = dx * dx + dy * dy;
+        const b = 2 * (px * dx + py * dy);
+        const c = px * px + py * py - targetRadius * targetRadius;
+        
+        // Solve quadratic equation
+        const discriminant = b * b - 4 * a * c;
+        if (discriminant < 0) {
+            // No intersection, fall back to current position
+            return { x: projectile.x, y: projectile.y };
+        }
+        
+        // Get the intersection point (we want the first intersection, so smaller t)
+        const t = (-b - Math.sqrt(discriminant)) / (2 * a);
+        
+        // Clamp t to [0, 1] range
+        const clampedT = Math.max(0, Math.min(1, t));
+        
+        // Calculate collision point
+        const collisionX = prevX + dx * clampedT;
+        const collisionY = prevY + dy * clampedT;
+        
+        return { x: collisionX, y: collisionY };
+    }
+
+    private resetAimState(): void {
+        this.isAiming = false;
+        this.powerCharging = false;
+        this.isDragging = false;
+        this.currentPower = 0;
+        
+        // Reset arrow position
+        this.simpleArcher.updateArrowPosition(0, MAX_POWER);
+        
+        // Reset UI
+        if (this.powerFill) {
+            this.powerFill.style.width = '0%';
+        }
+        if (this.angleIndicator) {
+            this.angleIndicator.textContent = 'Angle: 45°';
+        }
+        
+        // Clear trajectory line
+        if (this.trajectoryLine) {
+            this.trajectoryLine.destroy();
+            this.trajectoryLine = undefined;
+        }
     }
 }
 
