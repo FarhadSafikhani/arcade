@@ -220,7 +220,7 @@ class Projectile {
         }
 
         // Check if out of bounds
-        if (this.x > BASE_GAME_WIDTH || this.x < 0 || this.y < 0) {
+        if (this.x > BASE_GAME_WIDTH || this.x < 0) {
             this.active = false;
             this.container.destroy();
             return false;
@@ -242,7 +242,6 @@ class Target {
     radius: number;
     container: Container;
     graphics: Graphics;
-    points: number;
     platform?: Box;
 
     constructor(x: number, y: number, radius: number = 30, platform?: Box) {
@@ -250,7 +249,6 @@ class Target {
         this.y = y;
         this.radius = radius;
         this.platform = platform;
-        this.points = Math.max(10, Math.floor(50 - radius));
 
         // Create target container
         this.container = new Container();
@@ -480,7 +478,6 @@ export class ArcherGame {
     private isDragging: boolean = false;
     private dragStartX: number = 0;
     private dragStartY: number = 0;
-    private maxDragDistance: number = 0;
     private removeInputHandler?: () => void;
     private removeTopBarHandler?: () => void;
     private powerMeter?: HTMLElement;
@@ -628,12 +625,6 @@ export class ArcherGame {
                     // Moving away from archer - decrease charge
                     this.powerCharging = false;
                     this.currentPower = Math.max(MIN_POWER, MIN_POWER + distanceChange * 0.05);
-                    
-                    // Clear trajectory line when not charging
-                    if (this.trajectoryLine) {
-                        this.trajectoryLine.destroy();
-                        this.trajectoryLine = undefined;
-                    }
                 }
                 
                 // Update power bar
@@ -657,7 +648,6 @@ export class ArcherGame {
         this.isDragging = true;
         this.dragStartX = event.global.x;
         this.dragStartY = event.global.y;
-        this.maxDragDistance = 0;
         this.isAiming = true;
         this.powerCharging = false;
         this.currentPower = MIN_POWER;
@@ -741,39 +731,20 @@ export class ArcherGame {
         let currentVx = vx;
         let currentVy = vy;
         
-        // Skip a fixed distance to start the line further along the trajectory
-        const skipDistance = 100; // pixels
-        let distanceTraveled = 0;
-        
-        while (distanceTraveled < skipDistance) {
-            // Apply gravity
-            currentVy += GRAVITY;
-            
-            // Apply drag
-            currentVx *= 0.999;
-            
-            // Calculate movement for this frame
-            const dx = currentVx;
-            const dy = currentVy;
-            const frameDistance = Math.sqrt(dx * dx + dy * dy);
-            
-            // Update position
-            x += dx;
-            y += dy;
-            distanceTraveled += frameDistance;
-            
-            // Stop if we've traveled far enough
-            if (distanceTraveled >= skipDistance) {
-                break;
-            }
-        }
-        
         // Store trajectory points for fading effect
-        const trajectoryPoints: { x: number; y: number }[] = [];
-        trajectoryPoints.push({ x, y });
+        const trajectoryPoints: { x: number; y: number, skip: boolean }[] = [];
         
-        // Simulate trajectory for 60 frames (1 second at 60fps)
-        for (let i = 0; i < 50; i++) {
+        // Start from arrow position
+        trajectoryPoints.push({ x, y, skip: false });
+        
+        // Draw trajectory in fixed pixel distance segments
+        const segmentDistance = 30; // pixels between each segment
+        let segmentDistanceTraveled = 0;
+        const travelSkip = 80; // amount of min distance to skip
+        const maxTraveled = 1600;
+        let traveled = 0;
+
+        while (traveled < maxTraveled) {
             // Apply gravity
             currentVy += GRAVITY;
             
@@ -783,32 +754,42 @@ export class ArcherGame {
             // Update position
             x += currentVx;
             y += currentVy;
+            traveled += Math.sqrt(currentVx * currentVx + currentVy * currentVy);
+            segmentDistanceTraveled += Math.sqrt(currentVx * currentVx + currentVy * currentVy);
+            
+            // Add point every segmentDistance pixels
+            if (segmentDistanceTraveled >= segmentDistance) {
+                trajectoryPoints.push({ x, y, skip: traveled < travelSkip });
+                segmentDistanceTraveled = 0;
+            }
             
             // Stop if hit ground
             if (y >= BASE_GAME_HEIGHT - GROUND_HEIGHT) {
-                trajectoryPoints.push({ x, y: BASE_GAME_HEIGHT - GROUND_HEIGHT });
+                trajectoryPoints.push({ x, y: BASE_GAME_HEIGHT - GROUND_HEIGHT, skip: traveled < travelSkip });
                 break;
             }
             
             // Stop if out of bounds
-            if (x > BASE_GAME_WIDTH || x < 0 || y < 0) {
+            if (x > BASE_GAME_WIDTH || x < 0) {
                 break;
             }
+
             
-            trajectoryPoints.push({ x, y });
         }
         
-        // Draw the trajectory line with fading effect
+        // Draw the trajectory line with fading effect, skipping first few segments
         if (trajectoryPoints.length > 1) {
             const totalPoints = trajectoryPoints.length;
             
             for (let i = 0; i < totalPoints - 1; i++) {
-                const progress = i / (totalPoints - 1); // 0 to 1
-                const alpha = 0.4 * (1 - progress * 0.8); // Start at 0.3, fade to 0.06
+                const progress = (i) / (totalPoints - 1); // 0 to 1
+                const alpha = 0.4 * (1 - progress * 0.9); // Start at 0.4, fade to 0.08
                 
                 this.trajectoryLine.lineStyle(4, 'red', alpha);
-                this.trajectoryLine.moveTo(trajectoryPoints[i].x, trajectoryPoints[i].y);
-                this.trajectoryLine.lineTo(trajectoryPoints[i + 1].x, trajectoryPoints[i + 1].y);
+                if (!trajectoryPoints[i].skip) {
+                    this.trajectoryLine.moveTo(trajectoryPoints[i].x, trajectoryPoints[i].y);
+                    this.trajectoryLine.lineTo(trajectoryPoints[i + 1].x, trajectoryPoints[i + 1].y);
+                }
             }
         }
         
@@ -908,6 +889,7 @@ export class ArcherGame {
         this.boxes.forEach(box => box.destroy());
         this.boxes = [];
         
+        const targetRadius = 50;
         let targetX: number;
         let targetY: number;
         let platform: Box | undefined = undefined;
@@ -917,7 +899,7 @@ export class ArcherGame {
 
 
         const boxWidth = Math.random() * 100 + 50;
-        const boxHeight = Math.random() * 150 + 50;
+        const boxHeight = Math.random() * 250 + 50;
         const boxX = Math.random() * (maxX - minX - boxWidth) + minX;
         const boxY = BASE_GAME_HEIGHT - GROUND_HEIGHT - boxHeight; // Top of box at ground level
         
@@ -926,10 +908,10 @@ export class ArcherGame {
         this.boxes.push(platform);
 
         targetX = boxX + boxWidth / 2;
-        targetY = boxY - 30; // Target above the box
+        targetY = boxY - targetRadius; // Target above the box
 
 
-        const target = new Target(targetX, targetY, 30, platform);
+        const target = new Target(targetX, targetY, targetRadius, platform);
         this.app.stage.addChild(target.container);
         this.targets.push(target);
     }
