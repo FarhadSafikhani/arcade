@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Archer Game - Arcade Collection</title>
+  <script type="module" crossorigin src="/arcade/assets/archer-DBobxidI.js"></script>
+  <link rel="modulepreload" crossorigin href="/arcade/assets/main-CPvXibab.js">
+  <link rel="modulepreload" crossorigin href="/arcade/assets/HTMLText-f6zgcEQF.js">
+  <link rel="stylesheet" crossorigin href="/arcade/assets/main-Dh3m2aiW.css">
+  <link rel="stylesheet" crossorigin href="/arcade/assets/archer-CY2jxizf.css">
+</head>
+<body class="game-page archer-game">
+    <game-top-bar title="🏹 Archer" show-pause show-menu></game-top-bar>
+    <div id="gameUI">
+        <div>🏹 <span id="arrows">10</span></div>
+        <!-- <div>🎯 <span id="score">0</span></div>
+        <div>🏆 <span id="highScore">0</span></div>
+        <div>🎯 <span id="targets">0</span></div>
+        <div>🔄 <span id="round">1</span></div> -->
+    </div>
+    <div id="gameContainer">
+        <div id="gameOver">
+            <h2>Game Over!</h2>
+            <p>Final Score: <span id="finalScore">0</span></p>
+            <p>Targets Hit: <span id="finalTargets">0</span></p>
+            <p>Rounds Completed: <span id="finalRounds">0</span></p>
+            <button onclick="restartGame()">Play Again</button>
+            <button class="secondary" onclick="returnToMainMenu()">Main Menu</button>
+        </div>
+        <div id="pauseMenu">
+            <h2>Game Paused</h2>
+            <button onclick="resumeGame()">Resume</button>
+            <button class="secondary" onclick="returnToMainMenu()">Exit to Main Menu</button>
+        </div>
+    </div>
+    
+</body>
+</html> 
