@@ -238,17 +238,17 @@ class Projectile {
         const travelAngle = Math.atan2(this.vy, this.vx);
         this.container.rotation = travelAngle;
 
-        // Check collision with targets
-        for (let i = this.game.targets.length - 1; i >= 0; i--) {
-            const target = this.game.targets[i];
-            if (target.checkCollision(this)) {
-                // Hit target! Calculate actual collision point and create arrow graphic
-                const collisionPoint = this.game.calculateCollisionPoint(this, target);
-                this.game.spawnStuckArrow(collisionPoint.x, collisionPoint.y, this.container.rotation);
-                
-                this.destroy();
-                return false;
-            }
+        // Check collision with target
+        if (this.game.target && this.game.target.checkCollision(this)) {
+            // Hit target! Calculate actual collision point and create arrow graphic
+            const collisionPoint = this.game.calculateCollisionPoint(this, this.game.target);
+            this.game.spawnStuckArrow(collisionPoint.x, collisionPoint.y, this.container.rotation);
+            
+            // Update score but don't remove the target
+            this.game.onTargetHit();
+            
+            this.destroy();
+            return false;
         }
 
         // Check collision with boxes
@@ -525,7 +525,7 @@ export class ArcherGame {
     private gameContainer: Container;
     private simpleArcher: SimpleArcher;
     public projectiles: Projectile[] = [];
-    public targets: Target[] = [];
+    public target: Target | null = null;
     public boxes: Box[] = [];
     public trees: Tree[] = [];
     private stuckArrows: StuckArrow[] = [];
@@ -951,9 +951,15 @@ export class ArcherGame {
     }
 
     private spawnTarget(): void {
-        // Clear existing targets
-        this.targets.forEach(target => target.destroy());
-        this.targets = [];
+        // Clear existing projectiles
+        this.projectiles.forEach(projectile => projectile.destroy());
+        this.projectiles = [];
+        
+        // Clear existing target
+        if (this.target) {
+            this.target.destroy();
+            this.target = null;
+        }
 
         // Clear existing boxes
         this.boxes.forEach(box => box.destroy());
@@ -963,17 +969,44 @@ export class ArcherGame {
         this.trees.forEach(tree => tree.destroy());
         this.trees = [];
         
+        // Clear existing stuck arrows
+        this.stuckArrows.forEach(stuckArrow => stuckArrow.destroy());
+        this.stuckArrows = [];
+        
         const targetRadius = 50;
         let targetX: number;
         let targetY: number;
         let platform: Box | undefined = undefined;
 
-        const minX = BASE_GAME_WIDTH / 2 + 100;
-        const maxX = BASE_GAME_WIDTH - 100;
+        // const minX = BASE_GAME_WIDTH / 2 + 100;
+        // const maxX = BASE_GAME_WIDTH - 100;
 
         const boxWidth = Math.random() * 100 + 50;
         const boxHeight = Math.random() * 350 + 50;
-        const boxX = Math.random() * (maxX - minX - boxWidth) + minX;
+        
+        // Helper function to check if a position overlaps with tree area
+        const isInTreeArea = (x: number) => {
+            const treeAreaStart = BASE_GAME_WIDTH / 4;
+            const boxLeft = x;
+            return boxLeft < treeAreaStart + 200; // Add some buffer
+        };
+        
+        // Try to find a good position for the box that doesn't overlap with tree area
+        let boxX: number;
+        let attempts = 0;
+        const maxAttempts = 10;
+        
+        do {
+            boxX = Math.random() * (BASE_GAME_WIDTH - boxWidth) + 150;
+            boxX = Math.max(150, Math.min(BASE_GAME_WIDTH - boxWidth - 150, boxX));
+            attempts++;
+        } while (isInTreeArea(boxX) && attempts < maxAttempts);
+        
+        // If we still can't find a good position, force it to the right side
+        if (isInTreeArea(boxX)) {
+            boxX = BASE_GAME_WIDTH - boxWidth - 200; // Force to right side with margin
+        }
+
         const boxY = BASE_GAME_HEIGHT - GROUND_HEIGHT - boxHeight; // Top of box at ground level
         
         platform = new Box(boxX, boxY, boxWidth, boxHeight);
@@ -985,12 +1018,12 @@ export class ArcherGame {
 
         // Spawn trees with random heights to make it harder to hit targets
         const numTrees = Math.floor(Math.random() * 4) + 2; // 2-5 trees
-        const treeAreaStart = BASE_GAME_WIDTH / 4; // Start trees after first third of screen
+        const treeAreaStart = BASE_GAME_WIDTH / 4; // Start trees after first quarter of screen
         const treeAreaEnd = targetX - 30; // End before target with some gap
         
         for (let i = 0; i < numTrees; i++) {
-            const treeWidth = Math.random() * 100 + 40; // 40-100 pixels wide
-            const treeHeight = Math.random() * 350 + 80; // 200-500 pixels tall
+            const treeWidth = Math.random() * 100 + 40; // 40-140 pixels wide
+            const treeHeight = Math.random() * 350 + 80; // 80-430 pixels tall
             const treeX = Math.random() * (treeAreaEnd - treeAreaStart - treeWidth) + treeAreaStart;
             const treeY = BASE_GAME_HEIGHT - GROUND_HEIGHT - treeHeight; // Bottom of tree at ground level
             
@@ -999,9 +1032,8 @@ export class ArcherGame {
             this.trees.push(tree);
         }
 
-        const target = new Target(targetX, targetY, targetRadius, platform);
-        this.app.stage.addChild(target.container);
-        this.targets.push(target);
+        this.target = new Target(targetX, targetY, targetRadius, platform);
+        this.app.stage.addChild(this.target.container);
     }
 
     private gameOver(): void {
@@ -1032,8 +1064,12 @@ export class ArcherGame {
 
     private updateUI(): void {
         const arrowsElement = document.getElementById('arrows');
+        const scoreElement = document.getElementById('score');
+        const highScoreElement = document.getElementById('highScore');
         
         if (arrowsElement) arrowsElement.textContent = this.arrowsRemaining.toString();
+        if (scoreElement) scoreElement.textContent = this.score.toString();
+        if (highScoreElement) highScoreElement.textContent = this.highScore.toString();
     }
 
     togglePause(): void {
@@ -1063,12 +1099,14 @@ export class ArcherGame {
     restart(): void {
         // Clear projectiles, targets, and boxes
         this.projectiles.forEach(projectile => projectile.destroy());
-        this.targets.forEach(target => target.destroy());
+        if (this.target) {
+            this.target.destroy();
+            this.target = null;
+        }
         this.boxes.forEach(box => box.destroy());
         this.trees.forEach(tree => tree.destroy());
         this.stuckArrows.forEach(stuckArrow => stuckArrow.destroy());
         this.projectiles = [];
-        this.targets = [];
         this.boxes = [];
         this.trees = [];
         this.stuckArrows = [];
@@ -1078,6 +1116,8 @@ export class ArcherGame {
         this.isPaused = false;
         this.isWaitingToStart = false;
         this.arrowsRemaining = 10;
+        this.score = 0;
+        this.targetsHit = 0;
         
         // Reset aim state
         this.resetAimState();
@@ -1115,7 +1155,9 @@ export class ArcherGame {
 
         // Clear all game objects
         this.projectiles.forEach(projectile => projectile.destroy());
-        this.targets.forEach(target => target.destroy());
+        if (this.target) {
+            this.target.destroy();
+        }
         this.boxes.forEach(box => box.destroy());
         this.trees.forEach(tree => tree.destroy());
         this.stuckArrows.forEach(stuckArrow => stuckArrow.destroy());
@@ -1206,6 +1248,16 @@ export class ArcherGame {
             this.trajectoryLine.destroy();
             this.trajectoryLine = undefined;
         }
+    }
+
+    onTargetHit(): void {
+        this.targetsHit++;
+        this.score++;
+        this.arrowsRemaining += 2;
+        this.updateUI();
+        
+        // Spawn a new target with new trees
+        this.spawnTarget();
     }
 }
 
