@@ -801,7 +801,7 @@ export class ArcherGame {
         
         // Check if we have arrows remaining
         if (this.arrowsRemaining <= 0) {
-            this.gameOver();
+            // Don't allow shooting when out of ammo, but don't end game yet
             return;
         }
         
@@ -810,7 +810,7 @@ export class ArcherGame {
         if (!bowArrow) {
             return;
         }
-        
+
         this.isAiming = false;
         this.powerCharging = false;
 
@@ -871,6 +871,11 @@ export class ArcherGame {
             this.projectiles = this.projectiles.filter(projectile => {
                 return projectile.update();
             });
+            
+            // Check if game should end: 0 ammo and no active projectiles
+            if (this.arrowsRemaining <= 0 && this.projectiles.length === 0) {
+                this.gameOver();
+            }
         }
     }
 
