@@ -35,7 +35,7 @@ class Box {
 
     constructor(x: number, y: number, width: number, height: number) {
         this.container = new Container();
-        this.container.position.set(x, BASE_GAME_HEIGHT - y - height);
+        this.container.position.set(x, y);
         
         this.graphics = new Graphics();
         this.graphics.beginFill(0x8B4513);
@@ -851,7 +851,7 @@ export class ArcherGame {
         this.boxes.forEach(box => box.destroy());
         this.boxes = [];
         
-        const placeOnBox = Math.random() < 0.5;
+        const placeOnBox = Math.random() < 0.8;
         let targetX: number;
         let targetY: number;
         let platform: Box | undefined = undefined;
@@ -863,14 +863,14 @@ export class ArcherGame {
             const boxWidth = Math.random() * 100 + 50;
             const boxHeight = Math.random() * 150 + 50;
             const boxX = Math.random() * (maxX - minX - boxWidth) + minX;
-            const boxY = BASE_GAME_HEIGHT - GROUND_HEIGHT - boxHeight;
+            const boxY = BASE_GAME_HEIGHT - GROUND_HEIGHT - boxHeight; // Top of box at ground level
             
             platform = new Box(boxX, boxY, boxWidth, boxHeight);
             this.app.stage.addChild(platform.container);
             this.boxes.push(platform);
 
             targetX = boxX + boxWidth / 2;
-            targetY = boxY - 30; // 30 is target radius
+            targetY = boxY - 30; // Target above the box
         } else {
             targetX = Math.random() * (maxX - minX) + minX;
             targetY = BASE_GAME_HEIGHT - GROUND_HEIGHT - 30; // 30 is target radius
