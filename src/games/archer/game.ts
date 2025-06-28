@@ -171,6 +171,148 @@ class Tree {
     }
 }
 
+// Flying bird class
+class Bird {
+    container: Container;
+    graphics: Graphics;
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    width: number = 60;
+    height: number = 40;
+    active: boolean = true;
+    game: ArcherGame;
+    flapTimer: number = 0;
+    isFlapping: boolean = false;
+    isHit: boolean = false;
+
+    constructor(x: number, y: number, game: ArcherGame) {
+        this.x = x;
+        this.y = y;
+        this.game = game;
+        
+        // Random horizontal speed with random direction (left or right)
+        const baseSpeed = Math.random() * 2 + 1; // 1-3 pixels per frame
+        this.vx = Math.random() < 0.5 ? baseSpeed : -baseSpeed; // 50% chance of left or right
+        
+        // Random vertical oscillation
+        this.vy = Math.random() * 0.5 - 0.25; // -0.25 to 0.25 pixels per frame
+        
+        this.container = new Container();
+        this.container.position.set(x, y);
+        
+        this.graphics = new Graphics();
+        this.drawBird();
+        
+        this.container.addChild(this.graphics);
+    }
+
+    drawBird(): void {
+        this.graphics.clear();
+        this.graphics.lineStyle(4, 0x000000);
+        
+        // If hit, ALWAYS show wings up, no exceptions
+        if (this.isHit) {
+            this.graphics.moveTo(0, -30);
+            this.graphics.lineTo(30, 0);
+            this.graphics.lineTo(60, -30);
+            return; // Exit early, don't check anything else
+        }
+        
+        // Only normal birds can flap
+        if (this.isFlapping) {
+            // Flapping wings - V shape pointing down
+            this.graphics.moveTo(0, -10);
+            this.graphics.lineTo(30, 0);
+            this.graphics.lineTo(60, -10);
+        } else {
+            // Normal wings - V shape pointing up
+            this.graphics.moveTo(0, 10);
+            this.graphics.lineTo(30, 0);
+            this.graphics.lineTo(60, 10);
+        }
+    }
+
+    update(): boolean {
+        if (!this.active) return false;
+
+        if (this.isHit) {
+            // Bird is hit - fall down with gravity
+            this.vy += GRAVITY; // Gravity effect
+            this.x += this.vx * 0.9; // Reduced horizontal movement
+            this.y += this.vy;
+            
+            // Keep wings in upper position when hit - stop all flapping
+            this.isFlapping = false;
+            this.flapTimer = 0; // Reset timer to prevent any flapping
+            this.drawBird();
+            
+            // Update visual position
+            this.container.position.set(this.x, this.y);
+            
+            // Destroy when hitting ground
+            if (this.y >= BASE_GAME_HEIGHT - GROUND_HEIGHT) {
+                this.destroy();
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Only update flap animation when NOT hit
+        this.flapTimer++;
+        if (this.flapTimer >= 15) { // Flap every 15 frames
+            this.isFlapping = !this.isFlapping;
+            this.flapTimer = 0;
+            if (!this.isHit) { // Only draw if not hit
+                this.drawBird();
+            }
+        }
+
+        // Update position (only when not hit)
+        this.x += this.vx;
+        this.y += this.vy;
+        
+        // Add some vertical oscillation
+        this.vy += Math.sin(this.x * 0.02) * 0.1;
+        
+        // Keep vertical movement within bounds
+        this.vy = Math.max(-0.5, Math.min(0.5, this.vy));
+        
+        // Reverse direction when hitting screen edges
+        if (this.x <= 0 || this.x >= BASE_GAME_WIDTH - this.width) {
+            this.vx = -this.vx; // Reverse horizontal direction
+        }
+        
+        // Keep birds within vertical bounds
+        if (this.y <= 50 || this.y >= BASE_GAME_HEIGHT - GROUND_HEIGHT - 50) {
+            this.vy = -this.vy; // Reverse vertical direction
+        }
+        
+        // Update visual position
+        this.container.position.set(this.x, this.y);
+        
+        return true;
+    }
+
+    checkCollision(projectile: Projectile): boolean {
+        // Simple rectangular collision for bird
+        const birdLeft = this.x;
+        const birdRight = this.x + this.width;
+        const birdTop = this.y - this.height / 2;
+        const birdBottom = this.y + this.height / 2;
+        
+        return projectile.x >= birdLeft && projectile.x <= birdRight && 
+               projectile.y >= birdTop && projectile.y <= birdBottom;
+    }
+
+    destroy(): void {
+        this.active = false;
+        this.container.destroy();
+    }
+}
+
 // Physics projectile class
 class Projectile {
     x: number;
@@ -269,6 +411,21 @@ class Projectile {
             if (tree.checkCollision(this)) {
                 // Hit tree! Create stuck arrow at collision point
                 this.game.spawnStuckArrow(this.x, this.y, this.container.rotation);
+                
+                this.destroy();
+                return false;
+            }
+        }
+
+        // Check collision with birds
+        for (let i = this.game.birds.length - 1; i >= 0; i--) {
+            const bird = this.game.birds[i];
+            if (bird.checkCollision(this)) {
+                
+                // Mark bird as hit and force wings up
+                bird.isHit = true;
+                bird.isFlapping = false;
+                bird.drawBird();
                 
                 this.destroy();
                 return false;
@@ -528,6 +685,7 @@ export class ArcherGame {
     public target: Target | null = null;
     public boxes: Box[] = [];
     public trees: Tree[] = [];
+    public birds: Bird[] = [];
     private stuckArrows: StuckArrow[] = [];
     private score: number = 0;
     private highScore: number = 0;
@@ -937,6 +1095,11 @@ export class ArcherGame {
                 return projectile.update();
             });
             
+            // Update birds
+            this.birds = this.birds.filter(bird => {
+                return bird.update();
+            });
+            
             // Check if game should end: 0 ammo and no active projectiles
             if (this.arrowsRemaining <= 0 && this.projectiles.length === 0) {
                 this.gameOver();
@@ -972,6 +1135,10 @@ export class ArcherGame {
         // Clear existing stuck arrows
         this.stuckArrows.forEach(stuckArrow => stuckArrow.destroy());
         this.stuckArrows = [];
+        
+        // Clear existing birds
+        this.birds.forEach(bird => bird.destroy());
+        this.birds = [];
         
         const targetRadius = 50;
         let targetX: number;
@@ -1034,6 +1201,16 @@ export class ArcherGame {
 
         this.target = new Target(targetX, targetY, targetRadius, platform);
         this.app.stage.addChild(this.target.container);
+        
+        // Spawn some flying birds
+        const numBirds = Math.floor(Math.random() * 6) + 3; // 2-4 birds
+        for (let i = 0; i < numBirds; i++) {
+            const birdX = Math.random() * (BASE_GAME_WIDTH - 60); // Random X within screen bounds
+            const birdY = Math.random() * (BASE_GAME_HEIGHT - GROUND_HEIGHT - 200) + 100; // Random height, avoid ground
+            const bird = new Bird(birdX, birdY, this);
+            this.birds.push(bird);
+            this.app.stage.addChild(bird.container);
+        }
     }
 
     private gameOver(): void {
@@ -1105,10 +1282,12 @@ export class ArcherGame {
         }
         this.boxes.forEach(box => box.destroy());
         this.trees.forEach(tree => tree.destroy());
+        this.birds.forEach(bird => bird.destroy());
         this.stuckArrows.forEach(stuckArrow => stuckArrow.destroy());
         this.projectiles = [];
         this.boxes = [];
         this.trees = [];
+        this.birds = [];
         this.stuckArrows = [];
         
 
@@ -1160,6 +1339,7 @@ export class ArcherGame {
         }
         this.boxes.forEach(box => box.destroy());
         this.trees.forEach(tree => tree.destroy());
+        this.birds.forEach(bird => bird.destroy());
         this.stuckArrows.forEach(stuckArrow => stuckArrow.destroy());
         
         // Clear trajectory line
