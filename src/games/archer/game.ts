@@ -396,6 +396,7 @@ export class ArcherGame {
     private powerFill?: HTMLElement;
     private angleIndicator?: HTMLElement;
     private trajectoryLine?: Graphics;
+    private arrowsRemaining: number = 10;
 
     constructor(app: Application) {
         this.app = app;
@@ -408,6 +409,9 @@ export class ArcherGame {
         // Initialize bow and add to stage
         this.simpleArcher = new SimpleArcher();
         this.app.stage.addChild(this.simpleArcher.container);
+        
+        // Initialize UI
+        this.updateUI();
     }
 
     async init(): Promise<void> {
@@ -737,6 +741,12 @@ export class ArcherGame {
     private shoot(): void {
         if (!this.isAiming || !this.powerCharging) return;
         
+        // Check if we have arrows remaining
+        if (this.arrowsRemaining <= 0) {
+            this.gameOver();
+            return;
+        }
+        
         // Check if we have a bow arrow to shoot
         const bowArrow = this.simpleArcher.getBowArrow();
         if (!bowArrow) {
@@ -745,6 +755,9 @@ export class ArcherGame {
         
         this.isAiming = false;
         this.powerCharging = false;
+
+        // Decrease arrow count
+        this.arrowsRemaining--;
 
         // Remove from bow container
         this.simpleArcher.arrowContainer.removeChild(bowArrow.container);
@@ -789,6 +802,8 @@ export class ArcherGame {
             this.angleIndicator.textContent = 'Angle: 45°';
         }
         
+        // Update UI
+        this.updateUI();
     }
 
     update(deltaTime: number): void {
@@ -908,18 +923,9 @@ export class ArcherGame {
     }
 
     private updateUI(): void {
-        // Temporarily disabled - score, high score, targets, and round tracking
-        /*
-        const scoreElement = document.getElementById('score');
-        const highScoreElement = document.getElementById('highScore');
-        const targetsElement = document.getElementById('targets');
-        const roundElement = document.getElementById('round');
+        const arrowsElement = document.getElementById('arrows');
         
-        if (scoreElement) scoreElement.textContent = this.score.toString();
-        if (highScoreElement) highScoreElement.textContent = this.highScore.toString();
-        if (targetsElement) targetsElement.textContent = this.targetsHit.toString();
-        if (roundElement) roundElement.textContent = this.currentRound.toString();
-        */
+        if (arrowsElement) arrowsElement.textContent = this.arrowsRemaining.toString();
     }
 
     togglePause(): void {
@@ -969,6 +975,7 @@ export class ArcherGame {
         this.currentAngle = Math.PI / 4;
         this.currentPower = 0;
         this.powerCharging = false;
+        this.arrowsRemaining = 10;
         
         // Reset bow
         this.simpleArcher.updateAngle(this.currentAngle);
@@ -977,9 +984,8 @@ export class ArcherGame {
         this.simpleArcher.updateArrowPosition(0, MAX_POWER);
         
         // Reset UI
-        // this.updateUI();
+        this.updateUI();
         if (this.powerFill) this.powerFill.style.width = '0%';
-        if (this.angleIndicator) this.angleIndicator.textContent = 'Angle: 45°';
         
         // Hide menus
         const gameOver = document.getElementById('gameOver');
