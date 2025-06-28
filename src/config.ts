@@ -47,15 +47,15 @@ export const gamesConfig: GamesConfig = {
             icon: "🏹",
             available: true,
             entryPoint: "/games/archer/index.html"
+        },
+        {
+            id: "stickers",
+            name: "Stickers",
+            description: "Interactive sticker game",
+            icon: "🍎",
+            available: true,
+            entryPoint: "/games/stickers/index.html"
         }
-        // Example of a disabled game:
-        // {
-        //     id: "tetris",
-        //     name: "Tetris",
-        //     description: "Classic tetris game",
-        //     icon: "🧩",
-        //     available: false,
-        //     entryPoint: "/games/tetris/index.html"
-        // }
+
     ]
 }; 

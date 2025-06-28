@@ -1,6 +1,30 @@
 import { defineConfig } from 'vite'
 import { resolve } from 'path'
 import obfuscator from 'rollup-plugin-obfuscator'
+import { readdirSync, existsSync } from 'fs'
+
+// Auto-discover games from the games directory
+function getGameEntries() {
+  const gamesDir = resolve(__dirname, 'games')
+  const entries: Record<string, string> = {
+    main: resolve(__dirname, 'index.html')
+  }
+
+  if (existsSync(gamesDir)) {
+    const gameFolders = readdirSync(gamesDir, { withFileTypes: true })
+      .filter(dirent => dirent.isDirectory())
+      .map(dirent => dirent.name)
+
+    gameFolders.forEach(gameName => {
+      const gameHtmlPath = resolve(gamesDir, gameName, 'index.html')
+      if (existsSync(gameHtmlPath)) {
+        entries[gameName] = gameHtmlPath
+      }
+    })
+  }
+
+  return entries
+}
 
 export default defineConfig({
   base: '/arcade/',
@@ -30,13 +54,7 @@ export default defineConfig({
       }
     },
     rollupOptions: {
-      input: {
-        main: resolve(__dirname, 'index.html'),
-        snake: resolve(__dirname, 'games/snake/index.html'),
-        breakout: resolve(__dirname, 'games/breakout/index.html'),
-        memory: resolve(__dirname, 'games/memory/index.html'),
-        archer: resolve(__dirname, 'games/archer/index.html')
-      },
+      input: getGameEntries(),
       output: {
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
