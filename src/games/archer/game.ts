@@ -1,4 +1,4 @@
-import { Application, Container, Graphics, Text, FederatedPointerEvent } from 'pixi.js';
+import { Application, Container, Graphics, Text, FederatedPointerEvent, Point } from 'pixi.js';
 import { isTouchDevice } from '../../shared/utils/device-detection';
 
 // Game constants - fixed base dimensions
@@ -6,10 +6,9 @@ const BASE_GAME_WIDTH = 1920;
 const BASE_GAME_HEIGHT = 1080;
 
 // Game constants
-const GRAVITY = 0.2;
-const MAX_POWER = 35;
+const GRAVITY = 0.6;
+const MAX_POWER = 45;
 const MIN_POWER = 2;
-const POWER_CHARGE_RATE = 0.75;
 const GROUND_HEIGHT = 50;
 
 // Responsive scaling function
@@ -109,6 +108,10 @@ class Projectile {
 
         // Apply gravity
         this.vy += GRAVITY * deltaTime;
+
+        // Apply drag
+        this.vx *= 0.999;
+        //this.vy *= 0.98;
 
         // Update position
         this.x += this.vx * deltaTime;
@@ -392,6 +395,7 @@ export class ArcherGame {
     private powerMeter?: HTMLElement;
     private powerFill?: HTMLElement;
     private angleIndicator?: HTMLElement;
+    private trajectoryLine?: Graphics;
 
     constructor(app: Application) {
         this.app = app;
@@ -527,6 +531,12 @@ export class ArcherGame {
                     // Moving away from archer - decrease charge
                     this.powerCharging = false;
                     this.currentPower = Math.max(MIN_POWER, MIN_POWER + distanceChange * 0.05);
+                    
+                    // Clear trajectory line when not charging
+                    if (this.trajectoryLine) {
+                        this.trajectoryLine.destroy();
+                        this.trajectoryLine = undefined;
+                    }
                 }
                 
                 // Update power bar
@@ -537,6 +547,9 @@ export class ArcherGame {
                 
                 // Update arrow position
                 this.simpleArcher.updateArrowPosition(this.currentPower, MAX_POWER);
+                
+                // Update trajectory line
+                this.updateTrajectoryLine();
             }
         }
     }
@@ -574,6 +587,12 @@ export class ArcherGame {
         this.powerCharging = false;
         this.currentPower = 0;
         
+        // Clear trajectory line
+        if (this.trajectoryLine) {
+            this.trajectoryLine.destroy();
+            this.trajectoryLine = undefined;
+        }
+        
         // Reset arrow position
         this.simpleArcher.updateArrowPosition(0, MAX_POWER);
         
@@ -603,6 +622,118 @@ export class ArcherGame {
         }
     }
 
+    private updateTrajectoryLine(): void {
+        // Remove existing trajectory line
+        if (this.trajectoryLine) {
+            this.trajectoryLine.destroy();
+            this.trajectoryLine = undefined;
+        }
+
+        // Only show trajectory when power charging
+        if (!this.powerCharging || this.currentPower < MIN_POWER) {
+            return;
+        }
+
+        // Create new trajectory line
+        this.trajectoryLine = new Graphics();
+        
+        // Calculate the actual arrow position in world coordinates
+        const arrowContainer = this.simpleArcher.arrowContainer;
+        const bowArrow = this.simpleArcher.getBowArrow();
+        
+        if (!bowArrow) return;
+        
+        // Get the arrow's local position within the arrow container
+        const arrowLocalX = bowArrow.container.x;
+        const arrowLocalY = bowArrow.container.y;
+        
+        // Transform the arrow's local position to world coordinates
+        const arrowWorldPos = arrowContainer.toGlobal(new Point(arrowLocalX, arrowLocalY));
+        
+        // Calculate initial velocity
+        const vx = Math.cos(this.currentAngle) * this.currentPower;
+        const vy = Math.sin(this.currentAngle) * this.currentPower;
+        
+        // Draw trajectory points starting from actual arrow position
+        let x = arrowWorldPos.x;
+        let y = arrowWorldPos.y;
+        let currentVx = vx;
+        let currentVy = vy;
+        
+        // Skip a fixed distance to start the line further along the trajectory
+        const skipDistance = 100; // pixels
+        let distanceTraveled = 0;
+        
+        while (distanceTraveled < skipDistance) {
+            // Apply gravity
+            currentVy += GRAVITY;
+            
+            // Apply drag
+            currentVx *= 0.999;
+            
+            // Calculate movement for this frame
+            const dx = currentVx;
+            const dy = currentVy;
+            const frameDistance = Math.sqrt(dx * dx + dy * dy);
+            
+            // Update position
+            x += dx;
+            y += dy;
+            distanceTraveled += frameDistance;
+            
+            // Stop if we've traveled far enough
+            if (distanceTraveled >= skipDistance) {
+                break;
+            }
+        }
+        
+        // Store trajectory points for fading effect
+        const trajectoryPoints: { x: number; y: number }[] = [];
+        trajectoryPoints.push({ x, y });
+        
+        // Simulate trajectory for 60 frames (1 second at 60fps)
+        for (let i = 0; i < 50; i++) {
+            // Apply gravity
+            currentVy += GRAVITY;
+            
+            // Apply drag
+            currentVx *= 0.999;
+            
+            // Update position
+            x += currentVx;
+            y += currentVy;
+            
+            // Stop if hit ground
+            if (y >= BASE_GAME_HEIGHT - GROUND_HEIGHT) {
+                trajectoryPoints.push({ x, y: BASE_GAME_HEIGHT - GROUND_HEIGHT });
+                break;
+            }
+            
+            // Stop if out of bounds
+            if (x > BASE_GAME_WIDTH || x < 0 || y < 0) {
+                break;
+            }
+            
+            trajectoryPoints.push({ x, y });
+        }
+        
+        // Draw the trajectory line with fading effect
+        if (trajectoryPoints.length > 1) {
+            const totalPoints = trajectoryPoints.length;
+            
+            for (let i = 0; i < totalPoints - 1; i++) {
+                const progress = i / (totalPoints - 1); // 0 to 1
+                const alpha = 0.4 * (1 - progress * 0.8); // Start at 0.3, fade to 0.06
+                
+                this.trajectoryLine.lineStyle(4, 'red', alpha);
+                this.trajectoryLine.moveTo(trajectoryPoints[i].x, trajectoryPoints[i].y);
+                this.trajectoryLine.lineTo(trajectoryPoints[i + 1].x, trajectoryPoints[i + 1].y);
+            }
+        }
+        
+        this.app.stage.addChild(this.trajectoryLine);
+    }
+
     private shoot(): void {
         if (!this.isAiming || !this.powerCharging) return;
         
@@ -618,9 +749,20 @@ export class ArcherGame {
         // Remove from bow container
         this.simpleArcher.arrowContainer.removeChild(bowArrow.container);
         
-        // Set up the projectile with current position, angle, and power
-        bowArrow.x = this.simpleArcher.container.x;
-        bowArrow.y = this.simpleArcher.container.y;
+        // Calculate the actual arrow position in world coordinates
+        const archerContainer = this.simpleArcher.container;
+        const arrowContainer = this.simpleArcher.arrowContainer;
+        
+        // Get the arrow's local position within the arrow container
+        const arrowLocalX = bowArrow.container.x;
+        const arrowLocalY = bowArrow.container.y;
+        
+        // Transform the arrow's local position to world coordinates
+        const arrowWorldPos = arrowContainer.toGlobal(new Point(arrowLocalX, arrowLocalY));
+        
+        // Set up the projectile with the actual arrow position, angle, and power
+        bowArrow.x = arrowWorldPos.x;
+        bowArrow.y = arrowWorldPos.y;
         bowArrow.vx = Math.cos(this.currentAngle) * this.currentPower;
         bowArrow.vy = Math.sin(this.currentAngle) * this.currentPower;
         bowArrow.active = true; // Enable physics
