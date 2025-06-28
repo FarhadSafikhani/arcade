@@ -1,5 +1,4 @@
-import { Application, Container, Graphics, Text, FederatedPointerEvent, Point } from 'pixi.js';
-import { isTouchDevice } from '../../shared/utils/device-detection';
+import { Application, Container, Graphics, FederatedPointerEvent, Point } from 'pixi.js';
 
 // Game constants - fixed base dimensions
 const BASE_GAME_WIDTH = 1920;
@@ -78,10 +77,14 @@ class StuckArrow {
 class Box {
     container: Container;
     graphics: Graphics;
+    width: number;
+    height: number;
 
     constructor(x: number, y: number, width: number, height: number) {
         this.container = new Container();
         this.container.position.set(x, y);
+        this.width = width;
+        this.height = height;
         
         this.graphics = new Graphics();
         this.graphics.beginFill(0x8B4513);
@@ -101,6 +104,18 @@ class Box {
 
     destroy(): void {
         this.container.destroy();
+    }
+
+    checkCollision(projectile: Projectile): boolean {
+        // Get box bounds
+        const boxLeft = this.container.x;
+        const boxRight = this.container.x + this.width;
+        const boxTop = this.container.y;
+        const boxBottom = this.container.y + this.height;
+        
+        // Check if arrow position is within box bounds
+        return projectile.x >= boxLeft && projectile.x <= boxRight && 
+               projectile.y >= boxTop && projectile.y <= boxBottom;
     }
 }
 
@@ -151,19 +166,18 @@ class Projectile {
         this.container.addChild(this.graphics);
     }
 
-    update(deltaTime: number): boolean {
+    update(): boolean {
         if (!this.active) return false;
 
-        // Apply gravity
-        this.vy += GRAVITY * deltaTime;
+        // Gravity
+        this.vy += GRAVITY;
 
-        // Apply drag
+        // Drag
         this.vx *= 0.999;
-        //this.vy *= 0.98;
 
-        // Update position
-        this.x += this.vx * deltaTime;
-        this.y += this.vy * deltaTime;
+        // Update position with fixed time step
+        this.x += this.vx;
+        this.y += this.vy;
 
         // Update visual position
         this.container.position.set(this.x, this.y);
@@ -185,6 +199,18 @@ class Projectile {
             }
         }
 
+        // Check collision with boxes
+        for (let i = this.game.boxes.length - 1; i >= 0; i--) {
+            const box = this.game.boxes[i];
+            if (box.checkCollision(this)) {
+                // Hit box! Create stuck arrow at collision point
+                this.game.spawnStuckArrow(this.x, this.y, this.container.rotation);
+                
+                this.destroy();
+                return false;
+            }
+        }
+
         // Check if hit ground
         if (this.y >= BASE_GAME_HEIGHT - GROUND_HEIGHT) {
             // Hit ground! Create stuck arrow using current rotation
@@ -194,7 +220,7 @@ class Projectile {
         }
 
         // Check if out of bounds
-        if (this.x > BASE_GAME_WIDTH || this.x < 0) {
+        if (this.x > BASE_GAME_WIDTH || this.x < 0 || this.y < 0) {
             this.active = false;
             this.container.destroy();
             return false;
@@ -438,7 +464,7 @@ export class ArcherGame {
     private simpleArcher: SimpleArcher;
     public projectiles: Projectile[] = [];
     public targets: Target[] = [];
-    private boxes: Box[] = [];
+    public boxes: Box[] = [];
     private stuckArrows: StuckArrow[] = [];
     private score: number = 0;
     private highScore: number = 0;
@@ -462,6 +488,8 @@ export class ArcherGame {
     private angleIndicator?: HTMLElement;
     private trajectoryLine?: Graphics;
     private arrowsRemaining: number = 10;
+    private deltaAccumulator: number = 0;
+    private readonly UPDATE_RATE: number = 1 / 60; // 60 FPS
 
     constructor(app: Application) {
         this.app = app;
@@ -851,10 +879,18 @@ export class ArcherGame {
     update(deltaTime: number): void {
         if (this.isGameOver || this.isPaused || this.isWaitingToStart) return;
 
-        // Update projectiles
-        this.projectiles = this.projectiles.filter(projectile => {
-            return projectile.update(deltaTime);
-        });
+        // Accumulate delta time
+        this.deltaAccumulator += deltaTime;
+
+        // Update if enough time has passed
+        if (this.deltaAccumulator >= this.UPDATE_RATE) {
+            this.deltaAccumulator -= this.UPDATE_RATE;
+
+            // Update projectiles
+            this.projectiles = this.projectiles.filter(projectile => {
+                return projectile.update();
+            });
+        }
     }
 
     public spawnStuckArrow(x: number, y: number, rotation: number): void {
