@@ -119,6 +119,58 @@ class Box {
     }
 }
 
+// Tree obstacle class
+class Tree {
+    container: Container;
+    graphics: Graphics;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+
+    constructor(x: number, y: number, width: number, height: number) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        
+        this.container = new Container();
+        this.container.position.set(x, y);
+        
+        this.graphics = new Graphics();
+        
+        // Draw tree trunk (brown rectangle)
+        this.graphics.beginFill(0x8B4513); // Brown trunk
+        this.graphics.lineStyle(2, 0x654321);
+        this.graphics.drawRect(width * 0.4, height * 0.7, width * 0.2, height * 0.3);
+        this.graphics.endFill();
+        
+        // Draw tree foliage (simple green rectangle)
+        this.graphics.beginFill(0x228B22); // Forest green
+        this.graphics.lineStyle(2, 0x006400);
+        this.graphics.drawRect(0, 0, width, height * 0.7);
+        this.graphics.endFill();
+        
+        this.container.addChild(this.graphics);
+    }
+
+    destroy(): void {
+        this.container.destroy();
+    }
+
+    checkCollision(projectile: Projectile): boolean {
+        // Get tree bounds (simplified as a rectangle for collision)
+        const treeLeft = this.x;
+        const treeRight = this.x + this.width;
+        const treeTop = this.y;
+        const treeBottom = this.y + this.height;
+        
+        // Check if arrow position is within tree bounds
+        return projectile.x >= treeLeft && projectile.x <= treeRight && 
+               projectile.y >= treeTop && projectile.y <= treeBottom;
+    }
+}
+
 // Physics projectile class
 class Projectile {
     x: number;
@@ -204,6 +256,18 @@ class Projectile {
             const box = this.game.boxes[i];
             if (box.checkCollision(this)) {
                 // Hit box! Create stuck arrow at collision point
+                this.game.spawnStuckArrow(this.x, this.y, this.container.rotation);
+                
+                this.destroy();
+                return false;
+            }
+        }
+
+        // Check collision with trees
+        for (let i = this.game.trees.length - 1; i >= 0; i--) {
+            const tree = this.game.trees[i];
+            if (tree.checkCollision(this)) {
+                // Hit tree! Create stuck arrow at collision point
                 this.game.spawnStuckArrow(this.x, this.y, this.container.rotation);
                 
                 this.destroy();
@@ -463,6 +527,7 @@ export class ArcherGame {
     public projectiles: Projectile[] = [];
     public targets: Target[] = [];
     public boxes: Box[] = [];
+    public trees: Tree[] = [];
     private stuckArrows: StuckArrow[] = [];
     private score: number = 0;
     private highScore: number = 0;
@@ -894,6 +959,10 @@ export class ArcherGame {
         this.boxes.forEach(box => box.destroy());
         this.boxes = [];
         
+        // Clear existing trees
+        this.trees.forEach(tree => tree.destroy());
+        this.trees = [];
+        
         const targetRadius = 50;
         let targetX: number;
         let targetY: number;
@@ -902,9 +971,8 @@ export class ArcherGame {
         const minX = BASE_GAME_WIDTH / 2 + 100;
         const maxX = BASE_GAME_WIDTH - 100;
 
-
         const boxWidth = Math.random() * 100 + 50;
-        const boxHeight = Math.random() * 250 + 50;
+        const boxHeight = Math.random() * 350 + 50;
         const boxX = Math.random() * (maxX - minX - boxWidth) + minX;
         const boxY = BASE_GAME_HEIGHT - GROUND_HEIGHT - boxHeight; // Top of box at ground level
         
@@ -915,6 +983,21 @@ export class ArcherGame {
         targetX = boxX + boxWidth / 2;
         targetY = boxY - targetRadius; // Target above the box
 
+        // Spawn trees with random heights to make it harder to hit targets
+        const numTrees = Math.floor(Math.random() * 4) + 2; // 2-5 trees
+        const treeAreaStart = BASE_GAME_WIDTH / 4; // Start trees after first third of screen
+        const treeAreaEnd = targetX - 30; // End before target with some gap
+        
+        for (let i = 0; i < numTrees; i++) {
+            const treeWidth = Math.random() * 100 + 40; // 40-100 pixels wide
+            const treeHeight = Math.random() * 350 + 80; // 200-500 pixels tall
+            const treeX = Math.random() * (treeAreaEnd - treeAreaStart - treeWidth) + treeAreaStart;
+            const treeY = BASE_GAME_HEIGHT - GROUND_HEIGHT - treeHeight; // Bottom of tree at ground level
+            
+            const tree = new Tree(treeX, treeY, treeWidth, treeHeight);
+            this.app.stage.addChild(tree.container);
+            this.trees.push(tree);
+        }
 
         const target = new Target(targetX, targetY, targetRadius, platform);
         this.app.stage.addChild(target.container);
@@ -982,10 +1065,12 @@ export class ArcherGame {
         this.projectiles.forEach(projectile => projectile.destroy());
         this.targets.forEach(target => target.destroy());
         this.boxes.forEach(box => box.destroy());
+        this.trees.forEach(tree => tree.destroy());
         this.stuckArrows.forEach(stuckArrow => stuckArrow.destroy());
         this.projectiles = [];
         this.targets = [];
         this.boxes = [];
+        this.trees = [];
         this.stuckArrows = [];
         
 
@@ -1032,6 +1117,7 @@ export class ArcherGame {
         this.projectiles.forEach(projectile => projectile.destroy());
         this.targets.forEach(target => target.destroy());
         this.boxes.forEach(box => box.destroy());
+        this.trees.forEach(tree => tree.destroy());
         this.stuckArrows.forEach(stuckArrow => stuckArrow.destroy());
         
         // Clear trajectory line
