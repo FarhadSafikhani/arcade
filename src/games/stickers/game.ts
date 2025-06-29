@@ -1,9 +1,10 @@
-import { Application, Container, Graphics, Sprite, Texture, Assets, Rectangle, RenderTexture } from 'pixi.js';
-import { StickerMaker } from './stickermaker';
+import { Application, Container, Graphics, Sprite, FederatedPointerEvent } from 'pixi.js';
+import { Chunk, StickerMaker } from './stickermaker';
+import { GameDimensions } from '../../shared/utils/shared-types';
 
 
 // Responsive scaling function
-const getGameDimensions = () => {
+const getGameDimensions = (): GameDimensions => {
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
     const topBarHeight = 60; // Height of the top bar
@@ -11,6 +12,7 @@ const getGameDimensions = () => {
     return {
         gameWidth: windowWidth,
         gameHeight: windowHeight - topBarHeight, // Subtract top bar height
+        topBarHeight: topBarHeight,
         scale: 1
     };
 };
@@ -19,61 +21,32 @@ export class StickersGame {
     private app: Application;
     private gameContainer: Container;
     private stickerMaker: StickerMaker;
-    private stickerSprite: Sprite | null = null;
     private removeTopBarHandler?: () => void;
-    private gameDimensions: ReturnType<typeof getGameDimensions>;
-    private currentlyDraggedPart: Sprite | Graphics | null = null;
-    private dragOffset = { x: 0, y: 0 };
+    private gameDimensions: GameDimensions;
 
     constructor(app: Application) {
         this.app = app;
         this.gameContainer = new Container();
-        this.stickerMaker = new StickerMaker(this.app, this.gameContainer);
-        this.app.stage.addChild(this.gameContainer);
-        
-        // Get initial dimensions
         this.gameDimensions = getGameDimensions();
-        
+        this.stickerMaker = new StickerMaker(this.app, this.gameContainer, this.gameDimensions.gameWidth, this.gameDimensions.gameHeight);
+        this.app.stage.addChild(this.gameContainer);
+
         // Set up global pointer events
         this.setupGlobalPointerEvents();
-        
-        // Set up drag event listener for StickerMaker
-        this.setupStickerMakerEvents();
     }
 
     async init(): Promise<void> {
         // Create game background
         this.createBackground();
         
-        // Create StickerMaker and create sticker
-        
-        this.stickerSprite = await this.stickerMaker.createSticker('/arcade/assets/stickers/lion.png');
+
+        await this.stickerMaker.createSticker('/arcade/assets/stickers/lion.png');
         
         // Set up top bar events
         this.setupTopBarEvents();
     }
 
-    private setupStickerMakerEvents(): void {
-        document.addEventListener('startDrag', (event: any) => {
-            const { sprite, event: pointerEvent } = event.detail;
-            this.handleStartDrag(sprite, pointerEvent);
-        });
-    }
-
-    private handleStartDrag(sprite: Sprite | Graphics, event: any): void {
-        if (this.currentlyDraggedPart) return;
-        
-        console.log('pointerdown');
-        this.currentlyDraggedPart = sprite;
-        const pos = event.data.getLocalPosition(sprite.parent);
-        this.dragOffset.x = pos.x - sprite.position.x;
-        this.dragOffset.y = pos.y - sprite.position.y;
-        
-        // Move sprite to top
-        sprite.parent.addChild(sprite);
-    }
-
-        private createBackground(): void {
+    private createBackground(): void {
         const background = new Graphics();
         background.beginFill(0xffffff); // White background
         background.drawRect(0, 0, this.gameDimensions.gameWidth, this.gameDimensions.gameHeight);
@@ -124,33 +97,13 @@ export class StickersGame {
 
     private setupGlobalPointerEvents(): void {
         this.app.stage.eventMode = 'static';
-        
-        this.app.stage.on('pointermove', (event: any) => {
-            if (this.currentlyDraggedPart) {
-                const pos = event.data.getLocalPosition(this.currentlyDraggedPart.parent);
-                this.currentlyDraggedPart.position.x = pos.x - this.dragOffset.x;
-                this.currentlyDraggedPart.position.y = pos.y - this.dragOffset.y;
-                //dont allow parts to leave the screen
-                if (this.currentlyDraggedPart.position.x < 0) {
-                    this.currentlyDraggedPart.position.x = 0;
-                }
-                if (this.currentlyDraggedPart.position.x > this.gameDimensions.gameWidth - this.currentlyDraggedPart.width) {
-                    this.currentlyDraggedPart.position.x = this.gameDimensions.gameWidth - this.currentlyDraggedPart.width;
-                }
-                if (this.currentlyDraggedPart.position.y < 0) {
-                    this.currentlyDraggedPart.position.y = 0;
-                }
-                if (this.currentlyDraggedPart.position.y > this.gameDimensions.gameHeight - this.currentlyDraggedPart.height) {
-                    this.currentlyDraggedPart.position.y = this.gameDimensions.gameHeight - this.currentlyDraggedPart.height;
-                }
-            }
+            
+        this.app.stage.on('pointermove', (event: FederatedPointerEvent) => {
+            this.stickerMaker.onMove(event);
         });
         
         this.app.stage.on('pointerup', () => {
-            if (this.currentlyDraggedPart) {
-                this.currentlyDraggedPart.alpha = 1;
-                this.currentlyDraggedPart = null;
-            }
+            this.stickerMaker.onUp();
         });
 
 

@@ -1,16 +1,104 @@
-import { Application, Container, Graphics, Sprite, Texture, Assets, Rectangle, RenderTexture } from 'pixi.js';
+import { Application, Container, Graphics, Sprite, Texture, Assets, Rectangle, RenderTexture, FederatedPointerEvent } from 'pixi.js';
+import { Pnt } from '../../shared/utils/shared-types';
+
+export class Chunk {
+    sprite: Sprite | Graphics;
+    id: string;
+    originX: number; // the x when it was made, before moving
+    originY: number; // the y when it was made, before moving
+    dragOffset: Pnt = { x: 0, y: 0 };
+
+    constructor(sprite: Sprite | Graphics, id: string, originX: number, originY: number) {
+        this.sprite = sprite;
+        this.id = id;
+        this.originX = originX;
+        this.originY = originY;
+        this.makeDraggable();
+    }
+
+    private makeDraggable(): void {
+        this.sprite.eventMode = 'static';
+        this.sprite.cursor = 'pointer';
+        
+        this.sprite.on('pointerdown', (event: FederatedPointerEvent) => {
+
+
+            const pos = event.getLocalPosition(this.sprite.parent);
+            this.dragOffset.x = pos.x - this.sprite.position.x;
+            this.dragOffset.y = pos.y - this.sprite.position.y;
+
+            // Move sprite to top
+            this.sprite.parent.addChild(this.sprite);
+
+            // This will need to be handled by the main game class
+            // We'll emit a custom event or use a callback
+            const customEvent = new CustomEvent('startChunkDrag', { 
+                detail: { chunk: this, event } 
+            });
+            document.dispatchEvent(customEvent);
+
+            //this.activeChunk = this;
+        });
+    }
+}
+
+export class Hole {
+    id: string;
+    x: number;
+    y: number;
+    chunk: Chunk;
+
+
+    constructor(id: string, x: number, y: number, chunk: Chunk) {
+        this.id = id;
+        this.x = x;
+        this.y = y;
+        this.chunk = chunk;
+    }
+}
 
 export class StickerMaker {
     private app: Application;
     private gameContainer: Container;
     private currentStickerSprite: Sprite | null = null;
-    
-    constructor(app: Application, gameContainer: Container) {
+    private gameWidth: number;
+    private gameHeight: number;
+    private holeContainer: Container;
+
+    public chunks: Record<string, Chunk> = {};
+    public holes: Record<string, Hole> = {};
+    public activeChunk: Chunk | null = null;
+
+    constructor(app: Application, gameContainer: Container, gameWidth: number, gameHeight: number) {
         this.app = app;
         this.gameContainer = gameContainer;
+        this.gameWidth = gameWidth;
+        this.gameHeight = gameHeight;
+        
+        // Create hole container for proper layering
+        this.holeContainer = new Container();
+        
+        
+        this.setupStickerMakerEvents();
     }
 
-    async createSticker(assetPath: string): Promise<Sprite> {
+    private setupStickerMakerEvents(): void {
+        document.addEventListener('startChunkDrag', (event: Event) => {
+            const customEvent = event as CustomEvent;
+            const { chunk, event: pointerEvent } = customEvent.detail;
+            this.handleStartDrag(chunk, pointerEvent);
+        });
+    }
+
+    private handleStartDrag(chunk: Chunk, event: FederatedPointerEvent): void {
+        if (this.activeChunk) return;
+        this.activeChunk = chunk;
+    }
+
+    async createSticker(assetPath: string): Promise<void> {
+
+        const start = performance.now();
+
         // STEP 1: first load a lion sticker sprite image and paint it on the canvas
 
         // Get the cached texture from PixiJS
@@ -20,8 +108,8 @@ export class StickerMaker {
         this.currentStickerSprite = new Sprite(stickerTexture);
 
         // Ensure sprite doesn't exceed canvas size while preserving aspect ratio
-        const maxWidth = window.innerWidth * 0.9; // 90% of canvas width
-        const maxHeight = (window.innerHeight - 60) * 0.9; // 90% of canvas height
+        const maxWidth = this.gameWidth * 0.9; // 90% of canvas width
+        const maxHeight = this.gameHeight * 0.9; // 90% of canvas height
         
         if (this.currentStickerSprite.width > maxWidth || this.currentStickerSprite.height > maxHeight) {
             // Calculate scale factors for both dimensions
@@ -36,17 +124,23 @@ export class StickerMaker {
         // Center the sprite
         this.currentStickerSprite.anchor.set(0.5, 0.5);
         this.currentStickerSprite.position.set(
-            window.innerWidth / 2,
-            (window.innerHeight - 60) / 2
+            this.gameWidth / 2,
+            this.gameHeight / 2
         );
         
+        // Add sticker sprite first (bottom layer)
         this.gameContainer.addChild(this.currentStickerSprite);
+        this.gameContainer.addChild(this.holeContainer);
         
         // STEP 2: then make a copy of the lion sticker and break it into triangles and squares, and make them draggable 'parts'
         // STEP 3: as you make the 'parts' under the part paint over the original sprite random colors, so dragging the part away would show the colored sections called 'holes'
         this.cutIntoTrianglesAndSquares(stickerTexture);
 
-        return this.currentStickerSprite;
+        const end = performance.now();
+        console.log(`Time taken: ${end - start}ms`);
+
+        this.shuffleChunks();
+
     }
 
     private cutIntoTrianglesAndSquares(stickerTexture: Texture) {
@@ -142,15 +236,18 @@ export class StickerMaker {
             spriteTop + (y1 * this.currentStickerSprite.scale.y)
         );
         sprite.scale.set(this.currentStickerSprite.scale.x, this.currentStickerSprite.scale.y);
-        
-        // Make it draggable
-        this.makeDraggable(sprite);
-        
+
+        const chunk = new Chunk(sprite, `chunk_${Object.keys(this.chunks).length + 1}`, x1, y1);
+
+
+        // Add to chunks
+        this.chunks[chunk.id] = chunk;
+
         // Add to game container
         this.gameContainer.addChild(sprite);
         
         // Paint hole directly from the sprite we just created
-        this.paintHoleFromSprite(sprite, x1, y1, x2 - x1, y2 - y1);
+        this.paintHoleFromSprite(chunk, x1, y1, x2 - x1, y2 - y1);
     }
 
     private createDraggableTriangleFromTexture(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, texture: Texture): void {
@@ -187,18 +284,19 @@ export class StickerMaker {
             spriteTop + (minY * this.currentStickerSprite.scale.y)
         );
         triangle.scale.set(this.currentStickerSprite.scale.x, this.currentStickerSprite.scale.y);
+
+        const chunk = new Chunk(triangle, `chunk_${Object.keys(this.chunks).length + 1}`, minX, minY);
         
-        // Make it draggable
-        this.makeDraggable(triangle);
-        
+        // Add to chunks
+        this.chunks[chunk.id] = chunk;
         // Add to game container
         this.gameContainer.addChild(triangle);
         
         // Paint hole directly from the triangle we just created
-        this.paintHoleFromSprite(triangle, minX, minY, maxX - minX, maxY - minY);
+        this.paintHoleFromSprite(chunk, minX, minY, maxX - minX, maxY - minY);
     }
 
-    private paintHoleFromSprite(sprite: Sprite | Graphics, x: number, y: number, width: number, height: number): void {
+    private paintHoleFromSprite(chunk: Chunk, x: number, y: number, width: number, height: number): void {
 
         if (!this.currentStickerSprite) {
             throw new Error('Sticker sprite not found');
@@ -207,11 +305,11 @@ export class StickerMaker {
         // Create a temporary sprite/graphics at original scale and position to get clean pixel data
         let tempDisplayObject: Sprite | Graphics;
         
-        if (sprite instanceof Sprite) {
-            tempDisplayObject = new Sprite(sprite.texture);
+        if (chunk.sprite instanceof Sprite) {
+            tempDisplayObject = new Sprite(chunk.sprite.texture);
         } else {
             // For Graphics objects, we need to clone it
-            tempDisplayObject = sprite.clone();
+            tempDisplayObject = chunk.sprite.clone();
         }
         
         // Reset position and scale to get raw pixel data
@@ -242,10 +340,6 @@ export class StickerMaker {
         // Create Graphics object to paint the hole pixel by pixel
         const hole = new Graphics();
         
-        // Adjust coordinates to account for sprite's center anchor
-        const halfWidth = this.currentStickerSprite.texture.width / 2;
-        const halfHeight = this.currentStickerSprite.texture.height / 2;
-        
         // Paint each pixel using the clean pixel data
         for (let py = 0; py < height; py++) {
             for (let px = 0; px < width; px++) {
@@ -257,8 +351,8 @@ export class StickerMaker {
                     
                     hole.beginFill(pixelColor);
                     hole.drawRect(
-                        (x + px) - halfWidth,
-                        (y + py) - halfHeight,
+                        chunk.sprite.position.x + (px * chunk.sprite.scale.x),
+                        chunk.sprite.position.y + (py * chunk.sprite.scale.y),
                         1, 1
                     );
                     hole.endFill();
@@ -266,25 +360,79 @@ export class StickerMaker {
             }
         }
         
-        // Add as child to the original sprite
-        this.currentStickerSprite.addChild(hole);
+        // Add as child to the hole container (above sticker sprite, below chunks)
+        this.holeContainer.addChild(hole);
+        this.holes[chunk.id] = new Hole(chunk.id, chunk.sprite.position.x, chunk.sprite.position.y, chunk);
         
         // Clean up
         renderTexture.destroy(true);
     }
 
-    private makeDraggable(sprite: Sprite | Graphics): void {
-        sprite.eventMode = 'static';
-        sprite.cursor = 'pointer';
+    public shuffleChunks(): void {
+
+        if (!this.currentStickerSprite) {
+            return;
+        }
+
+        const margin = this.gameWidth * 0.1; // 10% of screen width
         
-        sprite.on('pointerdown', (event: any) => {
-            // This will need to be handled by the main game class
-            // We'll emit a custom event or use a callback
-            const customEvent = new CustomEvent('startDrag', { 
-                detail: { sprite, event } 
-            });
-            document.dispatchEvent(customEvent);
-        });
+        for (const chunk of Object.values(this.chunks)) {
+            // Randomly choose left or right side
+            const useLeftSide = Math.random() > 0.5;
+            
+            if (useLeftSide) {
+                // Left 20% of screen
+                chunk.sprite.position.x = Math.random() * margin;
+            } else {
+                // Right 20% of screen
+                chunk.sprite.position.x = this.gameWidth - margin + (Math.random() * margin);
+            }
+            
+            // Random Y position across full height
+            chunk.sprite.position.y = Math.random() * this.gameHeight;
+
+            //clamp to inside the screen
+            if (chunk.sprite.position.x < 0) {
+                chunk.sprite.position.x = 0;
+            }
+            if (chunk.sprite.position.x > this.gameWidth - chunk.sprite.width) {
+                chunk.sprite.position.x = this.gameWidth - chunk.sprite.width;
+            }
+            if (chunk.sprite.position.y < 0) {
+                chunk.sprite.position.y = 0;
+            }
+            if (chunk.sprite.position.y > this.gameHeight - chunk.sprite.height) {
+                chunk.sprite.position.y = this.gameHeight - chunk.sprite.height;
+            }
+        }
     }
 
+
+    public onMove(event: FederatedPointerEvent){
+        if (this.activeChunk) {
+            const pos = event.getLocalPosition(this.activeChunk.sprite.parent);
+            this.activeChunk.sprite.position.x = pos.x - this.activeChunk.dragOffset.x;
+            this.activeChunk.sprite.position.y = pos.y - this.activeChunk.dragOffset.y;
+            //dont allow parts to leave the screen
+            if (this.activeChunk.sprite.position.x < 0) {
+                this.activeChunk.sprite.position.x = 0;
+            }
+            if (this.activeChunk.sprite.position.x > this.gameWidth - this.activeChunk.sprite.width) {
+                this.activeChunk.sprite.position.x = this.gameWidth - this.activeChunk.sprite.width;
+            }
+            if (this.activeChunk.sprite.position.y < 0) {
+                this.activeChunk.sprite.position.y = 0;
+            }
+            if (this.activeChunk.sprite.position.y > this.gameHeight - this.activeChunk.sprite.height) {
+                this.activeChunk.sprite.position.y = this.gameHeight - this.activeChunk.sprite.height;
+            }
+        }
+    }
+
+    public onUp(): void {
+        if (this.activeChunk) {
+            this.activeChunk.sprite.alpha = 1;
+            this.activeChunk = null;
+        }
+    }
 }
