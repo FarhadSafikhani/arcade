@@ -1,4 +1,4 @@
-import { Application, Container, Graphics, Sprite, Texture, Assets, Rectangle, RenderTexture, FederatedPointerEvent } from 'pixi.js';
+import { Application, Container, Graphics, Sprite, Texture, Assets, Rectangle, RenderTexture, FederatedPointerEvent, ColorMatrixFilter } from 'pixi.js';
 import { Pnt } from '../../shared/utils/shared-types';
 
 export class Chunk {
@@ -8,52 +8,112 @@ export class Chunk {
     originY: number; // the y when it was made, before moving
     dragOffset: Pnt = { x: 0, y: 0 };
 
-    constructor(sprite: Sprite | Graphics, id: string, originX: number, originY: number) {
+    public hole: Hole | null = null;
+    public inPlay: boolean = false;
+
+    constructor(sprite: Sprite | Graphics, id: string) {
         this.sprite = sprite;
         this.id = id;
-        this.originX = originX;
-        this.originY = originY;
+        this.originX = sprite.position.x;
+        this.originY = sprite.position.y;
         this.makeDraggable();
+        this.inPlay = true;
     }
 
     private makeDraggable(): void {
         this.sprite.eventMode = 'static';
         this.sprite.cursor = 'pointer';
-        
+
         this.sprite.on('pointerdown', (event: FederatedPointerEvent) => {
 
+            if (!this.inPlay) {
+                console.log('chunk already in play, ignoring pointerdown');
+                return;
+            }
 
             const pos = event.getLocalPosition(this.sprite.parent);
             this.dragOffset.x = pos.x - this.sprite.position.x;
             this.dragOffset.y = pos.y - this.sprite.position.y;
+            this.sprite.alpha = 0.7;
 
-            // Move sprite to top
-            this.sprite.parent.addChild(this.sprite);
-
-            // This will need to be handled by the main game class
-            // We'll emit a custom event or use a callback
-            const customEvent = new CustomEvent('startChunkDrag', { 
-                detail: { chunk: this, event } 
+            // Dispatch custom event for the parent to handle
+            const customEvent = new CustomEvent('startChunkDrag', {
+                detail: { chunk: this, event: event }
             });
             document.dispatchEvent(customEvent);
-
-            //this.activeChunk = this;
         });
+    }
+
+    public checkSnapToHole(): void {
+
+        //check if the chunk is close to the hole (its origin)
+        const distance = Math.sqrt(Math.pow(this.sprite.position.x - this.originX, 2) + Math.pow(this.sprite.position.y - this.originY, 2));
+        if (distance < 15) {
+            //snap to the hole
+            this.sprite.position.x = this.originX;
+            this.sprite.position.y = this.originY;
+            this.correctlyPlaced();
+        }
+
+    }
+
+    public correctlyPlaced(): void {
+        this.sprite.alpha = 1;
+        this.inPlay = false;
+        this.sprite.eventMode = 'none';
+        this.sprite.cursor = 'default';
+        
+        // Create a nice brightness pulse animation
+        const brightnessFilter = new ColorMatrixFilter();
+        this.sprite.filters = [brightnessFilter];
+        
+        let time = 0;
+        const animate = () => {
+            time += 0.1;
+            
+            // Ease in and out the brightness
+            let brightness;
+            if (time < 1) {
+                // Ease in to max brightness
+                const t = time / 1;
+                brightness = 1 + (t * t) * 1; // Ease in
+            } else if (time < 2.5) {
+                // Stay at max brightness
+                brightness = 3;
+            } else if (time < 3.5) {
+                // Ease out from max brightness
+                const t = (time - 2.5) / 1;
+                brightness = 2 - (t * t) * 1; // Ease out
+            } else {
+                // Back to normal
+                brightness = 1;
+            }
+            
+            brightnessFilter.brightness(brightness, false);
+            
+            if (time < 4) { // Run for 5 seconds
+                requestAnimationFrame(animate);
+            } else {
+                // Remove the filter after animation
+                this.sprite.filters = [];
+            }
+        };
+        
+        animate();
     }
 }
 
 export class Hole {
     id: string;
-    x: number;
-    y: number;
+
     chunk: Chunk;
+    graphics: Graphics;
 
-
-    constructor(id: string, x: number, y: number, chunk: Chunk) {
+    constructor(graphics: Graphics, id: string, chunk: Chunk) {
         this.id = id;
-        this.x = x;
-        this.y = y;
+
         this.chunk = chunk;
+        this.graphics = graphics;
     }
 }
 
@@ -237,7 +297,7 @@ export class StickerMaker {
         );
         sprite.scale.set(this.currentStickerSprite.scale.x, this.currentStickerSprite.scale.y);
 
-        const chunk = new Chunk(sprite, `chunk_${Object.keys(this.chunks).length + 1}`, x1, y1);
+        const chunk = new Chunk(sprite, `chunk_${Object.keys(this.chunks).length + 1}`);
 
 
         // Add to chunks
@@ -285,7 +345,7 @@ export class StickerMaker {
         );
         triangle.scale.set(this.currentStickerSprite.scale.x, this.currentStickerSprite.scale.y);
 
-        const chunk = new Chunk(triangle, `chunk_${Object.keys(this.chunks).length + 1}`, minX, minY);
+        const chunk = new Chunk(triangle, `chunk_${Object.keys(this.chunks).length + 1}`);
         
         // Add to chunks
         this.chunks[chunk.id] = chunk;
@@ -338,7 +398,7 @@ export class StickerMaker {
         const grayColor = (grayValue << 16) | (grayValue << 8) | grayValue;
         
         // Create Graphics object to paint the hole pixel by pixel
-        const hole = new Graphics();
+        const holeGraphics = new Graphics();
         
         // Paint each pixel using the clean pixel data
         for (let py = 0; py < height; py++) {
@@ -349,20 +409,22 @@ export class StickerMaker {
                 if (alpha > 0) { // Only paint visible pixels
                     const pixelColor = alpha > 128 ? brightColor : grayColor;
                     
-                    hole.beginFill(pixelColor);
-                    hole.drawRect(
+                    holeGraphics.beginFill(pixelColor);
+                    holeGraphics.drawRect(
                         chunk.sprite.position.x + (px * chunk.sprite.scale.x),
                         chunk.sprite.position.y + (py * chunk.sprite.scale.y),
                         1, 1
                     );
-                    hole.endFill();
+                    holeGraphics.endFill();
                 }
             }
         }
         
         // Add as child to the hole container (above sticker sprite, below chunks)
-        this.holeContainer.addChild(hole);
-        this.holes[chunk.id] = new Hole(chunk.id, chunk.sprite.position.x, chunk.sprite.position.y, chunk);
+        this.holeContainer.addChild(holeGraphics);
+        const hole = new Hole(holeGraphics, chunk.id, chunk);
+        this.holes[chunk.id] = hole;
+        chunk.hole = hole;
         
         // Clean up
         renderTexture.destroy(true);
@@ -431,8 +493,10 @@ export class StickerMaker {
 
     public onUp(): void {
         if (this.activeChunk) {
-            this.activeChunk.sprite.alpha = 1;
+            this.activeChunk.checkSnapToHole();
             this.activeChunk = null;
         }
     }
+
+
 }
