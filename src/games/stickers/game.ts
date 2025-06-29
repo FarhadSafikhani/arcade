@@ -106,7 +106,8 @@ export class StickersGame {
             this.stickerMaker.onUp();
         });
 
-
+        // Disable context menu
+        (this.app.view as HTMLCanvasElement).oncontextmenu = (e: MouseEvent) => e.preventDefault();
     }
 
 }

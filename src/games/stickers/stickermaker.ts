@@ -34,7 +34,9 @@ export class Chunk {
             const pos = event.getLocalPosition(this.sprite.parent);
             this.dragOffset.x = pos.x - this.sprite.position.x;
             this.dragOffset.y = pos.y - this.sprite.position.y;
-            this.sprite.alpha = 0.7;
+
+            // bring chunk sprite ontop of everything else
+            this.sprite.parent.addChild(this.sprite);
 
             // Dispatch custom event for the parent to handle
             const customEvent = new CustomEvent('startChunkDrag', {
@@ -62,6 +64,9 @@ export class Chunk {
         this.inPlay = false;
         this.sprite.eventMode = 'none';
         this.sprite.cursor = 'default';
+
+        //make chunk first child of its parent
+        this.sprite.parent.setChildIndex(this.sprite, 0);
         
         // Create a nice brightness pulse animation
         const brightnessFilter = new ColorMatrixFilter();
@@ -76,7 +81,7 @@ export class Chunk {
             if (time < 1) {
                 // Ease in to max brightness
                 const t = time / 1;
-                brightness = 1 + (t * t) * 1; // Ease in
+                brightness = 1 + (t * t) * 2; // Ease in
             } else if (time < 2.5) {
                 // Stay at max brightness
                 brightness = 3;
@@ -123,7 +128,9 @@ export class StickerMaker {
     private currentStickerSprite: Sprite | null = null;
     private gameWidth: number;
     private gameHeight: number;
+
     private holeContainer: Container;
+    private chunkContainer: Container;
 
     public chunks: Record<string, Chunk> = {};
     public holes: Record<string, Hole> = {};
@@ -137,7 +144,7 @@ export class StickerMaker {
         
         // Create hole container for proper layering
         this.holeContainer = new Container();
-        
+        this.chunkContainer = new Container();
         
         this.setupStickerMakerEvents();
     }
@@ -191,6 +198,8 @@ export class StickerMaker {
         // Add sticker sprite first (bottom layer)
         this.gameContainer.addChild(this.currentStickerSprite);
         this.gameContainer.addChild(this.holeContainer);
+        this.gameContainer.addChild(this.chunkContainer);
+
         
         // STEP 2: then make a copy of the lion sticker and break it into triangles and squares, and make them draggable 'parts'
         // STEP 3: as you make the 'parts' under the part paint over the original sprite random colors, so dragging the part away would show the colored sections called 'holes'
@@ -304,7 +313,7 @@ export class StickerMaker {
         this.chunks[chunk.id] = chunk;
 
         // Add to game container
-        this.gameContainer.addChild(sprite);
+        this.chunkContainer.addChild(sprite);
         
         // Paint hole directly from the sprite we just created
         this.paintHoleFromSprite(chunk, x1, y1, x2 - x1, y2 - y1);
@@ -350,7 +359,7 @@ export class StickerMaker {
         // Add to chunks
         this.chunks[chunk.id] = chunk;
         // Add to game container
-        this.gameContainer.addChild(triangle);
+        this.chunkContainer.addChild(triangle);
         
         // Paint hole directly from the triangle we just created
         this.paintHoleFromSprite(chunk, minX, minY, maxX - minX, maxY - minY);
