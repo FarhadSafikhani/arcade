@@ -1,4 +1,4 @@
-import { Application, Container, Graphics, Sprite, Texture, Assets } from 'pixi.js';
+import { Application, Container, Graphics, Sprite, Texture, Assets, Rectangle, RenderTexture } from 'pixi.js';
 
 // Game constants
 const BASE_GAME_WIDTH = 800;
@@ -27,7 +27,7 @@ export class StickersGame {
     private stickerSprite!: Sprite;
     private removeTopBarHandler?: () => void;
     private gameDimensions: ReturnType<typeof getGameDimensions>;
-    private currentlyDraggedPart: Sprite | null = null;
+    private currentlyDraggedPart: Sprite | Graphics | null = null;
     private dragOffset = { x: 0, y: 0 };
 
     constructor(app: Application) {
@@ -92,31 +92,32 @@ export class StickersGame {
         
         this.gameContainer.addChild(this.stickerSprite);
         
-        // Hide the original sprite since we're creating draggable pieces
-        this.stickerSprite.visible = false;
-        
         // Draw a red dot on a random point inside the sticker AFTER adding the sprite
         await this.drawRedDotOnSticker(stickerTexture);
     }
 
     private async drawRedDotOnSticker(texture: any): Promise<void> {
-        // Create a temporary canvas to read pixel data
-        const canvas = document.createElement('canvas');
+        // Use PixiJS RenderTexture to extract pixel data
+        const renderTexture = RenderTexture.create({
+            width: this.stickerSprite.texture.width,
+            height: this.stickerSprite.texture.height
+        });
+        
+        // Create a temporary sprite with the original texture at original size
+        const tempSprite = new Sprite(this.stickerSprite.texture);
+        tempSprite.scale.set(1, 1); // No scaling
+        
+        // Render the texture to get pixel data
+        this.app.renderer.render(tempSprite, { renderTexture });
+        
+        // Get the canvas from the render texture
+        const canvas = this.app.renderer.extract.canvas(renderTexture);
         const ctx = canvas.getContext('2d')!;
-        
-        canvas.width = texture.width;
-        canvas.height = texture.height;
-        
-        // Draw the texture to canvas
-        const image = texture.baseTexture.resource.source;
-        ctx.drawImage(image, 0, 0);
-        
-        // Get pixel data
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const data = imageData.data;
         
         // Create grid-based triangulation
-        const gridSize = 120; // Size of each grid cell
+        const gridSize = 200; // Size of each grid cell
         const cols = Math.ceil(canvas.width / gridSize);
         const rows = Math.ceil(canvas.height / gridSize);
         
@@ -384,12 +385,14 @@ export class StickersGame {
         
         // Add to game container
         this.gameContainer.addChild(sprite);
+        
+        // Draw lines on the original sprite with bright color where this piece was
+        this.drawLines(x1, y1, x2, y2, 'square');
     }
 
     private createDraggableTriangle(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, texture: any): void {
-        // Create a canvas to extract the triangle region
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d')!;
+        // Create a Graphics object for the triangle with proper hit detection
+        const triangle = new Graphics();
         
         // Calculate bounding box of triangle
         const minX = Math.min(x1, x2, x3);
@@ -397,43 +400,129 @@ export class StickersGame {
         const maxX = Math.max(x1, x2, x3);
         const maxY = Math.max(y1, y2, y3);
         
-        const width = maxX - minX;
-        const height = maxY - minY;
-        canvas.width = width;
-        canvas.height = height;
+        // Clamp coordinates to texture bounds
+        const textureWidth = texture.width;
+        const textureHeight = texture.height;
+        const clampedMinX = Math.max(0, Math.min(minX, textureWidth - 1));
+        const clampedMinY = Math.max(0, Math.min(minY, textureHeight - 1));
+        const clampedMaxX = Math.max(clampedMinX + 1, Math.min(maxX, textureWidth));
+        const clampedMaxY = Math.max(clampedMinY + 1, Math.min(maxY, textureHeight));
+        const clampedWidth = clampedMaxX - clampedMinX;
+        const clampedHeight = clampedMaxY - clampedMinY;
         
-        // Draw the texture to canvas
-        const image = texture.baseTexture.resource.source;
-        ctx.drawImage(image, minX, minY, width, height, 0, 0, width, height);
+        // Create a texture from a region of the original texture using PixiJS Rectangle
+        const sourceRect = new Rectangle(clampedMinX, clampedMinY, clampedWidth, clampedHeight);
+        const extractedTexture = new Texture(texture.baseTexture, sourceRect);
         
-        // Create a mask for the triangle
-        ctx.globalCompositeOperation = 'destination-in';
-        ctx.beginPath();
-        ctx.moveTo(x1 - minX, y1 - minY);
-        ctx.lineTo(x2 - minX, y2 - minY);
-        ctx.lineTo(x3 - minX, y3 - minY);
-        ctx.closePath();
-        ctx.fill();
+        // Draw the texture on the Graphics object
+        triangle.beginTextureFill({ texture: extractedTexture });
+        triangle.moveTo(x1 - clampedMinX, y1 - clampedMinY);
+        triangle.lineTo(x2 - clampedMinX, y2 - clampedMinY);
+        triangle.lineTo(x3 - clampedMinX, y3 - clampedMinY);
+        triangle.lineTo(x1 - clampedMinX, y1 - clampedMinY);
+        triangle.endFill();
         
-        // Create a new texture from the canvas
-        const extractedTexture = Texture.from(canvas);
-        const sprite = new Sprite(extractedTexture);
-        
-        // Position the sprite at the original location
+        // Position the triangle at the original location
         const spriteLeft = this.stickerSprite.position.x - (this.stickerSprite.width / 2);
         const spriteTop = this.stickerSprite.position.y - (this.stickerSprite.height / 2);
         
-        sprite.position.set(
-            spriteLeft + (minX * this.stickerSprite.scale.x),
-            spriteTop + (minY * this.stickerSprite.scale.y)
+        triangle.position.set(
+            spriteLeft + (clampedMinX * this.stickerSprite.scale.x),
+            spriteTop + (clampedMinY * this.stickerSprite.scale.y)
         );
-        sprite.scale.set(this.stickerSprite.scale.x, this.stickerSprite.scale.y);
+        triangle.scale.set(this.stickerSprite.scale.x, this.stickerSprite.scale.y);
         
         // Make it draggable
-        this.makeDraggable(sprite);
+        this.makeDraggable(triangle);
         
         // Add to game container
-        this.gameContainer.addChild(sprite);
+        this.gameContainer.addChild(triangle);
+        
+        // Draw lines on the original sprite with bright color where this piece was
+        this.drawLines(clampedMinX, clampedMinY, clampedMaxX, clampedMaxY, 'triangle', x1, y1, x2, y2, x3, y3);
+    }
+
+    private drawLines(x1: number, y1: number, x2: number, y2: number, type: string, tx1?: number, ty1?: number, tx2?: number, ty2?: number, tx3?: number, ty3?: number): void {
+        // Generate a dynamic random bright color
+        const r = Math.floor(Math.random() * 256 - 100) + 100;
+        const g = Math.floor(Math.random() * 256 - 100) + 100;
+        const b = Math.floor(Math.random() * 256 - 100) + 100;
+        const randomColor = (r << 16) | (g << 8) | b;
+        
+        // Use PixiJS RenderTexture to extract pixel data
+        const renderTexture = RenderTexture.create({
+            width: this.stickerSprite.texture.width,
+            height: this.stickerSprite.texture.height
+        });
+        
+        // Create a temporary sprite with the original texture at original size
+        const tempSprite = new Sprite(this.stickerSprite.texture);
+        tempSprite.scale.set(1, 1); // No scaling
+        
+        // Render the texture to get pixel data
+        this.app.renderer.render(tempSprite, { renderTexture });
+        
+        // Get the canvas from the render texture
+        const canvas = this.app.renderer.extract.canvas(renderTexture);
+        const ctx = canvas.getContext('2d')!;
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        
+        // Create a Graphics object to draw on the lion
+        const paintOver = new Graphics();
+        paintOver.beginFill(randomColor);
+        
+        // Adjust coordinates to account for sprite's center anchor and scale
+        const halfWidth = this.stickerSprite.texture.width / 2;
+        const halfHeight = this.stickerSprite.texture.height / 2;
+        
+        if (type === 'square') {
+            // For squares, paint only non-transparent pixels
+            for (let y = y1; y < y2; y++) {
+                for (let x = x1; x < x2; x++) {
+                    if (x >= 0 && x < canvas.width && y >= 0 && y < canvas.height) {
+                        const index = (y * canvas.width + x) * 4;
+                        const alpha = data[index + 3];
+                        if (alpha > 128) { // Only paint if pixel is not transparent
+                            paintOver.drawRect(x - halfWidth, y - halfHeight, 1, 1);
+                        }
+                    }
+                }
+            }
+        } else if (type === 'triangle') {
+            // For triangles, paint only non-transparent pixels within the triangle
+            for (let y = Math.min(ty1!, ty2!, ty3!); y <= Math.max(ty1!, ty2!, ty3!); y++) {
+                for (let x = Math.min(tx1!, tx2!, tx3!); x <= Math.max(tx1!, tx2!, tx3!); x++) {
+                    if (x >= 0 && x < canvas.width && y >= 0 && y < canvas.height) {
+                        // Check if point is inside triangle
+                        if (this.isPointInTriangle(x, y, tx1!, ty1!, tx2!, ty2!, tx3!, ty3!)) {
+                            const index = (y * canvas.width + x) * 4;
+                            const alpha = data[index + 3];
+                            if (alpha > 128) { // Only paint if pixel is not transparent
+                                paintOver.drawRect(x - halfWidth, y - halfHeight, 1, 1);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        paintOver.endFill();
+        
+        // Add the paint as a child of the lion sprite so it becomes part of the lion image
+        this.stickerSprite.addChild(paintOver);
+        
+        // Clean up the render texture
+        renderTexture.destroy(true);
+    }
+
+    private isPointInTriangle(px: number, py: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number): boolean {
+        const A = 1/2 * (-y2 * x3 + y1 * (-x2 + x3) + x1 * (y2 - y3) + x2 * y3);
+        const sign = A < 0 ? -1 : 1;
+        const s = (y1 * x3 - x1 * y3 + (y3 - y1) * px + (x1 - x3) * py) * sign;
+        const t = (x1 * y2 - y1 * x2 + (y1 - y2) * px + (x2 - x1) * py) * sign;
+        
+        return s > 0 && t > 0 && (s + t) < 2 * A * sign;
     }
 
     private setupGlobalPointerEvents(): void {
@@ -455,7 +544,7 @@ export class StickersGame {
         });
     }
 
-    private makeDraggable(sprite: Sprite): void {
+    private makeDraggable(sprite: Sprite | Graphics): void {
         sprite.eventMode = 'static';
         sprite.cursor = 'pointer';
         
