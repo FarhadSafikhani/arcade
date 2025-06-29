@@ -1,23 +1,16 @@
 import { Application, Container, Graphics, Sprite, Texture, Assets, Rectangle, RenderTexture } from 'pixi.js';
 
-// Game constants
-const BASE_GAME_WIDTH = 800;
-const BASE_GAME_HEIGHT = 600;
 
 // Responsive scaling function
 const getGameDimensions = () => {
     const windowWidth = window.innerWidth;
-    const windowHeight = window.innerHeight - 120; // Account for top bar and margins
-    
-    // Calculate scale to fit within available space while maintaining aspect ratio
-    const scaleX = windowWidth / BASE_GAME_WIDTH;
-    const scaleY = windowHeight / BASE_GAME_HEIGHT;
-    const scale = Math.min(scaleX, scaleY);
+    const windowHeight = window.innerHeight;
+    const topBarHeight = 60; // Height of the top bar
     
     return {
-        gameWidth: BASE_GAME_WIDTH,
-        gameHeight: BASE_GAME_HEIGHT,
-        scale
+        gameWidth: windowWidth,
+        gameHeight: windowHeight - topBarHeight, // Subtract top bar height
+        scale: 1
     };
 };
 
@@ -533,6 +526,19 @@ export class StickersGame {
                 const pos = event.data.getLocalPosition(this.currentlyDraggedPart.parent);
                 this.currentlyDraggedPart.position.x = pos.x - this.dragOffset.x;
                 this.currentlyDraggedPart.position.y = pos.y - this.dragOffset.y;
+                //dont allow parts to leave the screen
+                if (this.currentlyDraggedPart.position.x < 0) {
+                    this.currentlyDraggedPart.position.x = 0;
+                }
+                if (this.currentlyDraggedPart.position.x > this.gameDimensions.gameWidth - this.currentlyDraggedPart.width) {
+                    this.currentlyDraggedPart.position.x = this.gameDimensions.gameWidth - this.currentlyDraggedPart.width;
+                }
+                if (this.currentlyDraggedPart.position.y < 0) {
+                    this.currentlyDraggedPart.position.y = 0;
+                }
+                if (this.currentlyDraggedPart.position.y > this.gameDimensions.gameHeight - this.currentlyDraggedPart.height) {
+                    this.currentlyDraggedPart.position.y = this.gameDimensions.gameHeight - this.currentlyDraggedPart.height;
+                }
             }
         });
         
@@ -542,6 +548,15 @@ export class StickersGame {
                 this.currentlyDraggedPart = null;
             }
         });
+
+        // this.app.stage.on('pointerleave', () => {
+        //     if (this.currentlyDraggedPart) {
+        //         this.currentlyDraggedPart.alpha = 1;
+        //         this.currentlyDraggedPart = null;
+        //     }
+        // });
+
+
     }
 
     private makeDraggable(sprite: Sprite | Graphics): void {
@@ -568,8 +583,8 @@ function updateCanvasScaling() {
     const canvas = document.querySelector('canvas');
     if (canvas) {
         const gameDimensions = getGameDimensions();
-        canvas.style.width = `${gameDimensions.gameWidth * gameDimensions.scale}px`;
-        canvas.style.height = `${gameDimensions.gameHeight * gameDimensions.scale}px`;
+        canvas.style.width = `${gameDimensions.gameWidth}px`;
+        canvas.style.height = `${gameDimensions.gameHeight}px`;
     }
 }
 
