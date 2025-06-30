@@ -2,6 +2,11 @@ import { Application, Container, Graphics, Sprite, FederatedPointerEvent } from 
 import { Chunk, StickerMaker } from './stickermaker';
 import { GameDimensions } from '../../shared/utils/shared-types';
 
+export const STICKER_GAME_CONFIG = {
+    gideSize: 6,
+    snapThreshold: 15
+}
+
 
 // Responsive scaling function
 const getGameDimensions = (): GameDimensions => {
@@ -124,6 +129,14 @@ function updateCanvasScaling() {
 
 // Initialize the game
 async function initGame() {
+    
+    // Check if game is already initialized
+    const existingCanvas = document.querySelector('#gameContainer canvas');
+    if (existingCanvas) {
+        console.warn('Game already initialized, skipping...');
+        return;
+    }
+    
     const gameDimensions = getGameDimensions();
     
     // Create PIXI application
@@ -192,4 +205,4 @@ declare global {
         resumeGame: () => void;
         togglePause: () => void;
     }
-} 
+}

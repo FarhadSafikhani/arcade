@@ -1,5 +1,6 @@
 import { Application, Container, Graphics, Sprite, Texture, Assets, Rectangle, RenderTexture, FederatedPointerEvent, ColorMatrixFilter } from 'pixi.js';
 import { Pnt } from '../../shared/utils/shared-types';
+import { STICKER_GAME_CONFIG } from './game';
 
 export class Chunk {
     sprite: Sprite | Graphics;
@@ -50,7 +51,7 @@ export class Chunk {
 
         //check if the chunk is close to the hole (its origin)
         const distance = Math.sqrt(Math.pow(this.sprite.position.x - this.originX, 2) + Math.pow(this.sprite.position.y - this.originY, 2));
-        if (distance < 15) {
+        if (distance < STICKER_GAME_CONFIG.snapThreshold) {
             //snap to the hole
             this.sprite.position.x = this.originX;
             this.sprite.position.y = this.originY;
@@ -228,7 +229,7 @@ export class StickerMaker {
         const data = imageData.data;
 
         // Create a grid of squares and triangles with perfect coverage
-        const gridSize = 5; 
+        const gridSize = STICKER_GAME_CONFIG.gideSize; 
 
         // Calculate grid cell dimensions that provide perfect coverage
         const gridWidth = stickerTexture.width / gridSize;
@@ -243,19 +244,23 @@ export class StickerMaker {
 
                 // Check if grid cell contains any non-transparent pixels
                 let hasContent = false;
+                let visiblePixels = 0;
+                const totalPixels = (x2 - x1) * (y2 - y1);
+                
                 for (let y = y1; y < y2; y++) {
                     for (let x = x1; x < x2; x++) {
                         const index = (y * canvas.width + x) * 4;
                         const alpha = data[index + 3];
                         if (alpha > 128) {
                             hasContent = true;
-                            break;
+                            visiblePixels++;
                         }
                     }
-                    if (hasContent) break;
                 }
-                 
-                if (hasContent) {
+                
+                // Only create chunks if at least 10% of the cell has visible pixels
+                const visiblePercentage = visiblePixels / totalPixels;
+                if (hasContent && visiblePercentage >= 0.1) {
                     // Create draggable pieces for areas with content
                     const useSquare = Math.random() > 0.5;
                     
