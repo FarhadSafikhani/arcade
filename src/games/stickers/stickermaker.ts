@@ -283,7 +283,7 @@ export class StickerMaker {
                 
                 // Only create chunks if at least 10% of the cell has visible pixels
                 const visiblePercentage = visiblePixels / totalPixels;
-                if (hasContent && visiblePercentage >= 0.18) {
+                if (hasContent && visiblePercentage >= STICKER_GAME_CONFIG.visiblePercentage) {
                     // Create draggable pieces for areas with content
                     const useSquare = Math.random() > 0.5;
                     
