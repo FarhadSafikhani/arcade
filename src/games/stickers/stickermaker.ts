@@ -11,12 +11,16 @@ export class Chunk {
 
     public hole: Hole | null = null;
     public inPlay: boolean = false;
+    private gameWidth: number;
+    private gameHeight: number;
 
-    constructor(sprite: Sprite | Graphics, id: string) {
+    constructor(sprite: Sprite | Graphics, id: string, gameWidth: number, gameHeight: number) {
         this.sprite = sprite;
         this.id = id;
         this.originX = sprite.position.x;
         this.originY = sprite.position.y;
+        this.gameWidth = gameWidth;
+        this.gameHeight = gameHeight;
         this.makeDraggable();
         this.inPlay = true;
     }
@@ -58,6 +62,25 @@ export class Chunk {
             this.correctlyPlaced();
         }
 
+    }
+
+    public onDrop(): void {
+
+        // //dont allow parts to leave the screen
+        if (this.sprite.position.x < 0) {
+            this.sprite.position.x = 0;
+        }
+        if (this.sprite.position.x > this.gameWidth - this.sprite.width) {
+            this.sprite.position.x = this.gameWidth - this.sprite.width;
+        }
+        if (this.sprite.position.y < 0) {
+            this.sprite.position.y = 0;
+        }
+        if (this.sprite.position.y > this.gameHeight - this.sprite.height) {
+            this.sprite.position.y = this.gameHeight - this.sprite.height;
+        }
+
+        this.checkSnapToHole();
     }
 
     public correctlyPlaced(): void {
@@ -260,7 +283,7 @@ export class StickerMaker {
                 
                 // Only create chunks if at least 10% of the cell has visible pixels
                 const visiblePercentage = visiblePixels / totalPixels;
-                if (hasContent && visiblePercentage >= 0.1) {
+                if (hasContent && visiblePercentage >= 0.18) {
                     // Create draggable pieces for areas with content
                     const useSquare = Math.random() > 0.5;
                     
@@ -311,7 +334,7 @@ export class StickerMaker {
         );
         sprite.scale.set(this.currentStickerSprite.scale.x, this.currentStickerSprite.scale.y);
 
-        const chunk = new Chunk(sprite, `chunk_${Object.keys(this.chunks).length + 1}`);
+        const chunk = new Chunk(sprite, `chunk_${Object.keys(this.chunks).length + 1}`, this.gameWidth, this.gameHeight);
 
 
         // Add to chunks
@@ -321,13 +344,13 @@ export class StickerMaker {
         this.chunkContainer.addChild(sprite);
         
         // Paint hole directly from the sprite we just created
-        this.paintHoleFromSprite(chunk, x1, y1, x2 - x1, y2 - y1);
+        this.paintHoleFromSprite(chunk, x2 - x1, y2 - y1);
     }
 
     private createDraggableTriangleFromTexture(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, texture: Texture): void {
 
         if (!this.currentStickerSprite) {
-            throw new Error('Sticker sprite not found');
+            throw new Error('Sticker sprite not found.');
         }
 
         // Calculate bounding box of triangle
@@ -359,7 +382,7 @@ export class StickerMaker {
         );
         triangle.scale.set(this.currentStickerSprite.scale.x, this.currentStickerSprite.scale.y);
 
-        const chunk = new Chunk(triangle, `chunk_${Object.keys(this.chunks).length + 1}`);
+        const chunk = new Chunk(triangle, `chunk_${Object.keys(this.chunks).length + 1}`, this.gameWidth, this.gameHeight);
         
         // Add to chunks
         this.chunks[chunk.id] = chunk;
@@ -367,10 +390,10 @@ export class StickerMaker {
         this.chunkContainer.addChild(triangle);
         
         // Paint hole directly from the triangle we just created
-        this.paintHoleFromSprite(chunk, minX, minY, maxX - minX, maxY - minY);
+        this.paintHoleFromSprite(chunk, maxX - minX, maxY - minY);
     }
 
-    private paintHoleFromSprite(chunk: Chunk, x: number, y: number, width: number, height: number): void {
+    private paintHoleFromSprite(chunk: Chunk, width: number, height: number): void {
 
         if (!this.currentStickerSprite) {
             throw new Error('Sticker sprite not found');
@@ -489,25 +512,12 @@ export class StickerMaker {
             const pos = event.getLocalPosition(this.activeChunk.sprite.parent);
             this.activeChunk.sprite.position.x = pos.x - this.activeChunk.dragOffset.x;
             this.activeChunk.sprite.position.y = pos.y - this.activeChunk.dragOffset.y;
-            //dont allow parts to leave the screen
-            if (this.activeChunk.sprite.position.x < 0) {
-                this.activeChunk.sprite.position.x = 0;
-            }
-            if (this.activeChunk.sprite.position.x > this.gameWidth - this.activeChunk.sprite.width) {
-                this.activeChunk.sprite.position.x = this.gameWidth - this.activeChunk.sprite.width;
-            }
-            if (this.activeChunk.sprite.position.y < 0) {
-                this.activeChunk.sprite.position.y = 0;
-            }
-            if (this.activeChunk.sprite.position.y > this.gameHeight - this.activeChunk.sprite.height) {
-                this.activeChunk.sprite.position.y = this.gameHeight - this.activeChunk.sprite.height;
-            }
         }
     }
 
     public onUp(): void {
         if (this.activeChunk) {
-            this.activeChunk.checkSnapToHole();
+            this.activeChunk.onDrop();
             this.activeChunk = null;
         }
     }

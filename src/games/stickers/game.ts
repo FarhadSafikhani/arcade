@@ -111,6 +111,11 @@ export class StickersGame {
             this.stickerMaker.onUp();
         });
 
+        //need to capture mouse up outside of the game
+        this.app.stage.on('pointerupoutside', () => {
+            this.stickerMaker.onUp();
+        });
+
         // Disable context menu
         (this.app.view as HTMLCanvasElement).oncontextmenu = (e: MouseEvent) => e.preventDefault();
     }
@@ -126,19 +131,20 @@ function updateCanvasScaling() {
         canvas.style.height = `${gameDimensions.gameHeight}px`;
     }
 }
-
+window.isInit = false;
 // Initialize the game
 async function initGame() {
     
-    // Check if game is already initialized
-    const existingCanvas = document.querySelector('#gameContainer canvas');
-    if (existingCanvas) {
+    if (window.isInit) {
         console.warn('Game already initialized, skipping...');
         return;
     }
-    
+
+    window.isInit = true;
+
     const gameDimensions = getGameDimensions();
     
+
     // Create PIXI application
     const app = new Application({
         width: gameDimensions.gameWidth,
@@ -197,6 +203,19 @@ function gameLoop(delta: number) {
 // Initialize when page loads
 window.addEventListener('load', initGame);
 
+
+// Hot Module Replacement (HMR) support for Vite
+if (import.meta.hot) {
+    import.meta.hot.accept(() => {
+        console.log('hot reloading.');
+        // Re-initialize the game when this module is hot-reloaded
+        //initGame();
+        window.location.reload();
+    });
+}
+
+
+
 // Global type declarations
 declare global {
     interface Window {
@@ -204,5 +223,6 @@ declare global {
         returnToMainMenu: () => void;
         resumeGame: () => void;
         togglePause: () => void;
+        isInit: boolean;
     }
 }

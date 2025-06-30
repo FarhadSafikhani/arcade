@@ -23,7 +23,7 @@ function getGameEntries() {
     })
   }
 
-  return entries
+  return entries;
 }
 
 export default defineConfig({
