@@ -3,9 +3,9 @@ import { Chunk, StickerMaker } from './stickermaker';
 import { GameDimensions } from '../../shared/utils/shared-types';
 
 export const STICKER_GAME_CONFIG = {
-    gideSize: 6,
+    gideSize: 5,
     snapThreshold: 15,
-    visiblePercentage: 0.15
+    visiblePercentage: 0.16
 }
 
 

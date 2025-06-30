@@ -13,14 +13,16 @@ export class Chunk {
     public inPlay: boolean = false;
     private gameWidth: number;
     private gameHeight: number;
+    private app: Application;
 
-    constructor(sprite: Sprite | Graphics, id: string, gameWidth: number, gameHeight: number) {
+    constructor(sprite: Sprite | Graphics, id: string, gameWidth: number, gameHeight: number, app: Application) {
         this.sprite = sprite;
         this.id = id;
         this.originX = sprite.position.x;
         this.originY = sprite.position.y;
         this.gameWidth = gameWidth;
         this.gameHeight = gameHeight;
+        this.app = app;
         this.makeDraggable();
         this.inPlay = true;
     }
@@ -92,43 +94,45 @@ export class Chunk {
         //make chunk first child of its parent
         this.sprite.parent.setChildIndex(this.sprite, 0);
         
-        // Create a nice brightness pulse animation
+        // Create a smooth brightness pulse animation using PIXI ticker
         const brightnessFilter = new ColorMatrixFilter();
         this.sprite.filters = [brightnessFilter];
         
-        let time = 0;
-        const animate = () => {
-            time += 0.1;
+        let elapsed = 0;
+        const duration = 50; // 4 seconds in milliseconds
+        
+        const animationTicker = (deltaTime: number) => {
+            elapsed += deltaTime; // Convert to milliseconds (60fps = 16.67ms per frame)
             
-            // Ease in and out the brightness
-            let brightness;
-            if (time < 1) {
-                // Ease in to max brightness
-                const t = time / 1;
-                brightness = 1 + (t * t) * 2; // Ease in
-            } else if (time < 2.5) {
-                // Stay at max brightness
-                brightness = 3;
-            } else if (time < 3.5) {
-                // Ease out from max brightness
-                const t = (time - 2.5) / 1;
-                brightness = 2 - (t * t) * 1; // Ease out
+            const progress = Math.min(elapsed / duration, 1);
+            
+            let brightness: number;
+            if (progress < 0.25) {
+                // Ease in to max brightness (0 to 0.25)
+                const t = progress / 0.25;
+                const eased = t * t; // Quadratic ease in
+                brightness = 2 + eased * 3;
+            } else if (progress < 0.875) {
+                // Ease out from max brightness (0.625 to 0.875)
+                const t = (progress - 0.625) / 0.25;
+                const eased = 1 - (1 - t) * (1 - t); // Quadratic ease out
+                brightness = 3 - eased * 2;
             } else {
-                // Back to normal
+                // Back to normal (0.875 to 1)
                 brightness = 1;
             }
             
             brightnessFilter.brightness(brightness, false);
             
-            if (time < 4) { // Run for 5 seconds
-                requestAnimationFrame(animate);
-            } else {
-                // Remove the filter after animation
+            // Clean up when animation is complete
+            if (progress >= 1) {
                 this.sprite.filters = [];
+                this.app.ticker.remove(animationTicker);
             }
         };
         
-        animate();
+        // Add to the app's ticker for smooth 60fps animation
+        this.app.ticker.add(animationTicker);
     }
 }
 
@@ -334,7 +338,7 @@ export class StickerMaker {
         );
         sprite.scale.set(this.currentStickerSprite.scale.x, this.currentStickerSprite.scale.y);
 
-        const chunk = new Chunk(sprite, `chunk_${Object.keys(this.chunks).length + 1}`, this.gameWidth, this.gameHeight);
+        const chunk = new Chunk(sprite, `chunk_${Object.keys(this.chunks).length + 1}`, this.gameWidth, this.gameHeight, this.app);
 
 
         // Add to chunks
@@ -382,7 +386,7 @@ export class StickerMaker {
         );
         triangle.scale.set(this.currentStickerSprite.scale.x, this.currentStickerSprite.scale.y);
 
-        const chunk = new Chunk(triangle, `chunk_${Object.keys(this.chunks).length + 1}`, this.gameWidth, this.gameHeight);
+        const chunk = new Chunk(triangle, `chunk_${Object.keys(this.chunks).length + 1}`, this.gameWidth, this.gameHeight, this.app);
         
         // Add to chunks
         this.chunks[chunk.id] = chunk;
