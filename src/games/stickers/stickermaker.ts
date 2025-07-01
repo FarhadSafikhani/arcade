@@ -13,6 +13,7 @@ export class Chunk {
     public inPlay: boolean = false;
 
     private stickerMaker: StickerMaker;
+    private brightnessFilter: ColorMatrixFilter;
 
     constructor(sprite: Sprite | Graphics, id: string, stickerMaker: StickerMaker) {
         this.sprite = sprite;
@@ -22,6 +23,8 @@ export class Chunk {
         this.stickerMaker = stickerMaker;
         this.makeDraggable();
         this.inPlay = true;
+        this.brightnessFilter = new ColorMatrixFilter();
+        this.sprite.filters = [this.brightnessFilter];
     }
 
     private makeDraggable(): void {
@@ -31,7 +34,6 @@ export class Chunk {
         this.sprite.on('pointerdown', (event: FederatedPointerEvent) => {
 
             if (!this.inPlay) {
-                console.log('chunk already in play, ignoring pointerdown');
                 return;
             }
 
@@ -85,20 +87,20 @@ export class Chunk {
     }
 
     public correctlyPlaced(): void {
+        const performance1 = performance.now();
         this.sprite.alpha = 1;
         this.inPlay = false;
-        this.sprite.eventMode = 'none';
+        
         this.sprite.cursor = 'default';
 
         //make chunk first child of its parent
         this.sprite.parent.setChildIndex(this.sprite, 0);
         
         // Create a smooth brightness pulse animation using PIXI ticker
-        const brightnessFilter = new ColorMatrixFilter();
-        this.sprite.filters = [brightnessFilter];
+
         
         let elapsed = 0;
-        const duration = 50; // 4 seconds in milliseconds
+        const duration = 60; 
         
         const animationTicker = (deltaTime: number) => {
             elapsed += deltaTime; // Convert to milliseconds (60fps = 16.67ms per frame)
@@ -110,18 +112,17 @@ export class Chunk {
                 // Ease in to max brightness (0 to 0.25)
                 const t = progress / 0.25;
                 const eased = t * t; // Quadratic ease in
-                brightness = 2 + eased * 3;
-            } else if (progress < 0.875) {
+                brightness = 2 + eased * 4;
+            } else if (progress < .9) {
                 // Ease out from max brightness (0.625 to 0.875)
-                const t = (progress - 0.625) / 0.25;
+                const t = (progress - 0.25) / 1;
                 const eased = 1 - (1 - t) * (1 - t); // Quadratic ease out
-                brightness = 3 - eased * 2;
+                brightness = 4 - eased * 3;
             } else {
-                // Back to normal (0.875 to 1)
                 brightness = 1;
             }
             
-            brightnessFilter.brightness(brightness, false);
+            this.brightnessFilter.brightness(brightness, false);
             
             // Clean up when animation is complete
             if (progress >= 1) {
@@ -130,8 +131,18 @@ export class Chunk {
             }
         };
         
-        // Add to the app's ticker for smooth 60fps animation
+        // // Add to the app's ticker for smooth 60fps animation
         this.stickerMaker.app.ticker.add(animationTicker);
+
+        // Spawn simple particle effect
+        this.stickerMaker.createSnapParticles(this.sprite.position.x + this.sprite.width/2, this.sprite.position.y + this.sprite.height/2);
+
+        const performance2 = performance.now();
+        console.log(`Chunk Drop Time: ${performance2 - performance1}ms`);
+
+        setTimeout(() => {
+            this.sprite.eventMode = 'none';
+        }, 1000);
     }
 }
 
@@ -268,43 +279,23 @@ export class StickerMaker {
                 const x2 = Math.round((col + 1) * gridWidth);
                 const y2 = Math.round((row + 1) * gridHeight);
 
-                // Check if grid cell contains any non-transparent pixels
-                let hasContent = false;
-                let visiblePixels = 0;
-                const totalPixels = (x2 - x1) * (y2 - y1);
+                // Try to create pieces - each method will check visibility internally
+                const useSquare = Math.random() > 0.5;
                 
-                for (let y = y1; y < y2; y++) {
-                    for (let x = x1; x < x2; x++) {
-                        const index = (y * canvas.width + x) * 4;
-                        const alpha = data[index + 3];
-                        if (alpha > 128) {
-                            hasContent = true;
-                            visiblePixels++;
-                        }
-                    }
-                }
-                
-                // Only create chunks if at least 10% of the cell has visible pixels
-                const visiblePercentage = visiblePixels / totalPixels;
-                if (hasContent && visiblePercentage >= STICKER_GAME_CONFIG.visiblePercentage) {
-                    // Create draggable pieces for areas with content
-                    const useSquare = Math.random() > 0.5;
-                    
-                    if (useSquare) {
-                        // Create a draggable square
-                        this.createDraggableSquareFromTexture(x1, y1, x2, y2, stickerTexture);
+                if (useSquare) {
+                    // Try to create square - method will check visibility internally
+                    this.createDraggableSquareFromTexture(x1, y1, x2, y2, stickerTexture, data, canvas.width, canvas.height);
+                } else {
+                    // Try to create triangles - each method will check visibility internally
+                    const diagonal = Math.random() > 0.5;
+                    if (diagonal) {
+                        // Diagonal from top-left to bottom-right
+                        this.createDraggableTriangleFromTexture(x1, y1, x2, y1, x1, y2, stickerTexture, data, canvas.width, canvas.height);
+                        this.createDraggableTriangleFromTexture(x2, y1, x2, y2, x1, y2, stickerTexture, data, canvas.width, canvas.height);
                     } else {
-                        // Create two draggable triangles
-                        const diagonal = Math.random() > 0.5;
-                        if (diagonal) {
-                            // Diagonal from top-left to bottom-right
-                            this.createDraggableTriangleFromTexture(x1, y1, x2, y1, x1, y2, stickerTexture);
-                            this.createDraggableTriangleFromTexture(x2, y1, x2, y2, x1, y2, stickerTexture);
-                        } else {
-                            // Diagonal from top-right to bottom-left
-                            this.createDraggableTriangleFromTexture(x1, y1, x2, y1, x2, y2, stickerTexture);
-                            this.createDraggableTriangleFromTexture(x1, y1, x2, y2, x1, y2, stickerTexture);
-                        }
+                        // Diagonal from top-right to bottom-left
+                        this.createDraggableTriangleFromTexture(x1, y1, x2, y1, x2, y2, stickerTexture, data, canvas.width, canvas.height);
+                        this.createDraggableTriangleFromTexture(x1, y1, x2, y2, x1, y2, stickerTexture, data, canvas.width, canvas.height);
                     }
                 }
             }
@@ -314,10 +305,41 @@ export class StickerMaker {
         renderTexture.destroy(true);
     }
 
-    private createDraggableSquareFromTexture(x1: number, y1: number, x2: number, y2: number, texture: Texture): void {
+    private isPointInTriangleSimple(px: number, py: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number): boolean {
+        // Use cross product method - simpler than barycentric coordinates
+        const sign1 = (px - x2) * (y1 - y2) - (x1 - x2) * (py - y2);
+        const sign2 = (px - x3) * (y2 - y3) - (x2 - x3) * (py - y3);
+        const sign3 = (px - x1) * (y3 - y1) - (x3 - x1) * (py - y1);
+        
+        const hasNeg = (sign1 < 0) || (sign2 < 0) || (sign3 < 0);
+        const hasPos = (sign1 > 0) || (sign2 > 0) || (sign3 > 0);
+        
+        return !(hasNeg && hasPos);
+    }
+
+    private createDraggableSquareFromTexture(x1: number, y1: number, x2: number, y2: number, texture: Texture, data: Uint8ClampedArray, canvasWidth: number, canvasHeight: number): void {
 
         if (!this.currentStickerSprite) {
             throw new Error('Sticker sprite not found');
+        }
+
+        // Check if this square has enough visible content
+        let visiblePixels = 0;
+        const totalPixels = (x2 - x1) * (y2 - y1);
+        
+        for (let y = y1; y < y2; y++) {
+            for (let x = x1; x < x2; x++) {
+                const index = (y * canvasWidth + x) * 4;
+                const alpha = data[index + 3];
+                if (alpha > 128) {
+                    visiblePixels++;
+                }
+            }
+        }
+        
+        const visiblePercentage = visiblePixels / totalPixels;
+        if (visiblePercentage < STICKER_GAME_CONFIG.visiblePercentage) {
+            return; // Skip creating this square - not enough content
         }
 
         // Create a texture region for this square
@@ -350,10 +372,41 @@ export class StickerMaker {
         this.paintHoleFromSprite(chunk, x2 - x1, y2 - y1);
     }
 
-    private createDraggableTriangleFromTexture(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, texture: Texture): void {
+    private createDraggableTriangleFromTexture(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, texture: Texture, data: Uint8ClampedArray, canvasWidth: number, canvasHeight: number): void {
 
         if (!this.currentStickerSprite) {
             throw new Error('Sticker sprite not found.');
+        }
+
+        // Check if this triangle has enough visible content
+        const checkMinX = Math.min(x1, x2, x3);
+        const checkMinY = Math.min(y1, y2, y3);
+        const checkMaxX = Math.max(x1, x2, x3);
+        const checkMaxY = Math.max(y1, y2, y3);
+        
+        let visiblePixels = 0;
+        let totalPixels = 0;
+        
+        for (let y = checkMinY; y <= checkMaxY; y++) {
+            for (let x = checkMinX; x <= checkMaxX; x++) {
+                // Check if point is inside triangle using simple cross product method
+                if (this.isPointInTriangleSimple(x, y, x1, y1, x2, y2, x3, y3)) {
+                    totalPixels++;
+                    
+                    const index = (y * canvasWidth + x) * 4;
+                    const alpha = data[index + 3];
+                    if (alpha > 128) {
+                        visiblePixels++;
+                    }
+                }
+            }
+        }
+        
+        if (totalPixels === 0) return; // Degenerate triangle
+        
+        const visiblePercentage = visiblePixels / totalPixels;
+        if (visiblePercentage < STICKER_GAME_CONFIG.visiblePercentage) {
+            return; // Skip creating this triangle - not enough content
         }
 
         // Calculate bounding box of triangle
@@ -429,9 +482,9 @@ export class StickerMaker {
         const data = imageData.data;
         
         // Generate colors
-        const brightR = Math.floor(Math.random() * 156) + 100;
-        const brightG = Math.floor(Math.random() * 156) + 100;
-        const brightB = Math.floor(Math.random() * 156) + 100;
+        const brightR = Math.floor(Math.random() * 156) + 50;
+        const brightG = Math.floor(Math.random() * 156) + 50;
+        const brightB = Math.floor(Math.random() * 156) + 50;
         const brightColor = (brightR << 16) | (brightG << 8) | brightB;
         
         // const grayValue = Math.floor(Math.random() * 100) + 100;
@@ -446,7 +499,7 @@ export class StickerMaker {
                 const index = (py * width + px) * 4;
                 const alpha = data[index + 3];
                 
-                if (alpha > 128) { // Only paint visible pixels
+                if (alpha > 200) { // Only paint visible pixels
                     //const pixelColor = alpha > 128 ? brightColor : grayColor;
                     
                     holeGraphics.beginFill(brightColor);
@@ -525,5 +578,61 @@ export class StickerMaker {
         }
     }
 
+    public createSnapParticles(x: number, y: number): void {
+        const particleCount = 30;
+        
+        for (let i = 0; i < particleCount; i++) {
+            // Create simple white circle particle
+            const particle = new Graphics();
+            const size = Math.random() * 4 + 2; // 3-9 pixels
+            
+            particle.beginFill(0xFFFFFF); // White
+            particle.drawCircle(0, 0, size);
+            particle.endFill();
+            
+            // Position at snap point
+            particle.position.set(x, y);
+            
+            // Random velocity
+            const angle = (Math.PI * 2 * i / particleCount) + (Math.random() - 0.5) * 0.8;
+            const speed = Math.random() * 3 + 4;
+            const velocityX = Math.cos(angle) * speed;
+            const velocityY = Math.sin(angle) * speed;
+            
+            // Add to game container
+            this.gameContainer.addChild(particle);
+            
+            // Animate particle
+            let life = 30; // 1 second at 60fps
+            const gravity = 0.3;
+            let currentVelX = velocityX;
+            let currentVelY = velocityY;
+            
+            const particleTicker = (deltaTime: number) => {
+                life -= deltaTime;
+                
+                // Apply physics
+                currentVelY += gravity * deltaTime;
+                particle.position.x += currentVelX * deltaTime;
+                particle.position.y += currentVelY * deltaTime;
+                
+                // Fade out
+                particle.alpha = life / 30;
+                
+                // Scale down slightly
+                const scale = (life / 30)  + 0.1;
+                particle.scale.set(scale);
+                
+                // Remove when done
+                if (life <= 0) {
+                    this.app.ticker.remove(particleTicker);
+                    this.gameContainer.removeChild(particle);
+                    particle.destroy();
+                }
+            };
+            
+            this.app.ticker.add(particleTicker);
+        }
+    }
 
 }

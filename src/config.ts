@@ -53,7 +53,7 @@ export const gamesConfig: GamesConfig = {
             name: "Stickers",
             description: "Interactive sticker game",
             icon: "🍎",
-            available: false,
+            available: true,
             entryPoint: "/games/stickers/index.html"
         }
 

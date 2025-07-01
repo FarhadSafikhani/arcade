@@ -4,8 +4,8 @@ import { GameDimensions } from '../../shared/utils/shared-types';
 
 export const STICKER_GAME_CONFIG = {
     gideSize: 5,
-    snapThreshold: 15,
-    visiblePercentage: 0.16
+    snapThreshold: 100,
+    visiblePercentage: 0.1
 }
 
 
