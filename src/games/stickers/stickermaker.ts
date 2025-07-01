@@ -11,18 +11,15 @@ export class Chunk {
 
     public hole: Hole | null = null;
     public inPlay: boolean = false;
-    private gameWidth: number;
-    private gameHeight: number;
-    private app: Application;
 
-    constructor(sprite: Sprite | Graphics, id: string, gameWidth: number, gameHeight: number, app: Application) {
+    private stickerMaker: StickerMaker;
+
+    constructor(sprite: Sprite | Graphics, id: string, stickerMaker: StickerMaker) {
         this.sprite = sprite;
         this.id = id;
         this.originX = sprite.position.x;
         this.originY = sprite.position.y;
-        this.gameWidth = gameWidth;
-        this.gameHeight = gameHeight;
-        this.app = app;
+        this.stickerMaker = stickerMaker;
         this.makeDraggable();
         this.inPlay = true;
     }
@@ -57,7 +54,9 @@ export class Chunk {
 
         //check if the chunk is close to the hole (its origin)
         const distance = Math.sqrt(Math.pow(this.sprite.position.x - this.originX, 2) + Math.pow(this.sprite.position.y - this.originY, 2));
-        if (distance < STICKER_GAME_CONFIG.snapThreshold) {
+        const relativeSnapThreshold = STICKER_GAME_CONFIG.snapThreshold / STICKER_GAME_CONFIG.gideSize;
+
+        if (distance < relativeSnapThreshold) {
             //snap to the hole
             this.sprite.position.x = this.originX;
             this.sprite.position.y = this.originY;
@@ -72,14 +71,14 @@ export class Chunk {
         if (this.sprite.position.x < 0) {
             this.sprite.position.x = 0;
         }
-        if (this.sprite.position.x > this.gameWidth - this.sprite.width) {
-            this.sprite.position.x = this.gameWidth - this.sprite.width;
+        if (this.sprite.position.x > this.stickerMaker.gameWidth - this.sprite.width) {
+            this.sprite.position.x = this.stickerMaker.gameWidth - this.sprite.width;
         }
         if (this.sprite.position.y < 0) {
             this.sprite.position.y = 0;
         }
-        if (this.sprite.position.y > this.gameHeight - this.sprite.height) {
-            this.sprite.position.y = this.gameHeight - this.sprite.height;
+        if (this.sprite.position.y > this.stickerMaker.gameHeight - this.sprite.height) {
+            this.sprite.position.y = this.stickerMaker.gameHeight - this.sprite.height;
         }
 
         this.checkSnapToHole();
@@ -127,12 +126,12 @@ export class Chunk {
             // Clean up when animation is complete
             if (progress >= 1) {
                 this.sprite.filters = [];
-                this.app.ticker.remove(animationTicker);
+                this.stickerMaker.app.ticker.remove(animationTicker);
             }
         };
         
         // Add to the app's ticker for smooth 60fps animation
-        this.app.ticker.add(animationTicker);
+        this.stickerMaker.app.ticker.add(animationTicker);
     }
 }
 
@@ -151,11 +150,11 @@ export class Hole {
 }
 
 export class StickerMaker {
-    private app: Application;
-    private gameContainer: Container;
-    private currentStickerSprite: Sprite | null = null;
-    private gameWidth: number;
-    private gameHeight: number;
+    public app: Application;
+    public gameContainer: Container;
+    public currentStickerSprite: Sprite | null = null;
+    public gameWidth: number;
+    public gameHeight: number;
 
     private holeContainer: Container;
     private chunkContainer: Container;
@@ -338,7 +337,7 @@ export class StickerMaker {
         );
         sprite.scale.set(this.currentStickerSprite.scale.x, this.currentStickerSprite.scale.y);
 
-        const chunk = new Chunk(sprite, `chunk_${Object.keys(this.chunks).length + 1}`, this.gameWidth, this.gameHeight, this.app);
+        const chunk = new Chunk(sprite, `chunk_${Object.keys(this.chunks).length + 1}`, this);
 
 
         // Add to chunks
@@ -386,7 +385,7 @@ export class StickerMaker {
         );
         triangle.scale.set(this.currentStickerSprite.scale.x, this.currentStickerSprite.scale.y);
 
-        const chunk = new Chunk(triangle, `chunk_${Object.keys(this.chunks).length + 1}`, this.gameWidth, this.gameHeight, this.app);
+        const chunk = new Chunk(triangle, `chunk_${Object.keys(this.chunks).length + 1}`, this);
         
         // Add to chunks
         this.chunks[chunk.id] = chunk;
@@ -435,8 +434,8 @@ export class StickerMaker {
         const brightB = Math.floor(Math.random() * 156) + 100;
         const brightColor = (brightR << 16) | (brightG << 8) | brightB;
         
-        const grayValue = Math.floor(Math.random() * 100) + 100;
-        const grayColor = (grayValue << 16) | (grayValue << 8) | grayValue;
+        // const grayValue = Math.floor(Math.random() * 100) + 100;
+        // const grayColor = (grayValue << 16) | (grayValue << 8) | grayValue;
         
         // Create Graphics object to paint the hole pixel by pixel
         const holeGraphics = new Graphics();
@@ -447,10 +446,10 @@ export class StickerMaker {
                 const index = (py * width + px) * 4;
                 const alpha = data[index + 3];
                 
-                if (alpha > 0) { // Only paint visible pixels
-                    const pixelColor = alpha > 128 ? brightColor : grayColor;
+                if (alpha > 128) { // Only paint visible pixels
+                    //const pixelColor = alpha > 128 ? brightColor : grayColor;
                     
-                    holeGraphics.beginFill(pixelColor);
+                    holeGraphics.beginFill(brightColor);
                     holeGraphics.drawRect(
                         chunk.sprite.position.x + (px * chunk.sprite.scale.x),
                         chunk.sprite.position.y + (py * chunk.sprite.scale.y),
