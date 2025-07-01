@@ -1,4 +1,4 @@
-import { gamesConfig, GameConfig } from './config';
+import { gamesConfig, GameConfig } from './games.config';
 
 // Global functions for game control
 declare global {

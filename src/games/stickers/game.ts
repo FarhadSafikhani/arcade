@@ -45,6 +45,7 @@ export class StickersGame {
         // Create game background
         this.createBackground();
         
+        // await this.stickerMaker.createSticker('/arcade/assets/stickers/elephant.png');
 
         await this.stickerMaker.createSticker('/arcade/assets/stickers/lion.png');
         
