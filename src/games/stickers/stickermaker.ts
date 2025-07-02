@@ -1,6 +1,6 @@
 import { Application, Container, Graphics, Sprite, Texture, Assets, Rectangle, RenderTexture, FederatedPointerEvent, ColorMatrixFilter, Text } from 'pixi.js';
 import { Pnt } from '../../shared/utils/shared-types';
-import { STICKER_GAME_CONFIG } from './game';
+import { STICKER_GAME_CONFIG, StickerGameLevel, StickersGame } from './game';
 
 export class Chunk {
     sprite: Sprite | Graphics;
@@ -177,6 +177,7 @@ export class Hole {
 
 export class StickerMaker {
     public app: Application;
+    public game: StickersGame;
     public gameContainer: Container;
     public currentStickerSprite: Sprite | null = null;
     public gameWidth: number;
@@ -188,9 +189,11 @@ export class StickerMaker {
     public chunks: Record<string, Chunk> = {};
     public holes: Record<string, Hole> = {};
     public activeChunk: Chunk | null = null;
+    public currentLevel!: StickerGameLevel;
 
-    constructor(app: Application, gameContainer: Container, gameWidth: number, gameHeight: number) {
+    constructor(app: Application, game: StickersGame, gameContainer: Container, gameWidth: number, gameHeight: number) {
         this.app = app;
+        this.game = game;
         this.gameContainer = gameContainer;
         this.gameWidth = gameWidth;
         this.gameHeight = gameHeight;
@@ -215,14 +218,16 @@ export class StickerMaker {
         this.activeChunk = chunk;
     }
 
-    async createSticker(assetPath: string): Promise<void> {
+    async createSticker(level: StickerGameLevel): Promise<void> {
+
+        this.currentLevel = level;
 
         const start = performance.now();
 
         // STEP 1: first load a lion sticker sprite image and paint it on the canvas
 
         // Get the cached texture from PixiJS
-        const stickerTexture = await Assets.load(assetPath);
+        const stickerTexture = await Assets.load(level.path);
         
         // Create sprite from the texture
         this.currentStickerSprite = new Sprite(stickerTexture);
@@ -587,10 +592,14 @@ export class StickerMaker {
             this.activeChunk = null;
             if (this.checkIfAllChunksArePlaced()) {
                 this.celebrate();
+                this.game.setLevelCompleted(this.currentLevel.id);
+                
             }
         }
 
     }
+
+
 
     public createSnapParticles(x: number, y: number): void {
         const particleCount = 30;
@@ -760,6 +769,7 @@ export class StickerMaker {
                 if (goodJobText.parent) {
                     this.gameContainer.removeChild(goodJobText);
                     goodJobText.destroy();
+                    this.game.showReturnButton();
                 }
             }, 3000);
         }, 500);

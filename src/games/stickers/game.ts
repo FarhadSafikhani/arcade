@@ -1,9 +1,10 @@
-import { Application, Container, Graphics, Sprite, FederatedPointerEvent, Assets } from 'pixi.js';
-import { Chunk, StickerMaker } from './stickermaker';
+import { Application, Container, Graphics, FederatedPointerEvent, Assets } from 'pixi.js';
+import { StickerMaker } from './stickermaker';
 import { GameDimensions } from '../../shared/utils/shared-types';
+import { TOP_BAR_HEIGHT } from '../../shared/utils/shared-consts';
 
 export const STICKER_GAME_CONFIG = {
-    gideSize: 2,
+    gideSize: 1,
     snapThreshold: 100,
     visiblePercentage: 0.1
 }
@@ -13,7 +14,7 @@ export const STICKER_GAME_CONFIG = {
 const getGameDimensions = (): GameDimensions => {
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
-    const topBarHeight = 60; // Height of the top bar
+    const topBarHeight = TOP_BAR_HEIGHT;
     
     return {
         gameWidth: windowWidth,
@@ -23,39 +24,184 @@ const getGameDimensions = (): GameDimensions => {
     };
 };
 
+export interface StickerGameLevel {
+    id: string;
+    path: string;
+}
+
+export const STICKER_GAME_LEVELS: StickerGameLevel[] = [
+    {
+        id: 'lion_1',
+        path: '/arcade/assets/stickers/lion.png',
+    },
+    {
+        id: 'elephant_1',
+        path: '/arcade/assets/stickers/elephant.png'
+    },
+    {
+        id: 'chimp_1',
+        path: '/arcade/assets/stickers/chimp.png'
+    }
+]
+
+export interface UserState {
+    levelsCompleted: string[];
+}
+export const userState: UserState = {
+    levelsCompleted: []
+}
+
 export class StickersGame {
     private app: Application;
     private gameContainer: Container;
     private stickerMaker: StickerMaker;
     private removeTopBarHandler?: () => void;
     private gameDimensions: GameDimensions;
+    private userState: UserState;
 
     constructor(app: Application) {
         this.app = app;
         this.gameContainer = new Container();
         this.gameDimensions = getGameDimensions();
-        this.stickerMaker = new StickerMaker(this.app, this.gameContainer, this.gameDimensions.gameWidth, this.gameDimensions.gameHeight);
+        this.stickerMaker = new StickerMaker(this.app, this, this.gameContainer, this.gameDimensions.gameWidth, this.gameDimensions.gameHeight);
         this.app.stage.addChild(this.gameContainer);
+        this.userState = this.loadUserState();
 
         // Set up global pointer events
         this.setupGlobalPointerEvents();
     }
 
     async init(): Promise<void> {
+
         // Create game background
         this.createBackground();
-        
+        this.setupTopBarEvents();
 
         //preload the star for later use
         ///arcade/assets/stickers/star.png
         await Assets.load('/arcade/assets/stickers/star.png');
         
-        await this.stickerMaker.createSticker('/arcade/assets/stickers/elephant.png');
+        // Preload all level assets
+        for (const level of STICKER_GAME_LEVELS) {
+            await Assets.load(level.path);
+        }
 
-        //await this.stickerMaker.createSticker('/arcade/assets/stickers/lion.png');
+        // Show level menu initially
+        this.showLevelMenu();
+        this.populateLevelMenu();
+
+        // Setup return button event
+        this.setupReturnButton();
+
+    }
+
+
+    public showLevelMenu(): void {
+        // Hide game container and show level menu
+        this.gameContainer.visible = false;
+        const levelMenu = document.getElementById('levelMenu');
+        if (levelMenu) {
+            levelMenu.classList.remove('hidden');
+        }
+    }
+
+    public hideLevelMenu(): void {
+        // Show game container and hide level menu
+        this.gameContainer.visible = true;
+        const levelMenu = document.getElementById('levelMenu');
+        if (levelMenu) {
+            levelMenu.classList.add('hidden');
+        }
+    }
+
+    public populateLevelMenu(): void {
+        const levelGrid = document.getElementById('levelGrid');
+        if (!levelGrid) return;
+
+        // Clear existing content
+        levelGrid.innerHTML = '';
+
+        // Create level cards
+        STICKER_GAME_LEVELS.forEach((level) => {
+            const isCompleted = this.userState.levelsCompleted.includes(level.id);
+            
+            const levelCard = document.createElement('div');
+            levelCard.className = `level-card ${isCompleted ? 'completed' : ''}`;
+            levelCard.dataset.levelId = level.id;
+            
+            const levelImage = document.createElement('img');
+            levelImage.className = 'level-image';
+            levelImage.src = level.path;
+            levelImage.alt = `Level ${level.id}`;
+            
+            levelCard.appendChild(levelImage);
+            
+            // Add click handler
+            levelCard.addEventListener('click', () => {
+                this.startLevel(level);
+            });
+            
+            levelGrid.appendChild(levelCard);
+        });
+    }
+
+    public async startLevel(level: StickerGameLevel): Promise<void> {
+        // Hide level menu and return button, show game
+        this.hideLevelMenu();
+        this.hideReturnButton();
         
-        // Set up top bar events
-        this.setupTopBarEvents();
+        // Clear any existing game content
+        this.gameContainer.removeChildren();
+        this.createBackground();
+        
+        // Start the level
+        await this.stickerMaker.createSticker(level);
+    }
+
+    private loadUserState(): UserState {
+        const userStateString = localStorage.getItem('userState');
+        return userStateString ? JSON.parse(userStateString) : { levelsCompleted: [] };
+    }
+
+    public setLevelCompleted(levelId: string): void {
+        if (!this.userState.levelsCompleted.includes(levelId)) {
+            this.userState.levelsCompleted.push(levelId);
+            this.saveUserState();
+        }
+    }
+
+    public returnToLevelMenu(): void {
+        // Hide return button and show level menu
+        this.hideReturnButton();
+        this.showLevelMenu();
+        this.populateLevelMenu();
+    }
+
+    private setupReturnButton(): void {
+        const returnButton = document.getElementById('returnButton');
+        if (returnButton) {
+            returnButton.addEventListener('click', () => {
+                this.returnToLevelMenu();
+            });
+        }
+    }
+
+    public showReturnButton(): void {
+        const returnButton = document.getElementById('returnButton');
+        if (returnButton) {
+            returnButton.classList.remove('hidden');
+        }
+    }
+
+    public hideReturnButton(): void {
+        const returnButton = document.getElementById('returnButton');
+        if (returnButton) {
+            returnButton.classList.add('hidden');
+        }
+    }
+
+    private saveUserState(): void {
+        localStorage.setItem('userState', JSON.stringify(this.userState));
     }
 
     private createBackground(): void {
@@ -72,7 +218,11 @@ export class StickersGame {
             if (event.type === 'pause') {
                 this.togglePause();
             } else if (event.type === 'menu') {
-                this.returnToMainMenu();
+                if (this.gameContainer.visible) {
+                    this.returnToLevelMenu();
+                } else {
+                    this.returnToMainMenu();
+                }
             }
         };
 

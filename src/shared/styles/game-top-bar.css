@@ -1,15 +1,19 @@
+:host {
+    position: relative;
+    display: block;
+    width: 100%;
+}
+
 .top-bar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
+    position: relative;
+    width: 100%;
     background: rgba(0, 0, 0, 0.8);
     padding: 10px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    z-index: 100;
     backdrop-filter: blur(10px);
+    box-sizing: border-box;
 }
 
 .game-title {

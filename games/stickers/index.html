@@ -9,9 +9,30 @@
 </head>
 <body class="game-page">
     <game-top-bar title="🍎 Stickers" show-pause show-menu></game-top-bar>
+    
+
+    
     <div id="gameContainer">
         <!-- PixiJS will create and append the canvas here -->
     </div>
+
+    <!-- Level Selection Menu -->
+    <div id="levelMenu" class="level-menu hidden">
+        <div class="level-menu-header">
+            <h2>Select a Puzzle</h2>
+        </div>
+        <div class="level-grid-container">
+            <div id="levelGrid" class="level-grid">
+                <!-- Levels will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Return Button -->
+    <button id="returnButton" class="return-button hidden">
+        Return to Menu
+    </button>
+    
     
     <script type="module" src="/src/shared/components/game-top-bar.ts"></script>
     <script type="module" src="/src/games/stickers/game.ts"></script>

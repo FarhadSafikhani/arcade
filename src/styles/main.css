@@ -161,7 +161,6 @@ body {
 .game-page {
     margin: 0;
     padding: 0;
-    padding-top: 60px; /* Space for top bar */
     background: #2c3e50;
     font-family: 'Arial', sans-serif;
     display: flex;
@@ -269,6 +268,7 @@ body {
     background: #7f8c8d;
 }
 
+
 /* Disable hover effects on touch devices */
 @media (hover: none) and (pointer: coarse) {
     #gameOver button:hover, #pauseMenu button:hover {
@@ -283,7 +283,6 @@ body {
 /* Mobile-specific game styles */
 @media (max-width: 768px) {
     .game-page {
-        padding-top: 50px;
         justify-content: flex-start;
     }
     
@@ -300,9 +299,7 @@ body {
 
 /* Extra small screens */
 @media (max-width: 480px) {
-    .game-page {
-        padding-top: 45px;
-    }
+
     
     #gameUI {
         font-size: 12px;
