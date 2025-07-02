@@ -23,6 +23,7 @@
     flex-direction: column;
     padding: 20px;
     margin-top: 0;
+    user-select: none;
 }
 
 .level-menu-header {
