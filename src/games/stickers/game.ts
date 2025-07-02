@@ -1,9 +1,9 @@
-import { Application, Container, Graphics, Sprite, FederatedPointerEvent } from 'pixi.js';
+import { Application, Container, Graphics, Sprite, FederatedPointerEvent, Assets } from 'pixi.js';
 import { Chunk, StickerMaker } from './stickermaker';
 import { GameDimensions } from '../../shared/utils/shared-types';
 
 export const STICKER_GAME_CONFIG = {
-    gideSize: 5,
+    gideSize: 2,
     snapThreshold: 100,
     visiblePercentage: 0.1
 }
@@ -45,9 +45,14 @@ export class StickersGame {
         // Create game background
         this.createBackground();
         
-        // await this.stickerMaker.createSticker('/arcade/assets/stickers/elephant.png');
 
-        await this.stickerMaker.createSticker('/arcade/assets/stickers/lion.png');
+        //preload the star for later use
+        ///arcade/assets/stickers/star.png
+        await Assets.load('/arcade/assets/stickers/star.png');
+        
+        await this.stickerMaker.createSticker('/arcade/assets/stickers/elephant.png');
+
+        //await this.stickerMaker.createSticker('/arcade/assets/stickers/lion.png');
         
         // Set up top bar events
         this.setupTopBarEvents();
@@ -102,6 +107,21 @@ export class StickersGame {
         window.location.href = '/arcade/';
     }
 
+    onResize(): void {
+
+        this.gameDimensions = getGameDimensions();
+    
+        // Resize the PIXI renderer itself, not just the CSS
+        this.app.renderer.resize(this.gameDimensions.gameWidth, this.gameDimensions.gameHeight);
+        
+        // Update the stickerMaker dimensions
+        this.stickerMaker.gameWidth = this.gameDimensions.gameWidth;
+        this.stickerMaker.gameHeight = this.gameDimensions.gameHeight;
+
+        // Clamp chunks to new screen bounds
+        this.stickerMaker.clampChunksToScreen();
+    }
+
     private setupGlobalPointerEvents(): void {
         this.app.stage.eventMode = 'static';
             
@@ -124,15 +144,7 @@ export class StickersGame {
 
 }
 
-// Canvas scaling function
-function updateCanvasScaling() {
-    const canvas = document.querySelector('canvas');
-    if (canvas) {
-        const gameDimensions = getGameDimensions();
-        canvas.style.width = `${gameDimensions.gameWidth}px`;
-        canvas.style.height = `${gameDimensions.gameHeight}px`;
-    }
-}
+
 window.isInit = false;
 // Initialize the game
 async function initGame() {
@@ -162,9 +174,6 @@ async function initGame() {
         gameContainer.appendChild(app.view as HTMLCanvasElement);
     }
 
-    // Update canvas scaling
-    updateCanvasScaling();
-
     // Create and initialize game
     const game = new StickersGame(app);
     await game.init();
@@ -176,7 +185,7 @@ async function initGame() {
 
     // Handle window resize
     window.addEventListener('resize', () => {
-        updateCanvasScaling();
+        game.onResize();
     });
 
     // Set up global functions

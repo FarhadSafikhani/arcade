@@ -1,4 +1,4 @@
-import { Application, Container, Graphics, Sprite, Texture, Assets, Rectangle, RenderTexture, FederatedPointerEvent, ColorMatrixFilter } from 'pixi.js';
+import { Application, Container, Graphics, Sprite, Texture, Assets, Rectangle, RenderTexture, FederatedPointerEvent, ColorMatrixFilter, Text } from 'pixi.js';
 import { Pnt } from '../../shared/utils/shared-types';
 import { STICKER_GAME_CONFIG } from './game';
 
@@ -143,6 +143,21 @@ export class Chunk {
         setTimeout(() => {
             this.sprite.eventMode = 'none';
         }, 1000);
+    }
+
+    public clamp(): void {
+        if (this.sprite.position.x < 0) {
+            this.sprite.position.x = 0;
+        }
+        if (this.sprite.position.x > this.stickerMaker.gameWidth - this.sprite.width) {
+            this.sprite.position.x = this.stickerMaker.gameWidth - this.sprite.width;
+        }
+        if (this.sprite.position.y < 0) {
+            this.sprite.position.y = 0;
+        }
+        if (this.sprite.position.y > this.stickerMaker.gameHeight - this.sprite.height) {
+            this.sprite.position.y = this.stickerMaker.gameHeight - this.sprite.height;
+        }
     }
 }
 
@@ -547,21 +562,16 @@ export class StickerMaker {
             chunk.sprite.position.y = Math.random() * this.gameHeight;
 
             //clamp to inside the screen
-            if (chunk.sprite.position.x < 0) {
-                chunk.sprite.position.x = 0;
-            }
-            if (chunk.sprite.position.x > this.gameWidth - chunk.sprite.width) {
-                chunk.sprite.position.x = this.gameWidth - chunk.sprite.width;
-            }
-            if (chunk.sprite.position.y < 0) {
-                chunk.sprite.position.y = 0;
-            }
-            if (chunk.sprite.position.y > this.gameHeight - chunk.sprite.height) {
-                chunk.sprite.position.y = this.gameHeight - chunk.sprite.height;
-            }
+            chunk.clamp();
         }
     }
 
+    public clampChunksToScreen(): void {
+        // Clamp all chunks to stay within screen bounds
+        for (const chunk of Object.values(this.chunks)) {
+            chunk.clamp();
+        }
+    }
 
     public onMove(event: FederatedPointerEvent){
         if (this.activeChunk) {
@@ -575,7 +585,11 @@ export class StickerMaker {
         if (this.activeChunk) {
             this.activeChunk.onDrop();
             this.activeChunk = null;
+            if (this.checkIfAllChunksArePlaced()) {
+                this.celebrate();
+            }
         }
+
     }
 
     public createSnapParticles(x: number, y: number): void {
@@ -633,6 +647,122 @@ export class StickerMaker {
             
             this.app.ticker.add(particleTicker);
         }
+    }
+
+    public checkIfAllChunksArePlaced(): boolean {
+        return Object.values(this.chunks).every(chunk => chunk.inPlay === false);
+    }
+
+
+    public celebrate(): void {
+        // Get star texture from assets
+        const starTexture = Assets.get('/arcade/assets/stickers/star.png');
+        
+        // Create circular explosion of star particles
+        const particleCount = 20;
+        const centerX = this.gameWidth / 2;
+        const centerY = this.gameHeight / 2;
+        
+        for (let i = 0; i < particleCount; i++) {
+            const star = new Sprite(starTexture);
+            star.anchor.set(0.5, 0.5);
+            star.position.set(centerX, centerY);
+            
+            // Random size
+            const scale = Math.random() * 0.8 + 0.4; // 0.4 to 1.2
+            star.scale.set(scale);
+            
+            // Add to game container
+            this.gameContainer.addChild(star);
+            
+            // Circular explosion animation
+            const angle = (Math.PI * 2 * i / particleCount) + (Math.random() - 0.5) * 0.5;
+            const speed = Math.random() * 4 + 3;
+            const velocityX = Math.cos(angle) * speed;
+            const velocityY = Math.sin(angle) * speed;
+            
+            let life = 120; // 2 seconds at 60fps
+            const gravity = 0.05;
+            let currentVelX = velocityX;
+            let currentVelY = velocityY;
+            
+            const starTicker = (deltaTime: number) => {
+                life -= deltaTime;
+                
+                // Apply physics
+                currentVelY += gravity * deltaTime;
+                star.position.x += currentVelX * deltaTime;
+                star.position.y += currentVelY * deltaTime;
+                
+                // Fade out and scale down
+                const progress = life / 120;
+                star.alpha = progress;
+                star.scale.set(scale * progress);
+                
+                // Slight rotation
+                star.rotation += 0.1 * deltaTime;
+                
+                // Remove when done
+                if (life <= 0) {
+                    this.app.ticker.remove(starTicker);
+                    this.gameContainer.removeChild(star);
+                    star.destroy();
+                }
+            };
+            
+            this.app.ticker.add(starTicker);
+        }
+        
+        // Show "Good Job!" text at bottom after a short delay
+        setTimeout(() => {
+            const goodJobText = new Text('⭐ Puzzle Completed! ⭐');
+
+            goodJobText.style.fontSize = 48;
+            goodJobText.style.fill = '#FFD700';
+            goodJobText.style.stroke = '#000000';
+            goodJobText.style.strokeThickness = 5;
+            goodJobText.style.fontFamily = 'Arial, sans-serif';
+            goodJobText.style.fontWeight = 'bold';
+            
+            goodJobText.anchor.set(0.5, 0.5);
+            goodJobText.position.set(
+                this.gameWidth / 2,
+                this.gameHeight - 50 // Bottom of screen with margin
+            );
+            
+            this.gameContainer.addChild(goodJobText);
+            
+            // Animate text appearance
+            goodJobText.alpha = 0;
+            goodJobText.scale.set(0.5);
+            
+            let textLife = 0;
+            const textDuration = 30; // 0.5 seconds
+            
+            const textTicker = (deltaTime: number) => {
+                textLife += deltaTime;
+                const progress = Math.min(textLife / textDuration, 1);
+                
+                // Ease in scale and alpha
+                const eased = 1 - (1 - progress) * (1 - progress); // Quadratic ease out
+                goodJobText.alpha = eased;
+                goodJobText.scale.set(0.5 + (eased * 0.5));
+                
+                if (progress >= 1) {
+                    this.app.ticker.remove(textTicker);
+                }
+            };
+            
+            this.app.ticker.add(textTicker);
+            
+            // Remove text after 3 seconds
+            setTimeout(() => {
+                if (goodJobText.parent) {
+                    this.gameContainer.removeChild(goodJobText);
+                    goodJobText.destroy();
+                }
+            }, 3000);
+        }, 500);
     }
 
 }
