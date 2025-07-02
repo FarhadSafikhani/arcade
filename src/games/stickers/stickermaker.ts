@@ -662,6 +662,50 @@ export class StickerMaker {
         return Object.values(this.chunks).every(chunk => chunk.inPlay === false);
     }
 
+    public cleanup(): void {
+        // Stop all active chunk animations
+        for (const chunk of Object.values(this.chunks)) {
+            if (chunk.sprite.parent) {
+                chunk.sprite.parent.removeChild(chunk.sprite);
+            }
+            chunk.sprite.destroy({ children: true });
+        }
+
+        // Clean up holes
+        for (const hole of Object.values(this.holes)) {
+            if (hole.graphics.parent) {
+                hole.graphics.parent.removeChild(hole.graphics);
+            }
+            hole.graphics.destroy();
+        }
+
+        // Clean up current sticker sprite
+        if (this.currentStickerSprite) {
+            if (this.currentStickerSprite.parent) {
+                this.currentStickerSprite.parent.removeChild(this.currentStickerSprite);
+            }
+            this.currentStickerSprite.destroy();
+            this.currentStickerSprite = null;
+        }
+
+        // Clear containers
+        this.holeContainer.removeChildren();
+        this.chunkContainer.removeChildren();
+
+        // Reset state
+        this.chunks = {};
+        this.holes = {};
+        this.activeChunk = null;
+
+        // Remove containers from parent if they exist
+        if (this.holeContainer.parent) {
+            this.holeContainer.parent.removeChild(this.holeContainer);
+        }
+        if (this.chunkContainer.parent) {
+            this.chunkContainer.parent.removeChild(this.chunkContainer);
+        }
+    }
+
 
     public celebrate(): void {
         // Get star texture from assets

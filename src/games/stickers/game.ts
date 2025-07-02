@@ -4,7 +4,7 @@ import { GameDimensions } from '../../shared/utils/shared-types';
 import { TOP_BAR_HEIGHT } from '../../shared/utils/shared-consts';
 
 export const STICKER_GAME_CONFIG = {
-    gideSize: 1,
+    gideSize: 5,
     snapThreshold: 100,
     visiblePercentage: 0.1
 }
@@ -41,6 +41,22 @@ export const STICKER_GAME_LEVELS: StickerGameLevel[] = [
     {
         id: 'chimp_1',
         path: '/arcade/assets/stickers/chimp.png'
+    },
+    {
+        id: 'husky_1',
+        path: '/arcade/assets/stickers/husky.png'
+    },
+    {
+        id: 'panda_1',
+        path: '/arcade/assets/stickers/panda.png'
+    },
+    {
+        id: 'tiger_1',
+        path: '/arcade/assets/stickers/tiger.png'
+    },
+    {
+        id: 'skibidi_1',
+        path: '/arcade/assets/stickers/skibidi.png'
     }
 ]
 
@@ -150,8 +166,9 @@ export class StickersGame {
         this.hideLevelMenu();
         this.hideReturnButton();
         
-        // Clear any existing game content
-        this.gameContainer.removeChildren();
+        // Clean up any existing game state
+        this.stickerMaker.cleanup();
+        
         this.createBackground();
         
         // Start the level
@@ -171,6 +188,12 @@ export class StickersGame {
     }
 
     public returnToLevelMenu(): void {
+        // Clean up current game state
+        this.stickerMaker.cleanup();
+        
+        // Clear game container
+        this.gameContainer.removeChildren();
+        
         // Hide return button and show level menu
         this.hideReturnButton();
         this.showLevelMenu();
@@ -247,6 +270,9 @@ export class StickersGame {
         if (this.removeTopBarHandler) {
             this.removeTopBarHandler();
         }
+        
+        // Clean up game state first
+        this.stickerMaker.cleanup();
         
         // Clean up PIXI resources
         this.app.stage.removeChild(this.gameContainer);

@@ -22,7 +22,6 @@
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     flex-direction: column;
     padding: 20px;
-    padding-top: 30px;
     margin-top: 0;
 }
 
@@ -49,17 +48,17 @@
 }
 
 .level-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 20px;
+    justify-content: center;
     max-width: 1200px;
-    width: 100%;
-    align-content: start;
     padding-bottom: 40px;
 }
 
 .level-card {
-    aspect-ratio: 1;
+    width: 200px;
+    height: 200px;
     background: white;
     border-radius: 16px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
@@ -68,6 +67,7 @@
     transition: all 0.3s ease;
     position: relative;
     border: 4px solid transparent;
+    flex-shrink: 0;
 }
 
 .level-card:hover {
@@ -116,19 +116,31 @@
     filter: none;
 }
 
-
-
 /* Hidden by default */
 .level-menu.hidden {
     display: none;
 }
 
 /* Responsive design */
-@media (max-width: 768px) {
+@media (max-width: 1000px) {
     .level-grid {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        gap: 15px;
-        padding: 0 10px;
+        grid-template-columns: repeat(4, 200px);
+    }
+}
+
+@media (max-width: 850px) {
+    .level-grid {
+        grid-template-columns: repeat(3, 200px);
+    }
+    .level-card {
+        width: 150px;
+        height: 150px;
+    }
+}
+
+@media (max-width: 650px) {
+    .level-grid {
+        grid-template-columns: repeat(2, 200px);
     }
     
     .level-menu-header h2 {
@@ -142,8 +154,8 @@
 
 @media (max-width: 480px) {
     .level-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
+        grid-template-columns: repeat(2, 150px);
+        gap: 15px;
     }
     
     .level-card {
@@ -156,6 +168,22 @@
     
     .level-menu {
         padding: 12px;
+    }
+}
+
+@media (max-width: 360px) {
+    .level-grid {
+        grid-template-columns: repeat(2, 120px);
+        gap: 12px;
+    }
+    
+    .level-grid-container {
+        padding: 0 15px;
+        padding-top: 15px;
+    }
+    
+    .level-menu {
+        padding: 10px;
     }
 }
 

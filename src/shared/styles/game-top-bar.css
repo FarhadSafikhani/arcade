@@ -51,9 +51,7 @@
 
 /* Mobile-specific styles */
 @media (max-width: 768px) {
-    .top-bar {
-        padding: 8px 15px;
-    }
+
     
     .game-title {
         font-size: 18px;
@@ -68,10 +66,7 @@
 
 /* Extra small screens */
 @media (max-width: 480px) {
-    .top-bar {
-        padding: 6px 12px;
-    }
-    
+
     .game-title {
         font-size: 16px;
     }
