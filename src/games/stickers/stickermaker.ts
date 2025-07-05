@@ -56,7 +56,7 @@ export class Chunk {
 
         //check if the chunk is close to the hole (its origin)
         const distance = Math.sqrt(Math.pow(this.sprite.position.x - this.originX, 2) + Math.pow(this.sprite.position.y - this.originY, 2));
-        const relativeSnapThreshold = STICKER_GAME_CONFIG.snapThreshold / STICKER_GAME_CONFIG.gideSize;
+        const relativeSnapThreshold = STICKER_GAME_CONFIG.snapThreshold / this.stickerMaker.currentGridSize;
 
         if (distance < relativeSnapThreshold) {
             //snap to the hole
@@ -190,6 +190,7 @@ export class StickerMaker {
     public holes: Record<string, Hole> = {};
     public activeChunk: Chunk | null = null;
     public currentLevel!: StickerGameLevel;
+    public currentGridSize: number = STICKER_GAME_CONFIG.gideSizeMedium;
 
     constructor(app: Application, game: StickersGame, gameContainer: Container, gameWidth: number, gameHeight: number) {
         this.app = app;
@@ -218,9 +219,10 @@ export class StickerMaker {
         this.activeChunk = chunk;
     }
 
-    async createSticker(level: StickerGameLevel): Promise<void> {
+    async createSticker(level: StickerGameLevel, gridSize: number = STICKER_GAME_CONFIG.gideSizeMedium): Promise<void> {
 
         this.currentLevel = level;
+        this.currentGridSize = gridSize;
 
         const start = performance.now();
 
@@ -261,7 +263,7 @@ export class StickerMaker {
         
         // STEP 2: then make a copy of the lion sticker and break it into triangles and squares, and make them draggable 'parts'
         // STEP 3: as you make the 'parts' under the part paint over the original sprite random colors, so dragging the part away would show the colored sections called 'holes'
-        this.cutIntoTrianglesAndSquares(stickerTexture);
+        this.cutIntoTrianglesAndSquares(stickerTexture, gridSize);
 
         const end = performance.now();
         console.log(`Time taken: ${end - start}ms`);
@@ -270,7 +272,7 @@ export class StickerMaker {
 
     }
 
-    private cutIntoTrianglesAndSquares(stickerTexture: Texture) {
+    private cutIntoTrianglesAndSquares(stickerTexture: Texture, gridSize: number) {
         // Extract pixel data to check for non-transparent areas
         const renderTexture = RenderTexture.create({
             width: stickerTexture.width,
@@ -286,7 +288,7 @@ export class StickerMaker {
         const data = imageData.data;
 
         // Create a grid of squares and triangles with perfect coverage
-        const gridSize = STICKER_GAME_CONFIG.gideSize; 
+        // Use the passed gridSize parameter instead of hardcoded value 
 
         // Calculate grid cell dimensions that provide perfect coverage
         const gridWidth = stickerTexture.width / gridSize;

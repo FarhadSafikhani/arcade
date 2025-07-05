@@ -21,7 +21,7 @@
     box-sizing: border-box;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     flex-direction: column;
-    padding: 20px;
+    padding: 10px;
     margin-top: 0;
     user-select: none;
 }
@@ -56,6 +56,7 @@
     align-content: flex-start;
     max-width: 1200px;
     padding-bottom: 40px;
+    padding-top: 20px;
 }
 
 .level-card {
@@ -64,7 +65,7 @@
     background: white;
     border-radius: 16px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-    overflow: hidden;
+    overflow: visible;
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
@@ -73,7 +74,8 @@
 }
 
 .level-card:hover {
-    transform: translateY(-8px);
+    transform: scale(1.15);
+    transform-origin: center bottom;
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
 }
 
@@ -106,16 +108,77 @@
     transition: filter 0.3s ease;
 }
 
+.level-card:not(.completed) {
+    opacity: 0.4;
+}
+
+.level-card:not(.completed):hover {
+    opacity: 1;
+}
+
 .level-card:not(.completed) .level-image {
-    filter: grayscale(100%) brightness(0.7);
+    filter: grayscale(100%) brightness(0.8) blur(2px);
 }
 
 .level-card.completed .level-image {
     filter: none;
 }
 
-.level-card:hover .level-image {
+.level-card.completed:hover .level-image {
     filter: none;
+}
+
+/* Difficulty buttons */
+.difficulty-buttons {
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    gap: 4px;
+    transition: opacity 0.3s ease;
+}
+
+.level-card.show-buttons .difficulty-buttons {
+    display: flex;
+}
+
+/* Only show on hover for non-touch devices */
+@media (hover: hover) and (pointer: fine) {
+    .level-card:hover .difficulty-buttons {
+        display: flex;
+    }
+}
+
+.difficulty-btn {
+    padding: 4px 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    min-width: 40px;
+}
+
+.difficulty-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.difficulty-btn.easy {
+    background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+}
+
+.difficulty-btn.medium {
+    background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+}
+
+.difficulty-btn.hard {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
 }
 
 /* Hidden by default */
@@ -144,10 +207,7 @@
     .level-grid {
         grid-template-columns: repeat(2, 200px);
     }
-    
-    .level-menu-header h2 {
-        font-size: 2em;
-    }
+
     
     .level-menu {
         padding: 15px;
@@ -163,11 +223,7 @@
     .level-card {
         border-radius: 12px;
     }
-    
-    .level-menu-header h2 {
-        font-size: 1.8em;
-    }
-    
+
     .level-menu {
         padding: 12px;
     }
@@ -186,6 +242,15 @@
     
     .level-menu {
         padding: 10px;
+    }
+}
+
+/* Mobile-specific button sizing */
+@media (max-width: 480px) {
+    .difficulty-btn {
+        padding: 8px 16px;
+        font-size: 16px;
+        min-width: 60px;
     }
 }
 

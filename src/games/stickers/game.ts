@@ -4,7 +4,9 @@ import { GameDimensions } from '../../shared/utils/shared-types';
 import { TOP_BAR_HEIGHT } from '../../shared/utils/shared-consts';
 
 export const STICKER_GAME_CONFIG = {
-    gideSize: 5,
+    gideSizeSmall: 3,
+    gideSizeMedium: 5,
+    gideSizeLarge: 7,
     snapThreshold: 100,
     visiblePercentage: 0.1
 }
@@ -54,9 +56,37 @@ export const STICKER_GAME_LEVELS: StickerGameLevel[] = [
         id: 'tiger_1',
         path: '/arcade/assets/stickers/tiger.png'
     },
+    // {
+    //     id: 'skibidi_1',
+    //     path: '/arcade/assets/stickers/skibidi.png'
+    // },
+    // {
+    //     id: 'emma_1',
+    //     path: '/arcade/assets/stickers/emma.png'
+    // },
+    // {
+    //     id: 'ryan_1',
+    //     path: '/arcade/assets/stickers/ryan.png'
+    // },
     {
-        id: 'skibidi_1',
-        path: '/arcade/assets/stickers/skibidi.png'
+        id: 'frog_1',
+        path: '/arcade/assets/stickers/frog.png'
+    },
+    {
+        id: 'rooster_1',
+        path: '/arcade/assets/stickers/rooster.png'
+    },
+    {
+        id: 'crocodile_1',
+        path: '/arcade/assets/stickers/crocodile.png'
+    },
+    {
+        id: 'police_1',
+        path: '/arcade/assets/stickers/police.png'
+    },
+    {
+        id: 'barbie_1',
+        path: '/arcade/assets/stickers/barbie.png'
     }
 ]
 
@@ -109,6 +139,9 @@ export class StickersGame {
         // Setup return button event
         this.setupReturnButton();
 
+        // Setup click outside handler for difficulty buttons
+        this.setupClickOutsideHandler();
+
     }
 
 
@@ -128,6 +161,46 @@ export class StickersGame {
         if (levelMenu) {
             levelMenu.classList.add('hidden');
         }
+    }
+
+    private hideOtherDifficultyButtons(currentCard: HTMLElement): void {
+        // Hide difficulty buttons from all other cards
+        const allCards = document.querySelectorAll('.level-card');
+        allCards.forEach(card => {
+            if (card !== currentCard) {
+                card.classList.remove('show-buttons');
+            }
+        });
+    }
+
+    private toggleDifficultyButtons(clickedCard: HTMLElement): void {
+        const isCurrentlyShowing = clickedCard.classList.contains('show-buttons');
+        
+        // Hide all difficulty buttons first
+        const allCards = document.querySelectorAll('.level-card');
+        allCards.forEach(card => {
+            card.classList.remove('show-buttons');
+        });
+
+        // Show buttons for the clicked card only if it wasn't already showing
+        if (!isCurrentlyShowing) {
+            clickedCard.classList.add('show-buttons');
+        }
+    }
+
+    private setupClickOutsideHandler(): void {
+        document.addEventListener('click', (e) => {
+            const target = e.target as HTMLElement;
+            
+            // Check if click is outside any level card
+            if (!target.closest('.level-card')) {
+                // Hide all difficulty buttons
+                const allCards = document.querySelectorAll('.level-card');
+                allCards.forEach(card => {
+                    card.classList.remove('show-buttons');
+                });
+            }
+        });
     }
 
     public populateLevelMenu(): void {
@@ -152,16 +225,69 @@ export class StickersGame {
             
             levelCard.appendChild(levelImage);
             
-            // Add click handler
-            levelCard.addEventListener('click', () => {
-                this.startLevel(level);
+            // Create difficulty buttons container
+            const difficultyButtons = document.createElement('div');
+            difficultyButtons.className = 'difficulty-buttons';
+            
+            // Easy button (3x3)
+            const easyBtn = document.createElement('button');
+            easyBtn.className = 'difficulty-btn easy';
+            easyBtn.textContent = '3x3';
+            easyBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.startLevel(level, STICKER_GAME_CONFIG.gideSizeSmall);
+            });
+            
+            // Medium button (5x5)
+            const mediumBtn = document.createElement('button');
+            mediumBtn.className = 'difficulty-btn medium';
+            mediumBtn.textContent = '5x5';
+            mediumBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.startLevel(level, STICKER_GAME_CONFIG.gideSizeMedium);
+            });
+            
+            // Hard button (7x7)
+            const hardBtn = document.createElement('button');
+            hardBtn.className = 'difficulty-btn hard';
+            hardBtn.textContent = '7x7';
+            hardBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.startLevel(level, STICKER_GAME_CONFIG.gideSizeLarge);
+            });
+            
+            difficultyButtons.appendChild(easyBtn);
+            difficultyButtons.appendChild(mediumBtn);
+            difficultyButtons.appendChild(hardBtn);
+            
+            levelCard.appendChild(difficultyButtons);
+            
+            // Add hover handler to hide other cards' buttons
+            levelCard.addEventListener('mouseenter', () => {
+                this.hideOtherDifficultyButtons(levelCard);
+            });
+            
+            // Add click handler for the whole card (show difficulty options)
+            levelCard.addEventListener('click', (e) => {
+                // Only handle if we didn't click on a button
+                if (!(e.target as HTMLElement).classList.contains('difficulty-btn')) {
+                    this.toggleDifficultyButtons(levelCard);
+                    
+                    // Scroll card into view with some padding
+                    setTimeout(() => {
+                        levelCard.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center'
+                        });
+                    }, 100);
+                }
             });
             
             levelGrid.appendChild(levelCard);
         });
     }
 
-    public async startLevel(level: StickerGameLevel): Promise<void> {
+    public async startLevel(level: StickerGameLevel, gridSize: number): Promise<void> {
         // Hide level menu and return button, show game
         this.hideLevelMenu();
         this.hideReturnButton();
@@ -172,7 +298,7 @@ export class StickersGame {
         this.createBackground();
         
         // Start the level
-        await this.stickerMaker.createSticker(level);
+        await this.stickerMaker.createSticker(level, gridSize);
     }
 
     private loadUserState(): UserState {
