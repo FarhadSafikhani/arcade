@@ -287,9 +287,6 @@ export class StickerMaker {
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const data = imageData.data;
 
-        // Create a grid of squares and triangles with perfect coverage
-        // Use the passed gridSize parameter instead of hardcoded value 
-
         // Calculate grid cell dimensions that provide perfect coverage
         const gridWidth = stickerTexture.width / gridSize;
         const gridHeight = stickerTexture.height / gridSize;

@@ -123,24 +123,18 @@ export class StickersGame {
         this.createBackground();
         this.setupTopBarEvents();
 
-        //preload the star for later use
-        ///arcade/assets/stickers/star.png
-        await Assets.load('/arcade/assets/stickers/star.png');
-        
-        // Preload all level assets
-        for (const level of STICKER_GAME_LEVELS) {
-            await Assets.load(level.path);
-        }
-
-        // Show level menu initially
+        // Show level menu immediately
         this.showLevelMenu();
-        this.populateLevelMenu();
+        this.populateLevelMenuWithPlaceholders();
 
         // Setup return button event
         this.setupReturnButton();
 
         // Setup click outside handler for difficulty buttons
         this.setupClickOutsideHandler();
+
+        // Load assets in background and update cards as they load
+        this.loadAssetsProgressively();
 
     }
 
@@ -203,14 +197,14 @@ export class StickersGame {
         });
     }
 
-    public populateLevelMenu(): void {
+    public populateLevelMenuWithPlaceholders(): void {
         const levelGrid = document.getElementById('levelGrid');
         if (!levelGrid) return;
 
         // Clear existing content
         levelGrid.innerHTML = '';
 
-        // Create level cards
+        // Create level cards with placeholders
         STICKER_GAME_LEVELS.forEach((level) => {
             const isCompleted = this.userState.levelsCompleted.includes(level.id);
             
@@ -220,71 +214,145 @@ export class StickersGame {
             
             const levelImage = document.createElement('img');
             levelImage.className = 'level-image';
-            levelImage.src = level.path;
             levelImage.alt = `Level ${level.id}`;
             
-            levelCard.appendChild(levelImage);
+            // Check if asset is already loaded
+            const isAssetLoaded = Assets.cache.has(level.path);
             
-            // Create difficulty buttons container
-            const difficultyButtons = document.createElement('div');
-            difficultyButtons.className = 'difficulty-buttons';
+            if (isAssetLoaded) {
+                // Asset is already loaded, show immediately
+                levelImage.src = level.path;
+                levelImage.style.opacity = '1';
+                levelCard.appendChild(levelImage);
+            } else {
+                // Asset not loaded yet, show placeholder
+                levelImage.classList.add('loading');
+                
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'level-placeholder';
+                placeholderDiv.textContent = '⏳';
+                
+                levelCard.appendChild(placeholderDiv);
+                levelCard.appendChild(levelImage);
+            }
             
-            // Easy button (3x3)
-            const easyBtn = document.createElement('button');
-            easyBtn.className = 'difficulty-btn easy';
-            easyBtn.textContent = '3x3';
-            easyBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.startLevel(level, STICKER_GAME_CONFIG.gideSizeSmall);
-            });
-            
-            // Medium button (5x5)
-            const mediumBtn = document.createElement('button');
-            mediumBtn.className = 'difficulty-btn medium';
-            mediumBtn.textContent = '5x5';
-            mediumBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.startLevel(level, STICKER_GAME_CONFIG.gideSizeMedium);
-            });
-            
-            // Hard button (7x7)
-            const hardBtn = document.createElement('button');
-            hardBtn.className = 'difficulty-btn hard';
-            hardBtn.textContent = '7x7';
-            hardBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.startLevel(level, STICKER_GAME_CONFIG.gideSizeLarge);
-            });
-            
-            difficultyButtons.appendChild(easyBtn);
-            difficultyButtons.appendChild(mediumBtn);
-            difficultyButtons.appendChild(hardBtn);
-            
-            levelCard.appendChild(difficultyButtons);
-            
-            // Add hover handler to hide other cards' buttons
-            levelCard.addEventListener('mouseenter', () => {
-                this.hideOtherDifficultyButtons(levelCard);
-            });
-            
-            // Add click handler for the whole card (show difficulty options)
-            levelCard.addEventListener('click', (e) => {
-                // Only handle if we didn't click on a button
-                if (!(e.target as HTMLElement).classList.contains('difficulty-btn')) {
-                    this.toggleDifficultyButtons(levelCard);
-                    
-                    // Scroll card into view with some padding
-                    setTimeout(() => {
-                        levelCard.scrollIntoView({ 
-                            behavior: 'smooth', 
-                            block: 'center'
-                        });
-                    }, 100);
-                }
-            });
+            this.createDifficultyButtons(levelCard, level);
             
             levelGrid.appendChild(levelCard);
         });
+    }
+
+    private async loadAssetsProgressively(): Promise<void> {
+        // Load star asset first
+        await Assets.load('/arcade/assets/stickers/star.png');
+        
+        // Load level assets one by one
+        for (const level of STICKER_GAME_LEVELS) {
+            try {
+                await Assets.load(level.path);
+                this.updateLevelCard(level);
+            } catch (error) {
+                console.error(`Failed to load asset for level ${level.id}:`, error);
+                this.updateLevelCardWithError(level);
+            }
+        }
+    }
+
+    private updateLevelCard(level: StickerGameLevel): void {
+        const levelCard = document.querySelector(`[data-level-id="${level.id}"]`) as HTMLElement;
+        if (!levelCard) return;
+
+        const levelImage = levelCard.querySelector('.level-image') as HTMLImageElement;
+        const placeholder = levelCard.querySelector('.level-placeholder') as HTMLElement;
+
+        if (levelImage && placeholder) {
+            levelImage.src = level.path;
+            levelImage.onload = () => {
+                // Fade in the image
+                levelImage.classList.remove('loading');
+                levelImage.style.opacity = '1';
+                
+                // Fade out the placeholder
+                placeholder.style.opacity = '0';
+                placeholder.style.display = 'none';
+            };
+        }
+    }
+
+    private updateLevelCardWithError(level: StickerGameLevel): void {
+        const levelCard = document.querySelector(`[data-level-id="${level.id}"]`) as HTMLElement;
+        if (!levelCard) return;
+
+        const placeholder = levelCard.querySelector('.level-placeholder') as HTMLElement;
+        if (placeholder) {
+            placeholder.textContent = '❌';
+            placeholder.style.color = '#ff6b6b';
+        }
+    }
+
+    private createDifficultyButtons(levelCard: HTMLElement, level: StickerGameLevel): void {
+        // Create difficulty buttons container
+        const difficultyButtons = document.createElement('div');
+        difficultyButtons.className = 'difficulty-buttons';
+        
+        // Easy button (3x3)
+        const easyBtn = document.createElement('button');
+        easyBtn.className = 'difficulty-btn easy';
+        easyBtn.textContent = '3x3';
+        easyBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.startLevel(level, STICKER_GAME_CONFIG.gideSizeSmall);
+        });
+        
+        // Medium button (5x5)
+        const mediumBtn = document.createElement('button');
+        mediumBtn.className = 'difficulty-btn medium';
+        mediumBtn.textContent = '5x5';
+        mediumBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.startLevel(level, STICKER_GAME_CONFIG.gideSizeMedium);
+        });
+        
+        // Hard button (7x7)
+        const hardBtn = document.createElement('button');
+        hardBtn.className = 'difficulty-btn hard';
+        hardBtn.textContent = '7x7';
+        hardBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.startLevel(level, STICKER_GAME_CONFIG.gideSizeLarge);
+        });
+        
+        difficultyButtons.appendChild(easyBtn);
+        difficultyButtons.appendChild(mediumBtn);
+        difficultyButtons.appendChild(hardBtn);
+        
+        levelCard.appendChild(difficultyButtons);
+        
+        // Add hover handler to hide other cards' buttons
+        levelCard.addEventListener('mouseenter', () => {
+            this.hideOtherDifficultyButtons(levelCard);
+        });
+        
+        // Add click handler for the whole card (show difficulty options)
+        levelCard.addEventListener('click', (e) => {
+            // Only handle if we didn't click on a button
+            if (!(e.target as HTMLElement).classList.contains('difficulty-btn')) {
+                this.toggleDifficultyButtons(levelCard);
+                
+                // Scroll card into view with some padding
+                setTimeout(() => {
+                    levelCard.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center'
+                    });
+                }, 100);
+            }
+        });
+    }
+
+    public populateLevelMenu(): void {
+        // Legacy method - now just calls the new implementation
+        this.populateLevelMenuWithPlaceholders();
     }
 
     public async startLevel(level: StickerGameLevel, gridSize: number): Promise<void> {
