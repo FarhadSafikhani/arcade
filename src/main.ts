@@ -1,4 +1,5 @@
 import { gamesConfig, GameConfig } from './games.config';
+import { VERSION } from './version';
 
 // Global functions for game control
 declare global {
@@ -10,6 +11,9 @@ declare global {
 
 async function init() {
     try {
+        // Update version display
+        updateVersionDisplay();
+        
         // Generate menu buttons using imported config
         generateMenuButtons(gamesConfig.games);
         
@@ -18,6 +22,13 @@ async function init() {
         window.returnToMainMenu = returnToMainMenu;
     } catch (error) {
         console.error('Failed to initialize:', error);
+    }
+}
+
+function updateVersionDisplay() {
+    const versionElement = document.getElementById('version-number');
+    if (versionElement) {
+        versionElement.textContent = "v" + VERSION;
     }
 }
 

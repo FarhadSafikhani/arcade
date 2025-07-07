@@ -10,7 +10,8 @@
     "build:prod": "vite build --mode production",
     "preview": "vite preview",
     "serve": "vite preview",
-    "deploy": "npm run build:prod && gh-pages -d dist",
+    "increment-version": "node scripts/increment-version.js",
+    "deploy": "npm run increment-version && npm run build:prod && gh-pages -d dist",
     "clean": "rimraf dist",
     "build:clean": "npm run clean && npm run build:prod"
   },
