@@ -1,13 +1,4 @@
-/* Stickers Game Styles */
 
-#gameContainer {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: calc(100vh - 60px); /* Account for top bar */
-
-    background-color: #f5f5f5;
-}
 
 /* Level Menu Styles */
 .level-menu {

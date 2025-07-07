@@ -40,6 +40,7 @@
 .archer-game #gameContainer {
     position: relative;
     overflow: visible;
+    top: 0px;
 }
 
 
