@@ -36,7 +36,7 @@ export class GameTopBar extends HTMLElement {
         <div class="game-title">${this.props.title}</div>
         <div class="button-container">
           ${this.props.showPause ? '<button id="pauseBtn">⏸️</button>' : ''}
-          ${this.props.showMenu ? '<button id="menuBtn">🏠</button>' : ''}
+          ${this.props.showMenu ? '<button id="menuBtn">⬅️</button>' : ''}
         </div>
       </div>
     `;

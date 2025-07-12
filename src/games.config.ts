@@ -5,7 +5,6 @@ export interface GameConfig {
     description: string;
     icon: string;
     available: boolean;
-    entryPoint: string;
 }
 
 export interface GamesConfig {
@@ -21,40 +20,42 @@ export const gamesConfig: GamesConfig = {
             name: "Snake",
             description: "Classic snake game",
             icon: "🐍",
-            available: true,
-            entryPoint: "/games/snake/index.html"
+            available: true
         },
         {
             id: "breakout",
             name: "Breakout",
             description: "Classic brick-breaking arcade game",
             icon: "🎾",
-            available: true,
-            entryPoint: "/games/breakout/index.html"
+            available: true
         },
         {
             id: "memory",
             name: "Memory",
             description: "Classic memory game",
             icon: "👀",
-            available: true,
-            entryPoint: "/games/memory/index.html"
+            available: true
         },
         {
             id: "archer",
             name: "Archer",
             description: "Physics-based archery game",
             icon: "🏹",
-            available: true,
-            entryPoint: "/games/archer/index.html"
+            available: true
         },
         {
             id: "stickers",
             name: "Stickers",
             description: "Interactive sticker game",
             icon: "🍎",
-            available: true,
-            entryPoint: "/games/stickers/index.html"
+            available: true
+        },
+        {
+            id: "matchmakingsim",
+            name: "MatchMaking Sim",
+            description: "Multiplayer matchmaking simulation",
+            icon: "🎮",
+            available: true
         }
 
     ]

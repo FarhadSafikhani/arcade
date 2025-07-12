@@ -1,0 +1,69 @@
+# Cursor Rules for Arcade Game Project
+
+## Project Overview
+This is a TypeScript-based arcade game collection with modular game architecture. Each game is self-contained with shared utilities and components.
+
+## Code Style & Standards
+
+### TypeScript
+- Use strict TypeScript with proper type annotations
+- Prefer interfaces over types for object shapes
+- Use meaningful variable and function names
+- Implement proper error handling with try-catch blocks
+- Use async/await over promises when possible
+
+### Game Development
+- Keep game logic separated from rendering logic
+- Implement proper game state management (playing, paused, game over)
+- Handle user input with proper event listeners
+- Clean up resources and event listeners on game end
+- Always use PixiJS when possible
+- Instead of base canvas, utilize PixiJS
+
+### File Organization
+- Each game should be in its own directory under `src/games/`
+- Shared utilities go in `src/shared/`
+- Game-specific styles in `src/styles/`
+
+### CSS & Styling
+- Never use Z-Index
+- Use CSS custom properties (variables) for consistent theming
+- Implement responsive design principles
+- Use semantic class names that describe purpose, not appearance
+- Maintain consistent spacing and typography scales
+
+### Performance
+- Optimize game loops for 60fps performance
+- Use object pooling for frequently created/destroyed objects
+- Minimize DOM manipulations during game loops
+- Implement proper canvas rendering techniques where applicable
+
+### Code Organization
+- Emphasize not duplicating code
+- Export classes and functions with descriptive names
+- Use barrel exports in index files where appropriate
+- Keep functions small and focused on single tasks
+- Document complex game mechanics with comments
+
+
+
+## Specific Guidelines
+
+### Game Classes
+- Initialize game state in constructor
+- Implement update() and render() methods
+- Handle cleanup in destroy() method
+- Use consistent naming for game entities (player, enemies, etc.)
+
+### Event Handling
+- Use proper event delegation
+- Clean up event listeners to prevent memory leaks
+- Handle both mouse and touch events for mobile support
+- Implement keyboard controls where appropriate
+
+### State Management
+- Keep game state predictable and immutable where possible
+- Use enums for game states (PLAYING, PAUSED, GAME_OVER)
+- Implement proper state transitions
+- Store high scores and settings in localStorage
+

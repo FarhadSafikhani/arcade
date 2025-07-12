@@ -62,7 +62,8 @@ function generateMenuButtons(games: GameConfig[]) {
 }
 
 function startGame(gameId: string) {
-    // Navigate to the game page
+    // Navigate to the game page using convention: /games/{gameId}/index.html
+    // Vite handles the base URL automatically
     window.location.href = `/arcade/games/${gameId}/index.html`;
 }
 
