@@ -1,4 +1,4 @@
-import { Lobby, Player } from './lobby.js';
+import { Lobby } from './lobby.js';
 import { Matcher } from './matcher.js';
 
 export class MatchMakingSimGame {

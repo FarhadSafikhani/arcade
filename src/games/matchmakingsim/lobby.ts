@@ -16,6 +16,7 @@ export class Lobby {
     playerSlots: (Player | null)[];
     timeJoined: number;
     aiEligible: boolean;
+    classId: number;
 
     private onDelete: (lobbyId: number) => void;
     private previousAllReady: boolean = false;
@@ -25,6 +26,7 @@ export class Lobby {
         this.playerSlots = [null, null, null];
         this.timeJoined = 0;
         this.aiEligible = false;
+        this.classId = 0;
 
         this.onDelete = onDelete;
         
@@ -82,6 +84,13 @@ export class Lobby {
             lobbyIdDiv.className = 'lobby-id';
             lobbyIdDiv.textContent = `id:${this.id}`;
             
+            // Class ID (below lobby ID)
+            const classIdDiv = document.createElement('div');
+            classIdDiv.className = 'class-id';
+            classIdDiv.id = `class-id-${this.id}`;
+            classIdDiv.textContent = `class:${this.classId}`;
+            classIdDiv.onclick = () => this.incrementClassId();
+            
             // Queue time (center top)
             const queueTimeDiv = document.createElement('div');
             queueTimeDiv.className = 'queue-time';
@@ -112,6 +121,7 @@ export class Lobby {
             }
             
             lobbyDiv.appendChild(lobbyIdDiv);
+            lobbyDiv.appendChild(classIdDiv);
             lobbyDiv.appendChild(queueTimeDiv);
             lobbyDiv.appendChild(toggleReadyBtn);
             lobbyDiv.appendChild(deleteBtn);
@@ -227,6 +237,18 @@ export class Lobby {
         });
         this.updateDisplay();
         this.checkAndFireReadyStatusChange();
+    }
+
+    incrementClassId(): void {
+        this.classId = (this.classId + 1) % 3; // Cycle through 0, 1, 2
+        this.updateClassIdDisplay();
+    }
+
+    private updateClassIdDisplay(): void {
+        const classIdDiv = document.getElementById(`class-id-${this.id}`);
+        if (classIdDiv) {
+            classIdDiv.textContent = `class:${this.classId}`;
+        }
     }
 
     destroy() {

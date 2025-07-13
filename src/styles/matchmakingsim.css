@@ -160,6 +160,7 @@
 }
 
 .match-lobby {
+    position: relative;
     background: rgba(255,255,255,0.1);
     border: 1px solid #2c3e50;
     border-radius: 3px;
@@ -173,6 +174,22 @@
     background: rgba(255,255,255,0.3);
     font-style: italic;
     opacity: 0.8;
+}
+
+.match-lobby-class {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 2px;
+    padding: 1px 4px;
+    margin-left: 6px;
+    font-size: 8px;
+    font-weight: bold;
+    display: inline-block;
+    vertical-align: middle;
+    color: #ffffff;
 }
 
 #matchingContainer {
@@ -266,6 +283,23 @@
     font-size: 12px;
     color: #bdc3c7;
     font-weight: bold;
+}
+
+.class-id {
+    position: absolute;
+    top: 20px;
+    left: 5px;
+    font-size: 12px;
+    color: #bdc3c7;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.class-id:hover {
+    border-color: #3498db;
+    background: rgba(52, 152, 219, 0.2);
+    color: #3498db;
 }
 
 .queue-time {
