@@ -25,6 +25,27 @@
             <div id="matchResultsList"></div>
         </div>
 
+        <div id="settingsPanel">
+            <h3>Settings</h3>
+            
+            <div class="setting-group">
+                <label>Class Mix:</label>
+                <div id="classMixToggle" class="toggle-btn">
+                    <span id="classMixStatus">ENABLED</span>
+                </div>
+            </div>
+            
+            <div class="setting-group">
+                <label>AI Eligible Time (ms):</label>
+                <input type="number" id="aiEligibleTimeInput" value="15000" min="1000" max="60000" step="1000">
+            </div>
+            
+            <div class="setting-group">
+                <label>AI Forced Threshold (ms):</label>
+                <input type="number" id="aiReadyTimeInput" value="30000" min="1000" max="120000" step="1000">
+            </div>
+        </div>
+
     </div>
     
     <script type="module" src="/src/shared/components/game-top-bar.ts"></script>

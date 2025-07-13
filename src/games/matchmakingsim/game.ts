@@ -23,6 +23,61 @@ export class MatchMakingSimGame {
         if (createLobbyBtn) {
             createLobbyBtn.addEventListener('click', () => this.addLobby());
         }
+        
+        this.setupSettingsPanel();
+    }
+
+    private setupSettingsPanel(): void {
+        // Class mix toggle button
+        const classMixToggle = document.getElementById('classMixToggle');
+        const classMixStatus = document.getElementById('classMixStatus');
+        
+        if (classMixToggle && classMixStatus) {
+            this.updateClassMixDisplay();
+            classMixToggle.addEventListener('click', () => {
+                Matcher.ALLOW_TEAM_CLASS_MIX = !Matcher.ALLOW_TEAM_CLASS_MIX;
+                this.updateClassMixDisplay();
+            });
+        }
+
+        // AI Eligible Time input
+        const aiEligibleTimeInput = document.getElementById('aiEligibleTimeInput') as HTMLInputElement;
+        if (aiEligibleTimeInput) {
+            aiEligibleTimeInput.value = Matcher.AI_ELIGIBLE_TIME.toString();
+            aiEligibleTimeInput.addEventListener('input', () => {
+                const value = parseInt(aiEligibleTimeInput.value);
+                if (!isNaN(value) && value > 0) {
+                    Matcher.AI_ELIGIBLE_TIME = value;
+                }
+            });
+        }
+
+        // AI Ready Time input
+        const aiReadyTimeInput = document.getElementById('aiReadyTimeInput') as HTMLInputElement;
+        if (aiReadyTimeInput) {
+            aiReadyTimeInput.value = Matcher.AI_ELIGIBLE_TIME_THRESHOLD.toString();
+            aiReadyTimeInput.addEventListener('input', () => {
+                const value = parseInt(aiReadyTimeInput.value);
+                if (!isNaN(value) && value > 0) {
+                    Matcher.AI_ELIGIBLE_TIME_THRESHOLD = value;
+                }
+            });
+        }
+    }
+
+    private updateClassMixDisplay(): void {
+        const classMixToggle = document.getElementById('classMixToggle');
+        const classMixStatus = document.getElementById('classMixStatus');
+        
+        if (classMixToggle && classMixStatus) {
+            if (Matcher.ALLOW_TEAM_CLASS_MIX) {
+                classMixToggle.classList.add('enabled');
+                classMixStatus.textContent = 'ENABLED';
+            } else {
+                classMixToggle.classList.remove('enabled');
+                classMixStatus.textContent = 'DISABLED';
+            }
+        }
     }
 
     private addLobby(): void {

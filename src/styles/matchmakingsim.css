@@ -110,11 +110,10 @@
     position: absolute;
     left: 600px;
     top: 0;
-    width: 300px;
+    right: 250px;
     bottom: 0;
     background: #27ae60;
     border-left: 2px solid #4a5568;
-    border-right: 2px solid #4a5568;
     padding: 20px;
     overflow-y: auto;
     box-sizing: border-box;
@@ -127,6 +126,85 @@
     text-align: center;
     border-bottom: 1px solid #2ecc71;
     padding-bottom: 10px;
+}
+
+#settingsPanel {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 250px;
+    bottom: 0;
+    background: #34495e;
+    border-left: 2px solid #4a5568;
+    padding: 20px;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+#settingsPanel h3 {
+    color: white;
+    margin: 0 0 20px 0;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    padding: 8px 0;
+    background: rgba(0,0,0,0.2);
+    border-radius: 4px;
+}
+
+.setting-group {
+    margin-bottom: 20px;
+}
+
+.setting-group label {
+    display: block;
+    color: white;
+    font-size: 12px;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.toggle-btn {
+    background: #e74c3c;
+    color: white;
+    border: 1px solid #c0392b;
+    border-radius: 4px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: bold;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+.toggle-btn:hover {
+    background: #c0392b;
+}
+
+.toggle-btn.enabled {
+    background: #27ae60;
+    border-color: #2ecc71;
+}
+
+.toggle-btn.enabled:hover {
+    background: #2ecc71;
+}
+
+.setting-group input[type="number"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #4a5568;
+    border-radius: 4px;
+    background: #2c3e50;
+    color: white;
+    font-size: 12px;
+    box-sizing: border-box;
+}
+
+.setting-group input[type="number"]:focus {
+    outline: none;
+    border-color: #3498db;
+    background: #34495e;
 }
 
 .match-result {

@@ -7,7 +7,7 @@ import { MatcherNoClassMix } from "./matcher-no-class-mix";
 export class Matcher {
 
     public static AI_ELIGIBLE_TIME = 15000; //after this time, the lobby is eligible for AI players or allies
-    public static AI_ELIGIBLE_TIME_THRESHOLD = 30000; // after this time, this lobby is going in, and taking any AI Eligible lobbies with it
+    public static AI_ELIGIBLE_TIME_THRESHOLD = 35000; // after this time, this lobby is going in, and taking any AI Eligible lobbies with it
     public static ALLOW_TEAM_CLASS_MIX = true;
 
     queuedLobbies: Lobby[];
