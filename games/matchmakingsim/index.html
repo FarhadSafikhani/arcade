@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>MatchMaking Simulator - Arcade Collection</title>
-  <script type="module" crossorigin src="/arcade/assets/matchmakingsim-wuYBb6Db.js"></script>
+  <script type="module" crossorigin src="/arcade/assets/matchmakingsim--qnhfEbm.js"></script>
   <link rel="modulepreload" crossorigin href="/arcade/assets/main-Dacpvxy9.js">
   <link rel="modulepreload" crossorigin href="/arcade/assets/game-top-bar-D2G5Ym00.js">
   <link rel="stylesheet" crossorigin href="/arcade/assets/main-BweuvxzU.css">
-  <link rel="stylesheet" crossorigin href="/arcade/assets/matchmakingsim-DD7s7tn1.css">
+  <link rel="stylesheet" crossorigin href="/arcade/assets/matchmakingsim-CfP7W8jW.css">
 </head>
 <body class="game-page">
     <game-top-bar title="🎮 MatchMaking Sim" show-pause show-menu></game-top-bar>
@@ -26,6 +26,27 @@
         <div id="matchResultsContainer">
             <h3>Matches Made</h3>
             <div id="matchResultsList"></div>
+        </div>
+
+        <div id="settingsPanel">
+            <h3>Settings</h3>
+            
+            <div class="setting-group">
+                <label>Class Mix:</label>
+                <div id="classMixToggle" class="toggle-btn">
+                    <span id="classMixStatus">ENABLED</span>
+                </div>
+            </div>
+            
+            <div class="setting-group">
+                <label>AI Eligible Time (ms):</label>
+                <input type="number" id="aiEligibleTimeInput" value="15000" min="1000" max="60000" step="1000">
+            </div>
+            
+            <div class="setting-group">
+                <label>AI Forced Threshold (ms):</label>
+                <input type="number" id="aiReadyTimeInput" value="30000" min="1000" max="120000" step="1000">
+            </div>
         </div>
 
     </div>
