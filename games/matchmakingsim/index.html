@@ -9,11 +9,21 @@
 </head>
 <body class="game-page">
     <game-top-bar title="🎮 MatchMaking Sim" show-pause show-menu></game-top-bar>
-    <div id="gameUI">
-        <!-- <div>Queue: <span id="queueSize">0</span></div>
-        <div>Matches: <span id="matchCount">0</span></div> -->
-    </div>
+
     <div id="gameContainer">
+
+        <!-- lobbies containers -->
+         <div id="createLobbyBtn">+ Lobby</div>
+        <div id="lobbyContainer">
+        </div>
+        <div id="matchQueueContainer">
+            <div id="matchQueueHeader">Match Queue</div>
+            <div id="matchQueueList"></div>
+        </div>
+        <div id="matchResultsContainer">
+            <h3>Matches Made</h3>
+            <div id="matchResultsList"></div>
+        </div>
 
     </div>
     
