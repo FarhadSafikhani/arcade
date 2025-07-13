@@ -6,9 +6,10 @@ import { MatcherNoClassMix } from "./matcher-no-class-mix";
 
 export class Matcher {
 
-    public static AI_ELIGIBLE_TIME = 15000; //after this time, the lobby is eligible for AI players or allies
-    public static AI_ELIGIBLE_TIME_THRESHOLD = 35000; // after this time, this lobby is going in, and taking any AI Eligible lobbies with it
-    public static ALLOW_TEAM_CLASS_MIX = true;
+    public static AI_ELIGIBLE_TIME = 5000; //after this time, the lobby is eligible for AI players or allies
+    public static AI_ELIGIBLE_TIME_THRESHOLD = 15000; // after this time, this lobby is going in, and taking any AI Eligible lobbies with it
+    public static ALLOW_TEAM_CLASS_MIX = false;
+    public static MAX_LOBBIES_PER_SEARCH = 150; // Limit search to oldest N lobbies for performance
 
     queuedLobbies: Lobby[];
     private onLobbyDelete: (lobbyId: number) => void;
@@ -112,23 +113,32 @@ export class Matcher {
         if (this.queuedLobbies.length === 0) return;
         const startTime = performance.now();
         
-        // Delegate to the appropriate algorithm based on class mixing setting
-        let result: { team1: Lobby[], team2: Lobby[], aiPlayers?: number } | null = null;
+        // Process multiple matches per tick for better performance
+        const maxMatchesPerTick = 5; // Process up to 5 matches per tick
+        let matchesProcessed = 0;
         
-        if (Matcher.ALLOW_TEAM_CLASS_MIX) {
-            result = MatcherClassMix.runMatchAlgorithm(this.queuedLobbies);
-        } else {
-            result = MatcherNoClassMix.runMatchAlgorithm(this.queuedLobbies);
-        }
-        
-        //TODO: were only doing one match per tick atm, can improve to do multiple matches per tick
-        if (result) {
-            this.createMatch(result.team1, result.team2, result.aiPlayers || 0);
+        while (matchesProcessed < maxMatchesPerTick && this.queuedLobbies.length > 0) {
+            // Delegate to the appropriate algorithm based on class mixing setting
+            let result: { team1: Lobby[], team2: Lobby[], aiPlayers?: number } | null = null;
+            
+            if (Matcher.ALLOW_TEAM_CLASS_MIX) {
+                result = MatcherClassMix.runMatchAlgorithm(this.queuedLobbies);
+            } else {
+                result = MatcherNoClassMix.runMatchAlgorithm(this.queuedLobbies);
+            }
+            
+            if (result) {
+                this.createMatch(result.team1, result.team2, result.aiPlayers || 0);
+                matchesProcessed++;
+            } else {
+                // No more matches possible, break out of loop
+                break;
+            }
         }
         
         const endTime = performance.now();
         const duration = (endTime - startTime).toFixed(2);
-        console.log(`Algo Tick: ${duration}ms`);
+        console.log(`Algo Tick: ${duration}ms (${matchesProcessed} matches)`);
     }
 
 

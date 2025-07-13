@@ -21,12 +21,12 @@ export class Lobby {
     private onDelete: (lobbyId: number) => void;
     private previousAllReady: boolean = false;
     
-    constructor(id: number, onDelete: (lobbyId: number) => void) {
+    constructor(id: number, classId: number, onDelete: (lobbyId: number) => void) {
         this.id = id;
         this.playerSlots = [null, null, null];
         this.timeJoined = 0;
         this.aiEligible = false;
-        this.classId = 0;
+        this.classId = classId;
 
         this.onDelete = onDelete;
         
@@ -56,7 +56,13 @@ export class Lobby {
     }
 
     addPlayer(player: Player) {
-        this.playerSlots.push(player);
+        // Find the first empty slot
+        const emptySlotIndex = this.playerSlots.findIndex(slot => slot === null);
+        if (emptySlotIndex !== -1) {
+            this.playerSlots[emptySlotIndex] = player;
+            this.updateDisplay();
+            this.checkAndFireReadyStatusChange();
+        }
     }
 
 

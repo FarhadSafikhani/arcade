@@ -110,7 +110,7 @@
     position: absolute;
     left: 600px;
     top: 0;
-    right: 250px;
+    min-width: 500px;
     bottom: 0;
     background: #27ae60;
     border-left: 2px solid #4a5568;
@@ -207,6 +207,27 @@
     background: #34495e;
 }
 
+#addRandomReadyLobbyToGameBtn {
+    background: #3498db;
+    color: white;
+    border: 1px solid #2980b9;
+    border-radius: 4px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: bold;
+    text-align: center;
+    transition: all 0.2s;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#addRandomReadyLobbyToGameBtn:hover {
+    background: #2980b9;
+    border-color: #21618c;
+}
+
 .match-result {
     background: #2ecc71;
     border: 1px solid #27ae60;
@@ -263,7 +284,7 @@
     border-radius: 2px;
     padding: 1px 4px;
     margin-left: 6px;
-    font-size: 8px;
+    font-size: 13px;
     font-weight: bold;
     display: inline-block;
     vertical-align: middle;

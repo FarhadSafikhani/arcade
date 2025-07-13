@@ -1,4 +1,4 @@
-import { Lobby } from './lobby.js';
+import { Lobby, Player } from './lobby.js';
 import { Matcher } from './matcher.js';
 
 export class MatchMakingSimGame {
@@ -21,7 +21,7 @@ export class MatchMakingSimGame {
     private setupUI(): void {
         const createLobbyBtn = document.getElementById('createLobbyBtn');
         if (createLobbyBtn) {
-            createLobbyBtn.addEventListener('click', () => this.addLobby());
+            createLobbyBtn.addEventListener('click', () => this.addLobby(0));
         }
         
         this.setupSettingsPanel();
@@ -63,6 +63,11 @@ export class MatchMakingSimGame {
                 }
             });
         }
+
+        const addRandomReadyLobbyToGameBtn = document.getElementById('addRandomReadyLobbyToGameBtn');
+        if (addRandomReadyLobbyToGameBtn) {
+            addRandomReadyLobbyToGameBtn.addEventListener('click', () => this.addRandomReadyLobby());
+        }
     }
 
     private updateClassMixDisplay(): void {
@@ -80,10 +85,11 @@ export class MatchMakingSimGame {
         }
     }
 
-    private addLobby(): void {
+    private addLobby(classId: number): Lobby {
         const lobbyId = this.nextLobbyId++;
-        const lobby = new Lobby(lobbyId, (id: number) => this.deleteLobby(id));
+        const lobby = new Lobby(lobbyId, classId, (id: number) => this.deleteLobby(id));
         this.lobbies.set(lobbyId, lobby);
+        return lobby;
     }
 
     public deleteLobby(lobbyId: number): void {
@@ -96,6 +102,19 @@ export class MatchMakingSimGame {
             this.lobbies.delete(lobbyId);
         }
     }
+
+    private addRandomReadyLobby(): void {
+        const classId = Math.floor(Math.random() * 15);
+        const lobby = this.addLobby(classId);
+        //randomly add 1-3 ready players to the lobby
+        const numPlayers = Math.floor(Math.random() * 3) + 1;
+        for (let i = 0; i < numPlayers; i++) {
+            const player = new Player();
+            player.ready = true;
+            lobby.addPlayer(player);
+        }
+    }
+
 
 
 

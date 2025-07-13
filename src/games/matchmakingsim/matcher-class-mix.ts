@@ -3,36 +3,65 @@ import { Matcher } from "./matcher";
 
 export class MatcherClassMix {
     /**
-     * Simple matching algorithm when class mixing is allowed
-     * No class compatibility checks needed
+     * Optimized matching algorithm when class mixing is allowed
+     * Uses greedy approach for better performance with many lobbies
      */
-    static runMatchAlgorithm(queuedLobbies: Lobby[]): { team1: Lobby[], team2: Lobby[], aiPlayers?: number } | null {
-        if (queuedLobbies.length === 0) return null;
+    static runMatchAlgorithm(queuedLobbiesSorted: Lobby[]): { team1: Lobby[], team2: Lobby[], aiPlayers?: number } | null {
+        if (queuedLobbiesSorted.length === 0) return null;
 
         // First try: Normal matching (all lobbies, no AI)
-        const normalMatch = this.findSixPlayerMatch(queuedLobbies);
+        const normalMatch = this.findSixPlayerMatchGreedy(queuedLobbiesSorted);
         
         if (normalMatch) {
             return normalMatch;
-        } else {
-            // Second try: AI-eligible lobbies matching with each other (no AI yet)
-            const aiEligibleLobbies = queuedLobbies.filter(lobby => lobby.aiEligible);
-            if (aiEligibleLobbies.length > 0) {
-                const aiEligibleMatch = this.findSixPlayerMatch(aiEligibleLobbies);
-                if (aiEligibleMatch) {
-                    return aiEligibleMatch;
-                } else {
-                    // Third try: AI-assisted matching for lobbies that have waited 30+ seconds
-                    const now = Date.now();
-                    const aiReadyLobbies = aiEligibleLobbies.filter(lobby => {
-                        const queueTime = now - lobby.timeJoined;
-                        return queueTime >= Matcher.AI_ELIGIBLE_TIME_THRESHOLD;
-                    });
+        } 
+
+        // Second try: AI-eligible lobbies matching with each other (no AI yet)
+        const aiEligibleLobbies = queuedLobbiesSorted.filter(lobby => lobby.aiEligible);
+        if (aiEligibleLobbies.length > 0) {
+            const aiEligibleMatch = this.findSixPlayerMatchGreedy(aiEligibleLobbies);
+            if (aiEligibleMatch) {
+                return aiEligibleMatch;
+            } else {
+                // Third try: AI-assisted matching for lobbies that have waited 30+ seconds
+                const now = Date.now();
+                const aiReadyLobbies = aiEligibleLobbies.filter(lobby => {
+                    const queueTime = now - lobby.timeJoined;
+                    return queueTime >= Matcher.AI_ELIGIBLE_TIME_THRESHOLD;
+                });
+                
+                if (aiReadyLobbies.length > 0) {
+                    const aiAssistedMatch = this.findAIAssistedMatchGreedy(aiEligibleLobbies);
+                    if (aiAssistedMatch) {
+                        return aiAssistedMatch;
+                    }
+                }
+            }
+        }
+        
+        return null;
+    }
+
+    private static findSixPlayerMatchGreedy(lobbies: Lobby[]): { team1: Lobby[], team2: Lobby[] } | null {
+        // Greedy approach: try to find exactly 6 players using a subset sum approach
+        const targetPlayers = 6;
+        
+        // Use dynamic programming approach to find combinations that sum to 6
+        const dp = new Array(targetPlayers + 1).fill(null).map(() => [] as Lobby[]);
+        dp[0] = []; // 0 players can be achieved with empty set
+        
+        for (const lobby of lobbies) {
+            const playerCount = lobby.playerCount;
+            // Work backwards to avoid using the same lobby multiple times
+            for (let i = targetPlayers; i >= playerCount; i--) {
+                if (dp[i - playerCount] !== null) {
+                    dp[i] = [...dp[i - playerCount], lobby];
                     
-                    if (aiReadyLobbies.length > 0) {
-                        const aiAssistedMatch = this.findAIAssistedMatch(aiEligibleLobbies);
-                        if (aiAssistedMatch) {
-                            return aiAssistedMatch;
+                    // Early termination: if we found 6 players, try to split into teams
+                    if (i === targetPlayers) {
+                        const teams = this.splitIntoTeamsGreedy(dp[i]);
+                        if (teams) {
+                            return teams;
                         }
                     }
                 }
@@ -42,99 +71,40 @@ export class MatcherClassMix {
         return null;
     }
 
-    private static findSixPlayerMatch(lobbies: Lobby[]): { team1: Lobby[], team2: Lobby[] } | null {
-        const sixPlayerCombination = this.findCombination(lobbies, 6, 0, []);
-        if (sixPlayerCombination) {
-            // Try to split this combination into two teams of 3 players each
-            const teams = this.splitIntoTeams(sixPlayerCombination);
-            if (teams) {
-                return teams;
+    private static splitIntoTeamsGreedy(lobbies: Lobby[]): { team1: Lobby[], team2: Lobby[] } | null {
+        // Simple greedy approach: try to build team1 with 3 players, rest goes to team2
+        const team1: Lobby[] = [];
+        const team2: Lobby[] = [];
+        let team1Players = 0;
+        
+        for (const lobby of lobbies) {
+            const playerCount = lobby.playerCount;
+            if (team1Players + playerCount <= 3) {
+                team1.push(lobby);
+                team1Players += playerCount;
+            } else {
+                team2.push(lobby);
             }
+        }
+        
+        const team2Players = team2.reduce((sum, lobby) => sum + lobby.playerCount, 0);
+        
+        if (team1Players === 3 && team2Players === 3) {
+            return { team1, team2 };
         }
         
         return null;
     }
 
-    private static findCombination(lobbies: Lobby[], targetPlayers: number, startIndex: number, currentCombination: Lobby[]): Lobby[] | null {
-        const currentPlayerCount = currentCombination.reduce((sum, lobby) => sum + lobby.playerCount, 0);
-        
-        if (currentPlayerCount === targetPlayers) {
-            return currentCombination;
-        }
-        
-        if (currentPlayerCount > targetPlayers || startIndex >= lobbies.length) {
-            return null;
-        }
-        
-        // Try including the current lobby
-        const withCurrent = this.findCombination(
-            lobbies, 
-            targetPlayers, 
-            startIndex + 1, 
-            [...currentCombination, lobbies[startIndex]]
-        );
-        
-        if (withCurrent) {
-            return withCurrent;
-        }
-        
-        // Try skipping the current lobby
-        return this.findCombination(lobbies, targetPlayers, startIndex + 1, currentCombination);
-    }
-
-    private static splitIntoTeams(lobbies: Lobby[]): { team1: Lobby[], team2: Lobby[] } | null {
-        // Simple splitting - no class compatibility checks needed
-        const result = this.findTeamCombination(lobbies, 3, 0, []);
-        if (result) {
-            const team2 = lobbies.filter(lobby => !result.includes(lobby));
-            const team2PlayerCount = team2.reduce((sum, lobby) => sum + lobby.playerCount, 0);
+    private static findAIAssistedMatchGreedy(aiEligibleLobbies: Lobby[]): { team1: Lobby[], team2: Lobby[], aiPlayers: number } | null {
+        // Try different numbers of human players (starting from max to minimize AI players)
+        for (let humanPlayers = Math.min(6, aiEligibleLobbies.reduce((sum, lobby) => sum + lobby.playerCount, 0)); humanPlayers >= 1; humanPlayers--) {
+            const neededAIPlayers = 6 - humanPlayers;
             
-            if (team2PlayerCount === 3) {
-                return { team1: result, team2: team2 };
-            }
-        }
-        
-        return null;
-    }
-
-    private static findTeamCombination(lobbies: Lobby[], targetPlayers: number, startIndex: number, currentCombination: Lobby[]): Lobby[] | null {
-        const currentPlayerCount = currentCombination.reduce((sum, lobby) => sum + lobby.playerCount, 0);
-        
-        if (currentPlayerCount === targetPlayers) {
-            return currentCombination;
-        }
-        
-        if (currentPlayerCount > targetPlayers || startIndex >= lobbies.length) {
-            return null;
-        }
-        
-        // Try including the current lobby
-        const withCurrent = this.findTeamCombination(
-            lobbies, 
-            targetPlayers, 
-            startIndex + 1, 
-            [...currentCombination, lobbies[startIndex]]
-        );
-        
-        if (withCurrent) {
-            return withCurrent;
-        }
-        
-        // Try skipping the current lobby
-        return this.findTeamCombination(lobbies, targetPlayers, startIndex + 1, currentCombination);
-    }
-
-    private static findAIAssistedMatch(aiEligibleLobbies: Lobby[]): { team1: Lobby[], team2: Lobby[], aiPlayers: number } | null {
-        // Simple AI-assisted matching without class restrictions
-        for (let i = aiEligibleLobbies.length; i >= 1; i--) {
-            const combinations = this.getCombinations(aiEligibleLobbies, i);
-            
-            for (const combination of combinations) {
-                const humanPlayerCount = combination.reduce((sum, lobby) => sum + lobby.playerCount, 0);
-                const neededAIPlayers = 6 - humanPlayerCount;
-                
-                if (neededAIPlayers >= 0 && neededAIPlayers <= 6) {
-                    const teams = this.splitIntoTeamsWithAI(combination, neededAIPlayers);
+            if (neededAIPlayers >= 0 && neededAIPlayers <= 6) {
+                const humanMatch = this.findExactPlayerCountGreedy(aiEligibleLobbies, humanPlayers);
+                if (humanMatch) {
+                    const teams = this.splitIntoTeamsWithAIGreedy(humanMatch, neededAIPlayers);
                     if (teams) {
                         return { ...teams, aiPlayers: neededAIPlayers };
                     }
@@ -145,29 +115,22 @@ export class MatcherClassMix {
         return null;
     }
 
-    private static splitIntoTeamsWithAI(lobbies: Lobby[], aiPlayers: number): { team1: Lobby[], team2: Lobby[] } | null {
-        if (aiPlayers === 0) {
-            return this.splitIntoTeams(lobbies);
-        }
+    private static findExactPlayerCountGreedy(lobbies: Lobby[], targetPlayers: number): Lobby[] | null {
+        // Dynamic programming to find combination with exact player count
+        const dp = new Array(targetPlayers + 1).fill(null).map(() => null as Lobby[] | null);
+        dp[0] = []; // 0 players can be achieved with empty set
         
-        // Simple AI distribution without class checks
-        for (let i = 0; i <= lobbies.length; i++) {
-            const team1Combinations = this.getCombinations(lobbies, i);
-            
-            for (const team1Lobbies of team1Combinations) {
-                const team2Lobbies = lobbies.filter(lobby => !team1Lobbies.includes(lobby));
-                
-                const team1HumanCount = team1Lobbies.reduce((sum, lobby) => sum + lobby.playerCount, 0);
-                const team2HumanCount = team2Lobbies.reduce((sum, lobby) => sum + lobby.playerCount, 0);
-                
-                const team1AINeeded = 3 - team1HumanCount;
-                const team2AINeeded = 3 - team2HumanCount;
-                
-                if (team1AINeeded >= 0 && team2AINeeded >= 0 && 
-                    team1AINeeded + team2AINeeded === aiPlayers &&
-                    team1HumanCount <= 3 && team2HumanCount <= 3) {
+        for (const lobby of lobbies) {
+            const playerCount = lobby.playerCount;
+            // Work backwards to avoid using the same lobby multiple times
+            for (let i = targetPlayers; i >= playerCount; i--) {
+                if (dp[i - playerCount] !== null) {
+                    dp[i] = [...dp[i - playerCount]!, lobby];
                     
-                    return { team1: team1Lobbies, team2: team2Lobbies };
+                    // Early termination: if we found the target, return immediately
+                    if (i === targetPlayers) {
+                        return dp[i];
+                    }
                 }
             }
         }
@@ -175,14 +138,39 @@ export class MatcherClassMix {
         return null;
     }
 
-    private static getCombinations<T>(array: T[], size: number): T[][] {
-        if (size === 0) return [[]];
-        if (array.length === 0) return [];
+    private static splitIntoTeamsWithAIGreedy(lobbies: Lobby[], aiPlayers: number): { team1: Lobby[], team2: Lobby[] } | null {
+        if (aiPlayers === 0) {
+            return this.splitIntoTeamsGreedy(lobbies);
+        }
         
-        const [first, ...rest] = array;
-        const withFirst = this.getCombinations(rest, size - 1).map(combo => [first, ...combo]);
-        const withoutFirst = this.getCombinations(rest, size);
+        // Greedy approach: try to distribute human players as evenly as possible
+        const team1: Lobby[] = [];
+        const team2: Lobby[] = [];
+        let team1Players = 0;
+        let team2Players = 0;
         
-        return [...withFirst, ...withoutFirst];
+        for (const lobby of lobbies) {
+            const playerCount = lobby.playerCount;
+            // Add to team with fewer players, but don't exceed 3
+            if (team1Players + playerCount <= 3 && (team1Players <= team2Players || team2Players + playerCount > 3)) {
+                team1.push(lobby);
+                team1Players += playerCount;
+            } else if (team2Players + playerCount <= 3) {
+                team2.push(lobby);
+                team2Players += playerCount;
+            }
+        }
+        
+        const team1AINeeded = 3 - team1Players;
+        const team2AINeeded = 3 - team2Players;
+        
+        if (team1AINeeded >= 0 && team2AINeeded >= 0 && 
+            team1AINeeded + team2AINeeded === aiPlayers &&
+            team1Players <= 3 && team2Players <= 3) {
+            
+            return { team1, team2 };
+        }
+        
+        return null;
     }
 } 
