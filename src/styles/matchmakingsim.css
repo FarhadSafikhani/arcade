@@ -63,7 +63,7 @@
     margin: 0 0 15px 0;
     font-size: 16px;
     text-align: center;
-    border-bottom: 1px solid #4a5568;
+    border-bottom: 1px solid #cdcdcd;
     padding-bottom: 10px;
 }
 
@@ -269,11 +269,7 @@
     line-height: 1.2;
 }
 
-.match-lobby.ai-player {
-    background: rgba(255,255,255,0.3);
-    font-style: italic;
-    opacity: 0.8;
-}
+
 
 .match-lobby-class {
     position: absolute;

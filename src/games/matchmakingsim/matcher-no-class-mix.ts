@@ -17,7 +17,7 @@ export class MatcherNoClassMix {
         } 
 
         // Second try: AI-eligible lobbies matching with each other (no AI yet)
-        const aiEligibleLobbies = queuedLobbiesSorted.filter(lobby => lobby.aiEligible);
+        const aiEligibleLobbies = queuedLobbiesSorted.filter(lobby => lobby.isAiEligible);
         if (aiEligibleLobbies.length > 0) {
             const aiEligibleMatch = this.findSixPlayerMatchGreedy(aiEligibleLobbies);
             if (aiEligibleMatch) {

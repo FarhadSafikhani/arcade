@@ -1,12 +1,10 @@
-function someRandomName() {
-    return "Player" + Math.floor(Math.random() * 1000);
-}
+import { Matcher } from './matcher.js';
 
 export class Player {
     name: string;
     ready: boolean;
     constructor() {
-        this.name = someRandomName();
+        this.name = '🧑';
         this.ready = false;
     }
 }
@@ -15,7 +13,6 @@ export class Lobby {
     id: number;
     playerSlots: (Player | null)[];
     timeJoined: number;
-    aiEligible: boolean;
     classId: number;
 
     private onDelete: (lobbyId: number) => void;
@@ -25,7 +22,6 @@ export class Lobby {
         this.id = id;
         this.playerSlots = [null, null, null];
         this.timeJoined = 0;
-        this.aiEligible = false;
         this.classId = classId;
 
         this.onDelete = onDelete;
@@ -53,6 +49,12 @@ export class Lobby {
 
     get playerCount(): number {
         return this.playerSlots.filter(slot => slot !== null).length;
+    }
+
+    get isAiEligible(): boolean {
+        if (this.timeJoined === 0) return false;
+        const queueTime = Date.now() - this.timeJoined;
+        return queueTime >= Matcher.AI_ELIGIBLE_TIME;
     }
 
     addPlayer(player: Player) {

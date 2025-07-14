@@ -48,22 +48,11 @@ export class Matcher {
     }
 
     tick() {
-        this.updateAiEligibility();
         this.runMatchAlgorithm();
         this.updateLobbyQueueDisplay();
     }
 
-    private updateAiEligibility() {
-        const now = Date.now();
-        this.queuedLobbies.forEach(lobby => {
-            if (!lobby.aiEligible && lobby.timeJoined > 0) {
-                const queueTime = now - lobby.timeJoined;
-                if (queueTime >= Matcher.AI_ELIGIBLE_TIME) { // 5 seconds
-                    lobby.aiEligible = true;
-                }
-            }
-        });
-    }
+
 
 
 
@@ -83,7 +72,7 @@ export class Matcher {
                 if (timeInQueue >= Matcher.AI_ELIGIBLE_TIME_THRESHOLD) {
                     statusText = '[AI-READY]';
                     lobbyElement.className = 'queue-lobby queue-lobby-ai-ready';
-                } else if (lobby.aiEligible) {
+                } else if (lobby.isAiEligible) {
                     statusText = '[AI-ELIGIBLE]';
                     lobbyElement.className = 'queue-lobby queue-lobby-ai-eligible';
                 } else {
@@ -217,7 +206,7 @@ export class Matcher {
         const playerNames = lobby.playerSlots
             .filter(slot => slot !== null)
             .map(player => player!.name)
-            .join(', ');
+            .join(' | ');
         
         // Create player names element
         const playersSpan = document.createElement('span');
@@ -237,7 +226,7 @@ export class Matcher {
     private createAIPlayerElement(): HTMLElement {
         const aiDiv = document.createElement('div');
         aiDiv.className = 'match-lobby ai-player';
-        aiDiv.textContent = `AI-Bot${Math.floor(Math.random() * 1000)}`;
+        aiDiv.textContent = '🤖';
         return aiDiv;
     }
 } 
