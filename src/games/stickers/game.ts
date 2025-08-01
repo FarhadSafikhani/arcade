@@ -87,7 +87,15 @@ export const STICKER_GAME_LEVELS: StickerGameLevel[] = [
     {
         id: 'barbie_1',
         path: '/arcade/assets/stickers/barbie.png'
-    }
+    },
+    {
+        id: 'grumble_1',
+        path: '/arcade/assets/stickers/grumble.png'
+    },
+    {
+        id: 'jaina_1',
+        path: '/arcade/assets/stickers/jaina.png'
+    }  
 ]
 
 export interface UserState {
