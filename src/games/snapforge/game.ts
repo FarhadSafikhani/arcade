@@ -40,7 +40,7 @@ class SnapforgeGame {
     private gallery = byId<HTMLElement>('galleryScreen');
     private collectionList = byId<HTMLElement>('collectionList');
     private collectionPanel = byId<HTMLElement>('collectionPanel');
-    private collectionTitle = byId<HTMLElement>('collectionTitle');
+    private galleryArrows = byId<HTMLElement>('galleryArrows');
     private galleryTrack = byId<HTMLElement>('galleryTrack');
     private play = byId<HTMLElement>('playScreen');
     private model = byId<HTMLElement>('modelViewport');
@@ -320,6 +320,9 @@ class SnapforgeGame {
             const row = document.createElement('section');
             row.className = 'collection-row';
             row.dataset.collection = collection.id;
+            row.classList.toggle('is-active', collection.id === this.activeCollection);
+            const header = document.createElement('div');
+            header.className = 'collection-heading';
             const heading = document.createElement('h2');
             const button = document.createElement('button');
             button.type = 'button';
@@ -329,10 +332,13 @@ class SnapforgeGame {
             button.setAttribute('aria-controls', 'collectionPanel');
             button.addEventListener('click', () => this.selectCollection(collection.id));
             heading.appendChild(button);
-            row.appendChild(heading);
+            header.appendChild(heading);
+            row.appendChild(header);
             this.collectionList.appendChild(row);
         }
-        this.collectionList.firstElementChild?.appendChild(this.collectionPanel);
+        const firstRow = this.collectionList.firstElementChild!;
+        firstRow.querySelector('.collection-heading')?.append(this.previewCount, this.galleryArrows);
+        firstRow.appendChild(this.collectionPanel);
         this.collectionPanel.hidden = false;
     }
     private selectCollection(id: CollectionId): void {
@@ -341,9 +347,14 @@ class SnapforgeGame {
         this.activeCollection = id;
         this.selectedIndex = this.selectedByCollection.get(id) ?? 0;
         const row = this.collectionList.querySelector<HTMLElement>(`[data-collection="${id}"]`)!;
+        row.querySelector('.collection-heading')?.append(this.previewCount, this.galleryArrows);
         row.appendChild(this.collectionPanel);
-        for (const button of this.collectionList.querySelectorAll<HTMLButtonElement>('.collection-name'))
-            button.setAttribute('aria-expanded', String(button === row.querySelector('button')));
+        for (const collectionRow of this.collectionList.querySelectorAll<HTMLElement>('.collection-row')) {
+            const active = collectionRow === row;
+            collectionRow.classList.toggle('is-active', active);
+            collectionRow.querySelector<HTMLButtonElement>('.collection-name')!
+                .setAttribute('aria-expanded', String(active));
+        }
         this.renderGallery();
         this.scene?.setPreviews(this.galleryTrack, this.previewEntries());
         this.galleryMotion.reset(this.selectedIndex);
@@ -363,7 +374,6 @@ class SnapforgeGame {
         this.galleryMotion?.suspend();
         this.galleryTrack.replaceChildren();
         const items = this.activeLevels();
-        this.collectionTitle.textContent = collections.find(item => item.id === this.activeCollection)!.name;
         for (const [index, level] of items.entries()) {
             const item = { id: level.id, title: level.title, order: level.order, level };
             const isUnlocked = this.unlocked(index);

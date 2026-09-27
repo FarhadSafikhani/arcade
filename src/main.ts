@@ -1,6 +1,8 @@
 import { gamesConfig, GameConfig } from './games.config';
 import { VERSION } from './version';
 
+type CardVariant = 'featured' | 'legacy';
+
 // Global functions for game control
 declare global {
     interface Window {
@@ -11,13 +13,17 @@ declare global {
 
 async function init() {
     try {
-        // Update version display
         updateVersionDisplay();
-        
-        // Generate menu buttons using imported config
-        generateMenuButtons(gamesConfig.games);
-        
-        // Set up global functions
+        updateCopyrightYear();
+        renderGameCards(
+            gamesConfig.games.filter(game => game.section === 'games'),
+            'featuredGrid',
+            'featured'
+        );
+        const legacyGames = gamesConfig.games.filter(game => game.section === 'legacy');
+        renderGameCards(legacyGames, 'legacyGrid', 'legacy');
+        updateLegacySummary(legacyGames.length);
+
         window.startGame = startGame;
         window.returnToMainMenu = returnToMainMenu;
     } catch (error) {
@@ -32,47 +38,111 @@ function updateVersionDisplay() {
     }
 }
 
-function generateMenuButtons(games: GameConfig[]) {
-    const gameGrid = document.getElementById('gameGrid');
-    
-    if (!gameGrid) {
-        console.error('Game grid element not found!');
+function updateCopyrightYear() {
+    const yearElement = document.getElementById('copyright-year');
+    if (yearElement) {
+        yearElement.textContent = String(new Date().getFullYear());
+    }
+}
+
+function updateLegacySummary(count: number) {
+    const summary = document.getElementById('legacySummary');
+    if (summary) {
+        summary.textContent = `Misc / Legacy (${count})`;
+    }
+}
+
+function gameHref(gameId: string): string {
+    return `${import.meta.env.BASE_URL}games/${gameId}/index.html`;
+}
+
+function renderGameCards(games: GameConfig[], containerId: string, variant: CardVariant) {
+    const container = document.getElementById(containerId);
+
+    if (!container) {
+        console.error(`Game list element not found: ${containerId}`);
         return;
     }
-    
-    gameGrid.innerHTML = '';
-    
-    games.forEach(game => {
-        const button = document.createElement('div');
-        button.className = game.available ? 'game-button' : 'game-button disabled';
-        button.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-        if (!game.available) {
-            button.setAttribute('aria-disabled', 'true');
-        }
-        
-        button.innerHTML = `
-            <span class="game-icon">${game.icon} ${game.name}</span>
-            <div class="game-description">${game.available ? game.description : 'Coming soon'}</div>
-        `;
-        
-        if (game.available) {
-            button.addEventListener('click', () => startGame(game.id));
-        }
-        
-        gameGrid.appendChild(button);
+
+    container.replaceChildren(...games.map(game => createGameCard(game, variant)));
+}
+
+function createGameCard(game: GameConfig, variant: CardVariant): HTMLElement {
+    const card = document.createElement(game.available ? 'a' : 'div');
+    card.className = `game-card game-card--${variant}`;
+    if (game.accent) {
+        card.style.setProperty('--card-accent', game.accent);
+    }
+
+    if (card instanceof HTMLAnchorElement) {
+        card.href = gameHref(game.id);
+    } else {
+        card.classList.add('is-disabled');
+        card.setAttribute('aria-disabled', 'true');
+    }
+
+    if (variant === 'featured') {
+        card.append(createPolaroidPhoto(card, game));
+    }
+
+    card.append(createCaption(game));
+    return card;
+}
+
+function createPolaroidPhoto(card: HTMLElement, game: GameConfig): HTMLElement {
+    const photo = document.createElement('div');
+    photo.className = 'polaroid-photo';
+
+    const fallback = document.createElement('span');
+    fallback.className = 'photo-fallback';
+    fallback.setAttribute('aria-hidden', 'true');
+    fallback.textContent = game.icon;
+    photo.append(fallback);
+
+    if (!game.preview) {
+        card.classList.add('is-fallback');
+        return photo;
+    }
+
+    const image = document.createElement('img');
+    image.alt = '';
+    image.loading = 'lazy';
+    image.addEventListener('error', () => {
+        card.classList.add('is-fallback');
+        image.remove();
     });
+    image.src = `${import.meta.env.BASE_URL}previews/${game.preview}`;
+    photo.append(image);
+    return photo;
+}
+
+function createCaption(game: GameConfig): HTMLElement {
+    const caption = document.createElement('div');
+    caption.className = 'card-caption';
+
+    const icon = document.createElement('span');
+    icon.className = 'game-icon';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.textContent = game.icon;
+
+    const name = document.createElement('span');
+    name.className = 'game-name';
+    name.textContent = game.name;
+
+    const description = document.createElement('span');
+    description.className = 'game-description';
+    description.textContent = game.available ? game.description : 'Coming soon';
+
+    caption.append(icon, name, description);
+    return caption;
 }
 
 function startGame(gameId: string) {
-    // Navigate to the game page using convention: /games/{gameId}/index.html
-    // Vite handles the base URL automatically
-    window.location.href = `/arcade/games/${gameId}/index.html`;
+    window.location.href = gameHref(gameId);
 }
 
 function returnToMainMenu() {
-    // Navigate back to main menu
-    window.location.href = '/arcade/';
+    window.location.href = import.meta.env.BASE_URL;
 }
 
-// Initialize when page loads
 window.addEventListener('load', init);

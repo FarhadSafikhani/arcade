@@ -77,21 +77,16 @@ button:disabled { cursor: default; }
 #loadingNote { display: block; margin: 0 0 12px; color: #9c8871; font-size: 12px; font-weight: 800; }
 .collection-list { display: grid; gap: 10px; }
 .collection-row { min-width: 0; border: 1px solid var(--line); border-radius: 18px; background: var(--paper); overflow: hidden; }
-.collection-row h2 { margin: 0; }
-.collection-name { width: 100%; padding: 18px 22px; border: 0; background: transparent; color: var(--ink); text-align: left; font-size: clamp(17px, 2vw, 22px); font-weight: 1000; }
+.collection-heading { display: flex; align-items: center; gap: 16px; min-height: 64px; padding: 0 12px 0 22px; }
+.collection-heading h2 { flex: 1 1 auto; min-width: 0; margin: 0; }
+.collection-row.is-active .collection-heading h2 { flex: 0 1 auto; }
+.collection-name { width: 100%; padding: 16px 0; border: 0; background: transparent; color: var(--ink); text-align: left; font-size: clamp(17px, 2vw, 22px); font-weight: 1000; }
 .collection-name:hover, .collection-name:focus-visible { color: var(--coral); }
 .collection-name[aria-expanded="true"] { color: var(--coral); }
 .collection-name:focus-visible { outline: 3px solid var(--coral); outline-offset: -4px; }
+.collection-heading > strong { flex: none; font-size: 13px; letter-spacing: 1px; white-space: nowrap; }
 .collection-panel { min-width: 0; padding: 0 12px 14px; }
-.gallery-toolbar {
-    margin: 0 0 17px;
-    display: flex;
-    justify-content: space-between;
-    align-items: end;
-}
-.gallery-toolbar > div:first-child { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 19px; }
-.gallery-toolbar strong { font-size: 13px; letter-spacing: 1px; }
-.gallery-arrows { display: flex; gap: 8px; }
+.gallery-arrows { display: flex; flex: none; gap: 8px; margin-left: auto; }
 .gallery-arrows button {
     width: 44px;
     height: 44px;
@@ -416,10 +411,11 @@ button:disabled { cursor: default; }
     .sound-button { width: 38px; padding: 0; }
     .gallery-screen { padding: 24px 15px 30px; }
     .gallery-title { margin-bottom: 40px; font-size: clamp(38px, 8vw, 70px); }
-    .collection-name { padding: 15px; }
+    .collection-heading { gap: 10px; padding: 0 10px 0 15px; }
+    .collection-name { padding: 14px 0; }
     .collection-panel { padding: 0 4px 12px; }
-    .gallery-toolbar { align-items: center; gap: 8px; padding: 0 10px; }
-    .gallery-toolbar .eyebrow { letter-spacing: 1px; }
+    .gallery-arrows { gap: 4px; }
+    .gallery-arrows button { width: 36px; height: 36px; }
     .card-visual { height: 215px; }
     .play-screen { padding: 4px 10px 18px; }
     .play-header { min-height: 62px; }

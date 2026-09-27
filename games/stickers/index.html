@@ -8,7 +8,13 @@
     <link rel="stylesheet" href="/src/styles/stickers.css">
 </head>
 <body class="game-page">
-    <game-top-bar title="🍎 Stickers" show-pause show-menu></game-top-bar>
+    <header class="stickers-header">
+        <button id="backButton" class="back-link" type="button" aria-label="Back to arcade">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+            <span id="backLabel">Arcade</span>
+        </button>
+        <div class="header-title">🍎 Stickers</div>
+    </header>
     
 
     
@@ -34,7 +40,6 @@
     </button>
     
     
-    <script type="module" src="/src/shared/components/game-top-bar.ts"></script>
     <script type="module" src="/src/games/stickers/game.ts"></script>
 </body>
 </html> 

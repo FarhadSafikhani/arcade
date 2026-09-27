@@ -1,7 +1,6 @@
 import { Application, Container, Graphics, FederatedPointerEvent, Assets } from 'pixi.js';
 import { StickerMaker } from './stickermaker';
 import { GameDimensions } from '../../shared/utils/shared-types';
-import { TOP_BAR_HEIGHT } from '../../shared/utils/shared-consts';
 
 export const STICKER_GAME_CONFIG = {
     gideSizeSmall: 3,
@@ -13,10 +12,13 @@ export const STICKER_GAME_CONFIG = {
 
 
 // Responsive scaling function
+const headerHeight = (): number =>
+    document.querySelector('.stickers-header')?.getBoundingClientRect().height || 56;
+
 const getGameDimensions = (): GameDimensions => {
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
-    const topBarHeight = TOP_BAR_HEIGHT;
+    const topBarHeight = headerHeight();
     
     return {
         gameWidth: windowWidth,
@@ -125,7 +127,6 @@ export class StickersGame {
     private app: Application;
     private gameContainer: Container;
     private stickerMaker: StickerMaker;
-    private removeTopBarHandler?: () => void;
     private gameDimensions: GameDimensions;
     private userState: UserState;
 
@@ -145,7 +146,7 @@ export class StickersGame {
 
         // Create game background
         this.createBackground();
-        this.setupTopBarEvents();
+        this.setupBackButton();
 
         // Show level menu immediately
         this.showLevelMenu();
@@ -170,6 +171,7 @@ export class StickersGame {
         if (levelMenu) {
             levelMenu.classList.remove('hidden');
         }
+        this.updateBackButton();
     }
 
     public hideLevelMenu(): void {
@@ -179,6 +181,7 @@ export class StickersGame {
         if (levelMenu) {
             levelMenu.classList.add('hidden');
         }
+        this.updateBackButton();
     }
 
     private hideOtherDifficultyButtons(currentCard: HTMLElement): void {
@@ -235,6 +238,9 @@ export class StickersGame {
             const levelCard = document.createElement('div');
             levelCard.className = `level-card ${isCompleted ? 'completed' : ''}`;
             levelCard.dataset.levelId = level.id;
+
+            const art = document.createElement('div');
+            art.className = 'level-art';
             
             const levelImage = document.createElement('img');
             levelImage.className = 'level-image';
@@ -247,7 +253,7 @@ export class StickersGame {
                 // Asset is already loaded, show immediately
                 levelImage.src = level.path;
                 levelImage.style.opacity = '1';
-                levelCard.appendChild(levelImage);
+                art.appendChild(levelImage);
             } else {
                 // Asset not loaded yet, show placeholder
                 levelImage.classList.add('loading');
@@ -256,10 +262,11 @@ export class StickersGame {
                 placeholderDiv.className = 'level-placeholder';
                 placeholderDiv.textContent = '⏳';
                 
-                levelCard.appendChild(placeholderDiv);
-                levelCard.appendChild(levelImage);
+                art.appendChild(placeholderDiv);
+                art.appendChild(levelImage);
             }
-            
+
+            levelCard.appendChild(art);
             this.createDifficultyButtons(levelCard, level);
             
             levelGrid.appendChild(levelCard);
@@ -322,7 +329,7 @@ export class StickersGame {
         // Easy button (3x3)
         const easyBtn = document.createElement('button');
         easyBtn.className = 'difficulty-btn easy';
-        easyBtn.textContent = '3x3';
+        easyBtn.textContent = '3×3';
         easyBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             this.startLevel(level, STICKER_GAME_CONFIG.gideSizeSmall);
@@ -331,7 +338,7 @@ export class StickersGame {
         // Medium button (5x5)
         const mediumBtn = document.createElement('button');
         mediumBtn.className = 'difficulty-btn medium';
-        mediumBtn.textContent = '5x5';
+        mediumBtn.textContent = '5×5';
         mediumBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             this.startLevel(level, STICKER_GAME_CONFIG.gideSizeMedium);
@@ -340,7 +347,7 @@ export class StickersGame {
         // Hard button (7x7)
         const hardBtn = document.createElement('button');
         hardBtn.className = 'difficulty-btn hard';
-        hardBtn.textContent = '7x7';
+        hardBtn.textContent = '7×7';
         hardBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             this.startLevel(level, STICKER_GAME_CONFIG.gideSizeLarge);
@@ -454,41 +461,34 @@ export class StickersGame {
         this.gameContainer.addChild(background);
     }
 
-    private setupTopBarEvents(): void {
-        const handleTopBarEvent = (event: Event) => {
-            if (event.type === 'pause') {
-                this.togglePause();
-            } else if (event.type === 'menu') {
-                if (this.gameContainer.visible) {
-                    this.returnToLevelMenu();
-                } else {
-                    this.returnToMainMenu();
-                }
-            }
-        };
+    private setupBackButton(): void {
+        const button = document.getElementById('backButton');
+        if (!(button instanceof HTMLButtonElement)) return;
 
-        document.addEventListener('pause', handleTopBarEvent);
-        document.addEventListener('menu', handleTopBarEvent);
-        
-        this.removeTopBarHandler = () => {
-            document.removeEventListener('pause', handleTopBarEvent);
-            document.removeEventListener('menu', handleTopBarEvent);
-        };
+        button.addEventListener('click', () => {
+            if (this.gameContainer.visible) {
+                this.returnToLevelMenu();
+            } else {
+                this.returnToMainMenu();
+            }
+        });
+    }
+
+    private updateBackButton(): void {
+        const button = document.getElementById('backButton');
+        const label = document.getElementById('backLabel');
+        if (!(button instanceof HTMLButtonElement) || !label) return;
+
+        const inPuzzle = this.gameContainer.visible;
+        label.textContent = inPuzzle ? 'Menu' : 'Arcade';
+        button.setAttribute('aria-label', inPuzzle ? 'Back to puzzle menu' : 'Back to arcade');
     }
 
     update(_delta: number): void {
         // Game update logic can be added here
     }
 
-    togglePause(): void {
-        // Pause logic can be added here
-    }
-
     destroy(): void {
-        if (this.removeTopBarHandler) {
-            this.removeTopBarHandler();
-        }
-        
         // Clean up game state first
         this.stickerMaker.cleanup();
         
@@ -594,10 +594,6 @@ async function initGame() {
     window.resumeGame = () => {
         // Resume logic can be added here
     };
-    
-    window.togglePause = () => {
-        game.togglePause();
-    };
 }
 
 // Initialize when page loads
@@ -622,7 +618,6 @@ declare global {
         restartGame: () => void;
         returnToMainMenu: () => void;
         resumeGame: () => void;
-        togglePause: () => void;
         isInit: boolean;
     }
 }
