@@ -2,7 +2,6 @@ declare module '*.css?inline' {
   const content: string;
   export default content;
 }
-
 // Vite HMR types
 interface ImportMetaHot {
   accept(): void;

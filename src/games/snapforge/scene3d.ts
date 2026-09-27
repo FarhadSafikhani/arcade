@@ -22,7 +22,7 @@ const HELD_ROTATION_DURATION = 850;
 const SHIMMER_SWEEP_DURATION = 500;
 const SHIMMER_PAUSE_DURATION = 5000;
 const REJECTION_FLASH_DURATION = 420;
-const INTRO_RAIN_DELAY = 300;
+const GRAVITY = 19;
 const REJECTION_RED = new THREE.Color(0xff2038);
 
 function litScene(background: number): THREE.Scene {
@@ -72,7 +72,7 @@ export class SnapScene3D {
     private flights: Flight[] = [];
     private introQueue: SnapBrick[] = [];
     private introNext = 0;
-    private introRainPlayed = false;
+    private introRainAt = Infinity;
     private mystery: THREE.Group | null = null;
     private reserve: SnapBrick[] = [];
     private nextRefill = 0;
@@ -128,7 +128,7 @@ export class SnapScene3D {
         root.prepend(this.canvas);
         this.modelScene.add(this.modelGroup);
         this.overlayScene.add(new THREE.HemisphereLight(0xffffff, 0x999999, 3));
-        this.world = new RAPIER.World({ x: 0, y: -19, z: 0 });
+        this.world = new RAPIER.World({ x: 0, y: -GRAVITY, z: 0 });
         this.makeTable();
         this.hintMarker.rotation.x = Math.PI / 2;
         this.hintMarker.visible = false;
@@ -295,7 +295,7 @@ export class SnapScene3D {
         this.flights = [];
         this.clearTarget();
         this.introQueue = [];
-        this.introRainPlayed = false;
+        this.introRainAt = Infinity;
         this.reserve = [];
         this.nextRefill = 0;
         this.introDone = null;
@@ -350,6 +350,7 @@ export class SnapScene3D {
     skipIntro(): void {
         if (!this.playing || !this.level || this.interactive) return;
         this.onIntroCancel();
+        this.introRainAt = Infinity;
         this.clearMystery();
         for (const flight of this.flights) disposeBrick(flight.mesh);
         this.flights = [];
@@ -818,8 +819,12 @@ export class SnapScene3D {
             mesh.quaternion.copy(overlayRotation(this.modelCamera, modelMesh.quaternion));
             mesh.scale.setScalar(24);
             this.overlayScene.add(mesh);
+            const duration = 720 + Math.random() * 360;
+            // The flight hands the brick to physics mid-air; its first impact comes after a free fall to the table.
+            const drop = Math.max(0, landingPosition.y - BRICK_HEIGHT * (brick.h ?? 1) / 2);
+            this.introRainAt = Math.min(this.introRainAt, now + duration + Math.sqrt(2 * drop / GRAVITY) * 1000);
             this.flights.push({ brick, mesh, from, to, start: now,
-                duration: 720 + Math.random() * 360, kind: 'intro', landingPosition,
+                duration, kind: 'intro', landingPosition,
                 fromRotation: mesh.quaternion.clone(), arcHeight: 90 + Math.random() * 100,
                 arcSide: (Math.random() - 0.5) * 180,
                 spin: new THREE.Vector3((Math.random() - 0.5) * 2, (Math.random() - 0.5) * 3,
@@ -828,13 +833,13 @@ export class SnapScene3D {
     }
 
     private advanceFlights(now: number): void {
+        if (now >= this.introRainAt) {
+            this.introRainAt = Infinity;
+            this.onIntroRain();
+        }
         for (let index = this.flights.length - 1; index >= 0; index--) {
             const flight = this.flights[index];
             const t = Math.min(1, (now - flight.start) / flight.duration);
-            if (flight.kind === 'intro' && !this.introRainPlayed && now - flight.start >= INTRO_RAIN_DELAY) {
-                this.introRainPlayed = true;
-                this.onIntroRain();
-            }
             const eased = flight.kind === 'intro' ? 1 - Math.pow(1 - t, 2) : flight.kind === 'return' ? t * t * t * (t * (t * 6 - 15) + 10) :
                 t * t * (3 - 2 * t);
             const arc = flight.kind === 'intro' ? Math.sin(Math.PI * t) * flight.arcHeight! : flight.kind === 'return' ?

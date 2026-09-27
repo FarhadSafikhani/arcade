@@ -1,0 +1,154 @@
+{
+  "id": "apple",
+  "title": "Apple",
+  "description": "A round red apple with a little top dip, brown stem, and green leaf.",
+  "collection": "starter",
+  "order": 2,
+  "version": 3,
+  "targetParts": 30,
+  "palette": {
+    "red": "#E34239",
+    "brown": "#75462B",
+    "green": "#4B9B45"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 4
+  },
+  "volumes": [
+    {
+      "name": "lower-left-lobe",
+      "x": 1,
+      "y": 2,
+      "z": 0,
+      "w": 2,
+      "d": 4,
+      "h": 1,
+      "color": "red"
+    },
+    {
+      "name": "lower-right-lobe",
+      "x": 5,
+      "y": 2,
+      "z": 0,
+      "w": 2,
+      "d": 4,
+      "h": 1,
+      "color": "red"
+    },
+    {
+      "name": "lower-body",
+      "x": 1,
+      "y": 1,
+      "z": 1,
+      "w": 6,
+      "d": 6,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "belly-wide",
+      "x": 0,
+      "y": 2,
+      "z": 3,
+      "w": 8,
+      "d": 4,
+      "h": 6,
+      "color": "red"
+    },
+    {
+      "name": "belly-middle",
+      "x": 1,
+      "y": 1,
+      "z": 3,
+      "w": 6,
+      "d": 6,
+      "h": 6,
+      "color": "red",
+      "overlay": true
+    },
+    {
+      "name": "belly-deep",
+      "x": 2,
+      "y": 0,
+      "z": 3,
+      "w": 4,
+      "d": 8,
+      "h": 6,
+      "color": "red",
+      "overlay": true
+    },
+    {
+      "name": "shoulders-wide",
+      "x": 1,
+      "y": 2,
+      "z": 9,
+      "w": 6,
+      "d": 4,
+      "h": 2,
+      "color": "red"
+    },
+    {
+      "name": "shoulders-deep",
+      "x": 2,
+      "y": 1,
+      "z": 9,
+      "w": 4,
+      "d": 6,
+      "h": 2,
+      "color": "red",
+      "overlay": true
+    },
+    {
+      "name": "left-crown",
+      "x": 1,
+      "y": 2,
+      "z": 11,
+      "w": 2,
+      "d": 4,
+      "h": 1,
+      "color": "red"
+    },
+    {
+      "name": "right-crown",
+      "x": 5,
+      "y": 2,
+      "z": 11,
+      "w": 2,
+      "d": 4,
+      "h": 1,
+      "color": "red"
+    },
+    {
+      "name": "stem",
+      "x": 3,
+      "y": 3,
+      "z": 11,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "brown"
+    },
+    {
+      "name": "leaf",
+      "x": 4,
+      "y": 3,
+      "z": 13,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "green"
+    },
+    {
+      "name": "leaf-tip",
+      "x": 6,
+      "y": 3,
+      "z": 14,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "green"
+    }
+  ]
+}

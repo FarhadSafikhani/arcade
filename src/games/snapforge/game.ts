@@ -3,7 +3,7 @@ import { GalleryMotion } from './gallery-motion';
 import { collectionLevels, collections, CollectionId, modelUnlocked } from './collections';
 import { buildOrder, SnapLevel, validPlacedIds, validateLevel } from './level';
 import { SnapScene3D } from './scene3d';
-import { createBreakupBuffer, createBrickRainBuffer, createClickBuffer, createConnectionBuffer } from './sound';
+import { createClickBuffer, loadSnapSamples, SnapSamples } from './sound';
 
 interface PartialBuild { version: number; placedIds: string[]; }
 interface Progress { completed: string[]; partials: Record<string, PartialBuild>; seenIntro: string[]; muted: boolean; }
@@ -65,10 +65,10 @@ class SnapforgeGame {
     private galleryMotion!: GalleryMotion;
     private audio: AudioContext | null = null;
     private clickBuffer: AudioBuffer | null = null;
-    private connectionBuffer: AudioBuffer | null = null;
-    private breakupBuffer: AudioBuffer | null = null;
-    private brickRainBuffer: AudioBuffer | null = null;
+    private samples: SnapSamples | null = null;
+    private samplesRequested = false;
     private introSources = new Map<AudioBufferSourceNode, GainNode>();
+    private introGeneration = 0;
     private devSnap: HTMLButtonElement | null = null;
     private devFinish: HTMLButtonElement | null = null;
 
@@ -172,9 +172,9 @@ class SnapforgeGame {
     private async initializeScene(): Promise<void> {
         try {
             this.scene = await SnapScene3D.create(this.root, this.model, this.pile);
-            this.scene.setCallbacks(id => this.placed(id), () => this.wrong(), () => this.playEffect('click'));
+            this.scene.setCallbacks(id => this.placed(id), () => this.wrong(), () => this.playEffect('grab'));
             this.scene.setIntroCallbacks(() => this.playIntroEffect('breakup'),
-                () => this.playIntroEffect('rain'), () => this.stopIntroEffects());
+                () => this.playIntroEffect('pour'), () => this.stopIntroEffects());
             this.scene.setPreviews(this.galleryTrack, this.previewEntries());
             byId<HTMLElement>('loadingNote').hidden = true;
         } catch (error) {
@@ -199,50 +199,66 @@ class SnapforgeGame {
         try {
             this.audio ??= new AudioContext();
             if (this.audio.state === 'suspended') void this.audio.resume().catch(() => {});
+            if (!this.samplesRequested) {
+                this.samplesRequested = true;
+                void loadSnapSamples(this.audio).then(samples => { this.samples = samples; });
+            }
             return this.audio;
         } catch { return null; /* Sound is optional. */ }
     }
-    private playEffect(kind: 'click' | 'connection'): void {
+    private playBuffer(audio: AudioContext, buffer: AudioBuffer, volume: number, rate = 1,
+        onEnded?: () => void, offset = 0): [AudioBufferSourceNode, GainNode] {
+        const source = audio.createBufferSource();
+        const gain = audio.createGain();
+        source.buffer = buffer;
+        source.playbackRate.value = rate;
+        gain.gain.value = volume;
+        source.connect(gain).connect(audio.destination);
+        source.onended = () => { onEnded?.(); source.disconnect(); gain.disconnect(); };
+        source.start(0, offset);
+        return [source, gain];
+    }
+    private playEffect(kind: 'click' | 'grab' | 'snap'): void {
         const audio = this.prepareAudio();
         if (!audio) return;
         try {
-            const buffer = kind === 'click'
-                ? (this.clickBuffer ??= createClickBuffer(audio))
-                : (this.connectionBuffer ??= createConnectionBuffer(audio));
-            const source = audio.createBufferSource();
-            const gain = audio.createGain();
-            source.buffer = buffer;
-            source.playbackRate.value = 0.97 + Math.random() * 0.06;
-            gain.gain.value = 0.85 + Math.random() * 0.08;
-            source.connect(gain).connect(audio.destination);
-            source.onended = () => { source.disconnect(); gain.disconnect(); };
-            source.start();
+            // Recordings that are still decoding stay silent rather than substituting another sound.
+            const buffer = kind === 'click' ? (this.clickBuffer ??= createClickBuffer(audio)) : this.samples?.[kind];
+            if (!buffer) return;
+            const volume = kind === 'grab' ? 0.6 : 0.85;
+            this.playBuffer(audio, buffer, volume * (0.94 + Math.random() * 0.1), 0.96 + Math.random() * 0.08);
         } catch { /* Sound is optional. */ }
     }
-    private playIntroEffect(kind: 'breakup' | 'rain'): void {
+    private playIntroEffect(kind: 'breakup' | 'pour'): void {
         const audio = this.prepareAudio();
-        if (!audio || audio.state !== 'running') return;
-        try {
-            const buffer = kind === 'breakup'
-                ? (this.breakupBuffer ??= createBreakupBuffer(audio))
-                : (this.brickRainBuffer ??= createBrickRainBuffer(audio));
-            const source = audio.createBufferSource();
-            const gain = audio.createGain();
-            source.buffer = buffer;
-            gain.gain.value = kind === 'breakup' ? 0.55 : 0.6;
-            source.connect(gain).connect(audio.destination);
-            source.onended = () => {
-                this.introSources.delete(source);
-                source.disconnect(); gain.disconnect();
-            };
-            source.start();
-            this.introSources.set(source, gain);
-        } catch { /* Sound is optional. */ }
+        const buffer = this.samples?.[kind];
+        if (!audio || !buffer) return;
+        const requested = performance.now(), generation = this.introGeneration;
+        const play = () => {
+            // Skip the part of the clip that has already passed so it stays in sync with the animation.
+            const offset = (performance.now() - requested) / 1000;
+            if (generation !== this.introGeneration || offset > buffer.duration * 0.6) return;
+            try {
+                const [source, gain] = this.playBuffer(audio, buffer, kind === 'breakup' ? 0.7 : 0.75, 1,
+                    () => this.introSources.delete(source), offset);
+                this.introSources.set(source, gain);
+            } catch { /* Sound is optional. */ }
+        };
+        // The click that starts a first level can also create the context, which may take a moment to start.
+        if (audio.state === 'running') play();
+        else void audio.resume().then(play).catch(() => {});
     }
     private stopIntroEffects(): void {
+        this.introGeneration++;
+        const now = this.audio?.currentTime ?? 0;
+        // A short fade avoids the click of cutting a clip mid-waveform.
         for (const [source, gain] of this.introSources) {
-            try { source.stop(); } catch { /* An ended source needs no further action. */ }
-            source.disconnect(); gain.disconnect();
+            try {
+                gain.gain.cancelScheduledValues(now);
+                gain.gain.setValueAtTime(gain.gain.value, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.08);
+                source.stop(now + 0.08);
+            } catch { /* An ended source needs no further action. */ }
         }
         this.introSources.clear();
     }
@@ -513,7 +529,7 @@ class SnapforgeGame {
         this.placedIds.push(id);
         this.progress.partials[this.current.id] = { version: this.current.version, placedIds: [...this.placedIds] };
         this.save();
-        this.playEffect('connection');
+        this.playEffect('snap');
         if (this.placedIds.length >= this.current.bricks.length) this.finish();
         else this.updateStep();
     }

@@ -1,0 +1,211 @@
+{
+  "id": "house",
+  "title": "Little House",
+  "description": "A cozy cottage with a sloping red roof, blue front windows, and a little chimney.",
+  "collection": "starter",
+  "order": 4,
+  "version": 2,
+  "targetParts": 40,
+  "palette": {
+    "wall": "#FFF1D6",
+    "roof": "#B94F32",
+    "wood": "#69412F",
+    "window": "#87CEEB"
+  },
+  "symmetry": {
+    "axis": "x",
+    "plane": 5
+  },
+  "volumes": [
+    {
+      "name": "foundation",
+      "x": 1,
+      "y": 0,
+      "z": 0,
+      "w": 8,
+      "d": 8,
+      "h": 1,
+      "color": "wood"
+    },
+    {
+      "name": "walls",
+      "x": 1,
+      "y": 0,
+      "z": 1,
+      "w": 8,
+      "d": 8,
+      "h": 6,
+      "color": "wall"
+    },
+    {
+      "name": "front-door",
+      "x": 4,
+      "y": 0,
+      "z": 1,
+      "w": 2,
+      "d": 1,
+      "h": 4,
+      "color": "wood",
+      "overlay": true
+    },
+    {
+      "name": "front-left-window",
+      "x": 2,
+      "y": 0,
+      "z": 3,
+      "w": 2,
+      "d": 1,
+      "h": 2,
+      "color": "window",
+      "overlay": true
+    },
+    {
+      "name": "front-right-window",
+      "x": 6,
+      "y": 0,
+      "z": 3,
+      "w": 2,
+      "d": 1,
+      "h": 2,
+      "color": "window",
+      "overlay": true
+    },
+    {
+      "name": "roof-eaves",
+      "x": 0,
+      "y": 0,
+      "z": 7,
+      "w": 10,
+      "d": 8,
+      "h": 1,
+      "color": "roof",
+      "protected": true
+    },
+    {
+      "name": "roof-lower-slope",
+      "x": 1,
+      "y": 0,
+      "z": 8,
+      "w": 8,
+      "d": 8,
+      "h": 1,
+      "color": "roof"
+    },
+    {
+      "name": "roof-middle-slope",
+      "x": 2,
+      "y": 0,
+      "z": 9,
+      "w": 6,
+      "d": 8,
+      "h": 1,
+      "color": "roof"
+    },
+    {
+      "name": "roof-upper-slope",
+      "x": 3,
+      "y": 0,
+      "z": 10,
+      "w": 4,
+      "d": 8,
+      "h": 1,
+      "color": "roof"
+    },
+    {
+      "name": "roof-ridge",
+      "x": 4,
+      "y": 0,
+      "z": 11,
+      "w": 2,
+      "d": 8,
+      "h": 1,
+      "color": "roof"
+    },
+    {
+      "name": "front-gable-base",
+      "x": 2,
+      "y": 0,
+      "z": 7,
+      "w": 6,
+      "d": 2,
+      "h": 1,
+      "color": "wall",
+      "overlay": true
+    },
+    {
+      "name": "back-gable-base",
+      "x": 2,
+      "y": 6,
+      "z": 7,
+      "w": 6,
+      "d": 2,
+      "h": 1,
+      "color": "wall",
+      "overlay": true
+    },
+    {
+      "name": "front-gable-middle",
+      "x": 3,
+      "y": 0,
+      "z": 8,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "wall",
+      "overlay": true
+    },
+    {
+      "name": "back-gable-middle",
+      "x": 3,
+      "y": 6,
+      "z": 8,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "wall",
+      "overlay": true
+    },
+    {
+      "name": "front-gable-top",
+      "x": 4,
+      "y": 0,
+      "z": 9,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "wall",
+      "overlay": true
+    },
+    {
+      "name": "back-gable-top",
+      "x": 4,
+      "y": 6,
+      "z": 9,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "wall",
+      "overlay": true
+    },
+    {
+      "name": "chimney",
+      "x": 4,
+      "y": 5,
+      "z": 12,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "wood"
+    },
+    {
+      "name": "chimney-cap",
+      "x": 4,
+      "y": 5,
+      "z": 14,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "roof"
+    }
+  ]
+}

@@ -26,7 +26,6 @@ test('merged models preserve the original occupied cells and colors', () => {
     // Fingerprints captured from the height-1 catalog before merging pairs.
     const original = {
         duck: 'ebf55d3ded6afef3bbe7ca9c5c09329f0c85a5ddae391aa841f14fa52730c08c',
-        apple: '065af5061391b2a9ab78bd1bd35b61699c08f389cb3f94e3cac68a3040064bf9',
         pineapple: 'da38f5a8cbc917d5b8e9fdb6c198280762fa5ba51943cae0c8a181e3b8c9d1df',
         'sports-car': '2e6374299b3b3e21e4cb1c0acedcc2ec8e52940a39c20d3a0a929d1edd5c4cc9',
         castle: 'e4adc50d66a66ba964bea8483b6b22b96130c0483dfe12ac414f38d0a825b62b'
@@ -86,7 +85,7 @@ test('height participates in rotated matching, resume validation, and pile group
 
 test('seven collections have ordered models and independent unlock paths', () => {
     const expected = new Map([
-        ['starter', ['turtle', 'duck', 'apple', 'pineapple', 'sports-car', 'castle']],
+        ['starter', ['turtle', 'apple', 'duck', 'house', 'pineapple', 'sports-car', 'castle']],
         ['land-animal', ['rabbit', 'fox', 'elephant']],
         ['fruit', ['cherry', 'watermelon', 'pear']],
         ['bird', ['chick', 'owl', 'parrot']],
@@ -94,7 +93,7 @@ test('seven collections have ordered models and independent unlock paths', () =>
         ['ocean', ['fish', 'sea-turtle', 'shark']],
         ['dinosaur', ['stegosaurus', 'triceratops', 't-rex']]
     ]);
-    assert.equal(catalog.length, 24);
+    assert.equal(catalog.length, 25);
     for (const [collection, ids] of expected) {
         const group = catalog.filter(level => level.collection === collection).sort((a, b) => a.order - b.order);
         assert.deepEqual(group.map(level => level.id), ids);
@@ -115,7 +114,7 @@ test('seven collections have ordered models and independent unlock paths', () =>
         assert.equal(modelUnlocked(group, 1, [other.id]), false);
     }
     const starter = catalog.filter(level => level.collection === 'starter').sort((a, b) => a.order - b.order);
-    assert.deepEqual(starter.map(level => level.version), [1, 6, 2, 2, 1, 2]);
+    assert.deepEqual(starter.map(level => level.version), [1, 3, 6, 2, 2, 1, 2]);
 });
 
 test('every catalog model can be built from its replenishing pile and resumed at every step', () => {
@@ -241,10 +240,14 @@ function sceneModule(name) {
         compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 }
     }).outputText;
     js = js.replace(/from '([^']+)'/g, (_, specifier) =>
-        `from '${specifier.startsWith('./') ? sceneModule(specifier.slice(2)) : import.meta.resolve(specifier)}'`);
+        `from '${specifier.endsWith('.mp3') ? assetModule(specifier)
+            : specifier.startsWith('./') ? sceneModule(specifier.slice(2)) : import.meta.resolve(specifier)}'`);
     const url = `data:text/javascript;base64,${Buffer.from(js).toString('base64')}`;
     moduleUrls.set(name, url);
     return url;
+}
+function assetModule(specifier) {
+    return `data:text/javascript;base64,${Buffer.from(`export default ${JSON.stringify(specifier)};`).toString('base64')}`;
 }
 const reducedMotion = { matches: false };
 globalThis.matchMedia = () => reducedMotion;
@@ -252,32 +255,26 @@ globalThis.devicePixelRatio = 1;
 const { SnapScene3D } = await import(sceneModule('scene3d'));
 const THREE = await import('three');
 const { brickPosition, brickMesh, BRICK_HEIGHT } = await import(sceneModule('brick3d'));
-const { createBreakupBuffer, createBrickRainBuffer } = await import(sceneModule('sound'));
+const { loadSnapSamples } = await import(sceneModule('sound'));
 
-test('intro cues have an immediate, dense stereo rain with bounded peaks', () => {
-    const context = { sampleRate: 44100, createBuffer(channels, length) {
-        const samples = Array.from({ length: channels }, () => new Float32Array(length));
-        return { numberOfChannels: channels, duration: length / this.sampleRate,
-            getChannelData: channel => samples[channel] };
-    } };
-    const breakup = createBreakupBuffer(context);
-    const rain = createBrickRainBuffer(context);
-    for (const buffer of [breakup, rain]) for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
-        const samples = buffer.getChannelData(channel);
-        assert.ok(samples.some(sample => Math.abs(sample) > 0.03));
-        assert.ok(samples.every(Number.isFinite));
-        assert.ok(samples.every(sample => Math.abs(sample) <= 0.76));
+test('recorded clips exist, stay small, and decode together or not at all', async () => {
+    const names = ['snap', 'grab', 'breakup', 'pour'];
+    for (const name of names) {
+        const size = readFileSync(resolve(`src/games/snapforge/audio/${name}.mp3`)).byteLength;
+        assert.ok(size > 1000 && size < 40000, `${name}.mp3 is ${size} bytes`);
     }
-    assert.ok(breakup.duration < 0.5);
-    assert.ok(rain.duration > 1 && rain.duration < 1.2);
-    assert.equal(rain.numberOfChannels, 2);
-    const left = rain.getChannelData(0), right = rain.getChannelData(1);
-    for (const time of [0, 0.18, 0.4, 0.65, 0.85]) {
-        const start = Math.floor(time * context.sampleRate);
-        assert.ok(left.slice(start, start + 0.1 * context.sampleRate)
-            .some(sample => Math.abs(sample) > 0.01));
+    const originalFetch = globalThis.fetch;
+    const context = { decodeAudioData: async data => ({ decoded: new TextDecoder().decode(data) }) };
+    try {
+        globalThis.fetch = async url => new Response(url);
+        const samples = await loadSnapSamples(context);
+        assert.deepEqual(Object.keys(samples).sort(), [...names].sort());
+        for (const name of names) assert.equal(samples[name].decoded, `./audio/${name}.mp3`);
+        globalThis.fetch = async url => new Response('', { status: url.includes('pour') ? 404 : 200 });
+        assert.equal(await loadSnapSamples(context), null);
+    } finally {
+        globalThis.fetch = originalFetch;
     }
-    assert.ok(left.some((sample, index) => Math.abs(sample - right[index]) > 0.01));
 });
 
 test('height-2 meshes share the original bottom and top bounds with studs only on top', () => {
@@ -343,7 +340,7 @@ function sceneHarness() {
     Object.assign(scene, {
         clearLevel() {}, resize() {}, canvas: {}, renderer: { setPixelRatio() {} }, modelGroup: new THREE.Group(), staticMeshes: new Map(),
         loose: new Map(), flights: [], updateTarget() {},
-        onIntroBreakup() {}, onIntroRain() {}, onIntroCancel() {}, introRainPlayed: false,
+        onIntroBreakup() {}, onIntroRain() {}, onIntroCancel() {}, introRainAt: Infinity,
         spawnLoose(brick) { this.loose.set(brick.id, { brick }); }
     });
     return scene;
@@ -406,11 +403,15 @@ test('mystery intro hides finished bricks and launches every piece in one burst'
         assert.ok(scene.flights.every(flight => flight.start === launch && flight.landingPosition));
         scene.advanceFlights(launch);
         assert.ok(scene.flights.every(flight => flight.mesh.scale.x === 0));
-        scene.advanceFlights(launch + 299);
+        // The pour waits for the first brick to fall from its flight's end onto the table.
+        const firstImpact = scene.introRainAt;
+        assert.ok(firstImpact > Math.min(...scene.flights.map(flight => flight.start + flight.duration)));
+        assert.ok(firstImpact - launch > 1000 && firstImpact - launch < 1900);
+        scene.advanceFlights(firstImpact - 1);
         assert.deepEqual(cues, ['breakup']);
-        scene.advanceFlights(launch + 300);
+        scene.advanceFlights(firstImpact);
         assert.deepEqual(cues, ['breakup', 'rain']);
-        scene.advanceFlights(launch + 1200);
+        scene.advanceFlights(launch + 3000);
         assert.deepEqual(cues, ['breakup', 'rain']);
         assert.equal(scene.flights.length, 0);
         assert.equal(finished, 1);
@@ -429,10 +430,12 @@ test('skipping a burst in flight removes overlays and preserves the pile invento
         overlayScene: new THREE.Scene(), screenPoint() { return new THREE.Vector2(); }
     });
     scene.startLevel(duck, [], true, () => {});
-    scene.advanceIntro(scene.introNext);
-    scene.advanceFlights(scene.introNext + 300);
+    const launch = scene.introNext;
+    scene.advanceIntro(launch);
+    scene.advanceFlights(launch + 300);
     scene.skipIntro();
-    assert.deepEqual(cues, ['breakup', 'rain', 'cancel']);
+    scene.advanceFlights(launch + 3000);
+    assert.deepEqual(cues, ['breakup', 'cancel']);
     assert.equal(scene.overlayScene.children.length, 0);
     assert.equal(scene.flights.length, 0);
     assert.equal(scene.mystery, null);

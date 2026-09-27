@@ -68,7 +68,23 @@ test('turtle is reproducible, preserves every recipe cell and color, and mirrors
         other.z === b.z && other.w === b.w && other.d === b.d && other.h === b.h && other.color === b.color));
     assert.equal(buildOrder(level)[0].z, 0);
     assert.ok(buildOrder(level)[0].w * buildOrder(level)[0].d >= 12, 'start with a broad foundation');
+    assert.equal(level.vetted, 1);
+});
+
+test('redesigned apple reproduces its recipe, preserves the sculpt, and mirrors front-to-back seams', () => {
+    const recipe = JSON.parse(readFileSync(new URL('../src/games/snapforge/recipes/apple.json', import.meta.url)));
+    const saved = JSON.parse(readFileSync(new URL('../src/games/snapforge/levels/apple.json', import.meta.url)));
+    const { level, report } = compileRecipe(recipe, saved);
+    assert.deepEqual(level, saved);
+    assert.equal(report.withinBudget, true);
+    assert.equal(level.targetParts, 30);
+    assert.equal(level.order, 2);
+    assert.equal(level.version, 3);
     assert.equal(level.vetted, 0);
+    const expected = [...expandRecipe(recipe)].map(([key, c]) => `${key}:${c.color}`).sort();
+    assert.deepEqual(level.bricks.flatMap(b => brickCells(b).map(key => `${key}:${b.color}`)).sort(), expected);
+    for (const b of level.bricks) assert.ok(level.bricks.some(other => other.x === b.x && other.y === 8 - b.y - b.d &&
+        other.z === b.z && other.w === b.w && other.d === b.d && other.h === b.h && other.color === b.color));
 });
 
 test('metadata and authored build sequences validate; legacy ordering remains unchanged', () => {
