@@ -6,14 +6,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "build:prod": "vite build --mode production",
+    "build": "npm run validate:snapforge && vite build",
+    "build:prod": "npm run validate:snapforge && vite build --mode production",
     "preview": "vite preview",
     "serve": "vite preview",
     "increment-version": "node scripts/increment-version.js",
     "deploy": "npm run increment-version && npm run build:prod && gh-pages -d dist",
     "clean": "rimraf dist",
-    "build:clean": "npm run clean && npm run build:prod"
+    "build:clean": "npm run clean && npm run build:prod",
+    "validate:snapforge": "node scripts/validate-snapforge.mjs",
+    "test:snapforge": "node --test scripts/test-snapforge.mjs"
   },
   "keywords": [
     "arcade",

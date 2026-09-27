@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snapforge · Vibe Arcade</title>
+    <link rel="stylesheet" href="/src/styles/snapforge.css">
+</head>
+<body>
+    <main id="snapforge" class="snapforge">
+        <header class="snapforge-header">
+            <a class="arcade-link" href="/arcade/" aria-label="Back to arcade">← Arcade</a>
+            <div class="brand"><span class="brand-mark">✦</span> SNAPFORGE <span class="brand-dot">•</span> BUILD CLUB</div>
+            <button id="soundButton" class="sound-button" type="button" aria-label="Mute sound">Sound on</button>
+        </header>
+
+        <section id="galleryScreen" class="gallery-screen" aria-label="Model gallery">
+            <div class="gallery-heading">
+                <p class="eyebrow">A LITTLE WORLD, BRICK BY BRICK</p>
+                <h1>Pick your next build<span class="period">.</span></h1>
+                <p>Find the right pieces. Watch your creation come together.</p>
+            </div>
+            <div class="gallery-controls">
+                <span id="galleryCount">01 / 04</span>
+                <div>
+                    <button id="galleryPrevious" type="button" aria-label="Previous model">←</button>
+                    <button id="galleryNext" type="button" aria-label="Next model">→</button>
+                </div>
+            </div>
+            <div id="galleryTrack" class="gallery-track" tabindex="0" aria-label="Snapforge models"></div>
+            <p class="gallery-footnote">New shapes will join the club soon ✳</p>
+        </section>
+
+        <section id="playScreen" class="play-screen" aria-label="Build model" hidden>
+            <div class="play-heading">
+                <button id="modelsButton" class="text-button" type="button">← Models</button>
+                <div class="play-title-group"><span class="eyebrow">NOW BUILDING</span><h1 id="playTitle">Duck</h1></div>
+                <span id="stepCounter" class="step-counter">1 / 30</span>
+            </div>
+            <div id="playArea" class="play-area">
+                <div class="model-stage">
+                    <div class="stage-caption"><span class="live-dot"></span> BUILD SPACE</div>
+                    <p id="buildMessage" class="build-message">Watch the shape come apart...</p>
+                </div>
+                <div class="tray-section">
+                    <div class="tray-heading"><strong>YOUR BRICKS</strong><span>Tap the piece that matches the ghost</span></div>
+                    <div id="pieceTray" class="piece-tray" aria-label="Available bricks"></div>
+                </div>
+                <div id="pixiHost" class="pixi-host" aria-hidden="true"></div>
+            </div>
+            <button id="skipIntroButton" class="skip-button" type="button" hidden>Skip intro →</button>
+            <div id="completion" class="completion" role="status" hidden>
+                <span>✦ BUILD COMPLETE ✦</span><strong>You're a maker!</strong>
+            </div>
+        </section>
+    </main>
+    <script type="module" src="/src/games/snapforge/game.ts"></script>
+</body>
+</html>

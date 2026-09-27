@@ -12,9 +12,16 @@ export interface GamesConfig {
 }
 
 // Game configurations
-// Set available: false to hide a game from the menu
+// Set available: false to show a disabled "Coming soon" card in the menu
 export const gamesConfig: GamesConfig = {
     games: [
+        {
+            id: "snapforge",
+            name: "Snapforge",
+            description: "Build little worlds, one snap at a time",
+            icon: "🧱",
+            available: true
+        },
         {
             id: "snake",
             name: "Snake",
@@ -59,4 +66,4 @@ export const gamesConfig: GamesConfig = {
         }
 
     ]
-}; 
+};

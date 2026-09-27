@@ -42,20 +42,22 @@ function generateMenuButtons(games: GameConfig[]) {
     
     gameGrid.innerHTML = '';
     
-    // Filter out unavailable games
-    const availableGames = games.filter(game => game.available);
-    
-    availableGames.forEach(game => {
+    games.forEach(game => {
         const button = document.createElement('div');
-        button.className = 'game-button';
+        button.className = game.available ? 'game-button' : 'game-button disabled';
         button.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+        if (!game.available) {
+            button.setAttribute('aria-disabled', 'true');
+        }
         
         button.innerHTML = `
             <span class="game-icon">${game.icon} ${game.name}</span>
-            <div class="game-description">${game.description}</div>
+            <div class="game-description">${game.available ? game.description : 'Coming soon'}</div>
         `;
         
-        button.addEventListener('click', () => startGame(game.id));
+        if (game.available) {
+            button.addEventListener('click', () => startGame(game.id));
+        }
         
         gameGrid.appendChild(button);
     });
@@ -73,4 +75,4 @@ function returnToMainMenu() {
 }
 
 // Initialize when page loads
-window.addEventListener('load', init); 
+window.addEventListener('load', init);
