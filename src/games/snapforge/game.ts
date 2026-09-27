@@ -229,7 +229,7 @@ class SnapforgeGame {
             const source = audio.createBufferSource();
             const gain = audio.createGain();
             source.buffer = buffer;
-            gain.gain.value = kind === 'breakup' ? 0.55 : 0.48;
+            gain.gain.value = kind === 'breakup' ? 0.55 : 0.6;
             source.connect(gain).connect(audio.destination);
             source.onended = () => {
                 this.introSources.delete(source);

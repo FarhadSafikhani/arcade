@@ -22,6 +22,7 @@ const HELD_ROTATION_DURATION = 850;
 const SHIMMER_SWEEP_DURATION = 500;
 const SHIMMER_PAUSE_DURATION = 5000;
 const REJECTION_FLASH_DURATION = 420;
+const INTRO_RAIN_DELAY = 300;
 const REJECTION_RED = new THREE.Color(0xff2038);
 
 function litScene(background: number): THREE.Scene {
@@ -190,10 +191,16 @@ export class SnapScene3D {
             duck: 0xffdb61, apple: 0xffd9d3, pineapple: 0xe0ecc4,
             'sports-car': 0xffd7c5, castle: 0xe1d4fb
         };
+        const collectionBackgrounds: Record<string, number> = {
+            'land-animal': 0xe8dccb, fruit: 0xffe0d7, bird: 0xffedc3,
+            car: 0xdbe5ed, ocean: 0xcde9ec, dinosaur: 0xe2e5ca
+        };
+        const background = (entry: typeof entries[number]) =>
+            backgrounds[entry.id] ?? collectionBackgrounds[entry.level.collection] ?? 0xcfe7f7;
         for (const entry of entries)
-            entry.element.style.backgroundColor = `#${(backgrounds[entry.id] ?? 0xcfe7f7).toString(16)}`;
+            entry.element.style.backgroundColor = `#${background(entry).toString(16)}`;
         this.previewGallery = new PreviewGallery(this.renderer, track, entries.map(entry => ({ element: entry.element, create: () => {
-            const scene = litScene(backgrounds[entry.id] ?? 0xcfe7f7);
+            const scene = litScene(background(entry));
             const data = entry.level;
             const model = entry.completed ? new THREE.Group() : mysteryModel(data);
             for (const brick of entry.completed ? data.bricks : []) {
@@ -824,6 +831,10 @@ export class SnapScene3D {
         for (let index = this.flights.length - 1; index >= 0; index--) {
             const flight = this.flights[index];
             const t = Math.min(1, (now - flight.start) / flight.duration);
+            if (flight.kind === 'intro' && !this.introRainPlayed && now - flight.start >= INTRO_RAIN_DELAY) {
+                this.introRainPlayed = true;
+                this.onIntroRain();
+            }
             const eased = flight.kind === 'intro' ? 1 - Math.pow(1 - t, 2) : flight.kind === 'return' ? t * t * t * (t * (t * 6 - 15) + 10) :
                 t * t * (3 - 2 * t);
             const arc = flight.kind === 'intro' ? Math.sin(Math.PI * t) * flight.arcHeight! : flight.kind === 'return' ?
@@ -876,10 +887,6 @@ export class SnapScene3D {
                 this.placementPending = false;
             } else if (!this.reserve.includes(flight.brick)) {
                 this.spawnLoose(flight.brick, true, flight.landingPosition);
-                if (flight.kind === 'intro' && !this.introRainPlayed) {
-                    this.introRainPlayed = true;
-                    this.onIntroRain();
-                }
             }
         }
         if (this.playing && !this.interactive && this.introQueue.length === 0 &&

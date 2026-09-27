@@ -87,20 +87,67 @@ export function createBreakupBuffer(context: BaseAudioContext): AudioBuffer {
     return buffer;
 }
 
-/** A fixed-size cascade: enough clacks to suggest a pile without one voice per brick. */
+/** A broad, irregular shower of small plastic impacts, with no leading silence. */
 export function createBrickRainBuffer(context: BaseAudioContext): AudioBuffer {
-    const duration = 1.2;
+    const duration = 1.12;
     const rate = context.sampleRate;
-    const buffer = context.createBuffer(1, Math.ceil(rate * duration), rate);
-    const samples = buffer.getChannelData(0);
-    const impacts = [0.18, 0.29, 0.39, 0.48, 0.55, 0.63, 0.71, 0.78, 0.86, 0.94, 1.01];
-    for (let index = 0; index < impacts.length; index++) {
-        const pitch = 630 + ((index * 7) % 9) * 115;
-        const strength = (0.42 + (index % 4) * 0.085) * (1 - index / impacts.length * 0.4);
-        addPlasticClack(samples, rate, impacts[index], pitch, strength);
+    const buffer = context.createBuffer(2, Math.ceil(rate * duration), rate);
+    const left = buffer.getChannelData(0);
+    const right = buffer.getChannelData(1);
+    let seed = 0x5a17c9e3;
+    const random = (): number => {
+        seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+        return seed / 0x100000000;
+    };
+    const clusters: [number, number, number][] = [
+        [0, 4, 0.06], [0.09, 8, 0.12], [0.22, 12, 0.16],
+        [0.39, 15, 0.18], [0.59, 10, 0.16], [0.78, 7, 0.16]
+    ];
+    for (const [start, count, spread] of clusters) {
+        for (let index = 0; index < count; index++) {
+            const delay = start === 0 && index === 0 ? 0 : start + random() * spread;
+            const pitch = 620 + random() * 1250;
+            const strength = (0.32 + random() * 0.38) * (1 - start * 0.32);
+            addRainClack(left, right, rate, delay, pitch, strength, random() * 1.6 - 0.8, random);
+        }
     }
-    finishBuffer(samples, 0.68);
+    let peak = 0;
+    for (let index = 0; index < left.length; index++)
+        peak = Math.max(peak, Math.abs(left[index]), Math.abs(right[index]));
+    if (peak > 0.68) {
+        const scale = 0.68 / peak;
+        for (let index = 0; index < left.length; index++) {
+            left[index] *= scale;
+            right[index] *= scale;
+        }
+    }
     return buffer;
+}
+
+function addRainClack(left: Float32Array, right: Float32Array, rate: number, delay: number,
+    pitch: number, strength: number, pan: number, random: () => number): void {
+    const start = Math.round(delay * rate);
+    const length = Math.min(left.length - start, Math.ceil(rate * 0.07));
+    const leftGain = Math.sqrt((1 - pan) / 2);
+    const rightGain = Math.sqrt((1 + pan) / 2);
+    const lowPitch = pitch * (0.34 + random() * 0.1);
+    let filteredNoise = 0;
+    const smoothing = 1 - Math.exp(-2 * Math.PI * 2600 / rate);
+    for (let index = 0; index < length; index++) {
+        const time = index / rate;
+        const noise = random() * 2 - 1;
+        filteredNoise += smoothing * (noise - filteredNoise);
+        const attack = Math.min(1, time / 0.0004);
+        const crack = (noise - filteredNoise) * 0.3 * Math.exp(-time / 0.0024);
+        const texture = filteredNoise * 0.17 * Math.exp(-time / 0.009);
+        const body = Math.sin(2 * Math.PI * (pitch * time - 1300 * time * time))
+            * 0.13 * Math.exp(-time / 0.014)
+            + Math.sin(2 * Math.PI * lowPitch * time) * 0.12 * Math.exp(-time / 0.025);
+        const tail = Math.min(1, (length - index) / (rate * 0.008));
+        const sample = (crack + texture + body) * attack * tail * strength;
+        left[start + index] += sample * leftGain;
+        right[start + index] += sample * rightGain;
+    }
 }
 
 function addPlasticClack(samples: Float32Array, rate: number, delay: number,

@@ -18,12 +18,38 @@ class Model:
         return self
 
     def bricks(self):
+        # Each brick needs one stud beneath it; a whole overhang need not become a wall.
+        def slices(cells):
+            result = []
+            for z in sorted({cell[2] for cell in cells}):
+                layer = {cell: color for cell, color in cells.items() if cell[2] == z}
+                while layer:
+                    x, y, _ = min(layer, key=lambda cell: (cell[1], cell[0]))
+                    color = layer[x, y, z]
+                    w = 1
+                    while w < 2 and layer.get((x + w, y, z)) == color: w += 1
+                    d = 1
+                    while d < 2 and all(layer.get((xx, y + d, z)) == color for xx in range(x, x + w)): d += 1
+                    for yy in range(y, y + d):
+                        for xx in range(x, x + w): del layer[xx, yy, z]
+                    result.append(dict(x=x, y=y, z=z, w=w, d=d, color=color))
+            return result
+
+        while True:
+            unsupported = []
+            for brick in slices(self.cells):
+                if brick['z'] == 0: continue
+                if not any((x, y, brick['z'] - 1) in self.cells
+                           for x in range(brick['x'], brick['x'] + brick['w'])
+                           for y in range(brick['y'], brick['y'] + brick['d'])):
+                    unsupported.append(brick)
+            if not unsupported: break
+            for brick in unsupported:
+                self.cells[brick['x'], brick['y'], brick['z'] - 1] = brick['color']
+
         # Small rectangular bricks retain detail while keeping builds manageable.
-        for x, y, z in sorted(self.cells, key=lambda cell: -cell[2]):
-            for below in range(z):
-                self.cells.setdefault((x, y, below), self.cells[x, y, z])
         remaining = dict(self.cells)
-        slices = []
+        parts = []
         for z in sorted({cell[2] for cell in remaining}):
             layer = {cell: color for cell, color in remaining.items() if cell[2] == z}
             while layer:
@@ -35,11 +61,11 @@ class Model:
                 while d < 2 and all(layer.get((xx, y + d, z)) == color for xx in range(x, x + w)): d += 1
                 for yy in range(y, y + d):
                     for xx in range(x, x + w): del layer[xx, yy, z]
-                slices.append(dict(x=x, y=y, z=z, w=w, d=d, color=color))
-        by_shape = {(b['x'], b['y'], b['z'], b['w'], b['d'], b['color']): b for b in slices}
+                parts.append(dict(x=x, y=y, z=z, w=w, d=d, color=color))
+        by_shape = {(b['x'], b['y'], b['z'], b['w'], b['d'], b['color']): b for b in parts}
         bricks = []
         used = set()
-        for b in slices:
+        for b in parts:
             key = (b['x'], b['y'], b['z'], b['w'], b['d'], b['color'])
             if key in used: continue
             used.add(key)
@@ -79,6 +105,7 @@ def animal(id, title, order, main, accent, feature):
         m.box(8, 11, 2, 4, 3, 5, 'main').box(10, 11, 2, 4, 0, 4, 'main')
         m.box(7, 9, 0, 1, 4, 6, 'accent').box(7, 9, 5, 6, 4, 6, 'accent')
         m.box(7, 8, 1, 2, 5, 6, 'light').box(7, 8, 4, 5, 5, 6, 'light')
+        m.box(4, 7, 0, 1, 3, 6, 'main').box(4, 7, 5, 6, 3, 6, 'main')
     return m
 
 animal('rabbit', 'Rabbit', 1, '#E8D6C1', '#F2A7A7', 'rabbit').save()
@@ -145,8 +172,9 @@ def car(id, title, order, body, roof, kind):
         m.box(0, 5, 2, 7, 4, 5, 'body').box(0, 1, 2, 7, 5, 6, 'body')
     else:
         m.box(3, 9, 3, 6, 4, 5, 'roof').box(5, 8, 2, 3, 4, 5, 'glass')
+        m.box(3, 10, 2, 3, 3, 4, 'roof').box(3, 10, 6, 7, 3, 4, 'roof')
         m.box(0, 2, 1, 8, 3, 4, 'roof').box(10, 12, 1, 8, 3, 4, 'roof')
-        m.box(0, 2, 2, 7, 4, 5, 'roof')
+        m.box(0, 2, 0, 9, 4, 6, 'roof')
     m.box(length-1, length, 3, 6, 2, 3, 'light')
     return m
 
@@ -182,6 +210,17 @@ m.save()
 def dino(id, title, order, body, accent, kind):
     m = Model(id, title, 'dinosaur', order, f'Build a {title.lower()} from colorful bricks.',
               dict(body=body, accent=accent, dark='#26364A', belly='#D5D7A5', horn='#EFE3B5'))
+    if kind == 't-rex':
+        m.box(3, 13, 2, 7, 3, 7, 'body')
+        for x in (4, 9):
+            for y in (2, 6): m.box(x, x+2, y, y+1, 0, 4, 'body')
+        m.box(0, 4, 3, 6, 1, 5, 'body').box(0, 2, 3, 6, 0, 3, 'body')
+        m.box(10, 13, 3, 6, 5, 9, 'body').box(11, 14, 3, 6, 7, 10, 'body')
+        m.box(12, 14, 3, 6, 7, 8, 'belly').box(13, 15, 3, 6, 8, 9, 'body')
+        m.box(12, 13, 3, 4, 9, 10, 'dark').box(12, 13, 5, 6, 9, 10, 'dark')
+        m.box(9, 12, 1, 3, 4, 6, 'body').box(9, 12, 6, 8, 4, 6, 'body')
+        m.box(4, 9, 2, 3, 6, 7, 'accent').box(4, 9, 6, 7, 6, 7, 'accent')
+        return m
     m.box(3, 10, 2, 7, 3, 7, 'body')
     for x in (4, 8):
         for y in (2, 6): m.box(x, x+2, y, y+1, 0, 4, 'body')
@@ -196,10 +235,6 @@ def dino(id, title, order, body, accent, kind):
         m.box(9, 12, 2, 7, 8, 10, 'accent')
         m.box(11, 12, 2, 3, 9, 11, 'horn').box(11, 12, 6, 7, 9, 11, 'horn')
         m.box(13, 14, 4, 5, 8, 10, 'horn')
-    else:
-        m.box(3, 6, 3, 6, 7, 8, 'accent').box(9, 11, 1, 3, 4, 6, 'body')
-        m.box(11, 13, 1, 3, 4, 5, 'body').box(13, 15, 3, 6, 7, 8, 'body')
-        m.box(12, 14, 3, 6, 6, 7, 'belly')
     return m
 
 dino('stegosaurus', 'Stegosaurus', 1, '#90B86D', '#E7A86D', 'stegosaurus').save()

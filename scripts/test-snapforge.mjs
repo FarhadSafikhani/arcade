@@ -11,10 +11,16 @@ const compiled = ts.transpileModule(source, {
 }).outputText;
 const { validateLevel, buildOrder, pieceMatches, validPlacedIds, pileAdditions } =
     await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`);
+const collectionSource = readFileSync(resolve('src/games/snapforge/collections.ts'), 'utf8');
+const collectionCompiled = ts.transpileModule(collectionSource, {
+    compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 }
+}).outputText;
+const { collections, collectionLevels, modelUnlocked } =
+    await import(`data:text/javascript;base64,${Buffer.from(collectionCompiled).toString('base64')}`);
 const duck = JSON.parse(readFileSync(resolve('src/games/snapforge/levels/duck.json'), 'utf8'));
 const catalog = readdirSync(resolve('src/games/snapforge/levels')).filter(name => name.endsWith('.json'))
     .map(name => validateLevel(JSON.parse(readFileSync(resolve('src/games/snapforge/levels', name), 'utf8'))))
-    .sort((a, b) => a.order - b.order);
+    .sort((a, b) => a.collection.localeCompare(b.collection) || a.order - b.order);
 
 test('merged models preserve the original occupied cells and colors', () => {
     // Fingerprints captured from the height-1 catalog before merging pairs.
@@ -25,7 +31,7 @@ test('merged models preserve the original occupied cells and colors', () => {
         'sports-car': '2e6374299b3b3e21e4cb1c0acedcc2ec8e52940a39c20d3a0a929d1edd5c4cc9',
         castle: 'e4adc50d66a66ba964bea8483b6b22b96130c0483dfe12ac414f38d0a825b62b'
     };
-    for (const level of catalog) {
+    for (const level of catalog.filter(level => level.collection === 'starter')) {
         const cells = [];
         for (const b of level.bricks)
             for (let x = b.x; x < b.x + b.w; x++)
@@ -43,7 +49,7 @@ test('merged models preserve the original occupied cells and colors', () => {
 
 const unit = { id: 'base', x: 0, y: 0, z: 0, w: 2, d: 1, color: 'yellow' };
 const heightLevel = bricks => ({ id: 'height-test', title: 'Height test', description: '',
-    order: 1, version: 1, palette: { yellow: '#FFD233' }, bricks });
+    collection: 'starter', order: 1, version: 1, palette: { yellow: '#FFD233' }, bricks });
 
 test('height defaults to one and accepts only explicit one or two', () => {
     for (const b of [unit, { ...unit, h: 1 }, { ...unit, h: 2 }]) {
@@ -78,17 +84,38 @@ test('height participates in rotated matching, resume validation, and pile group
     assert.equal(pileAdditions([], [...active, ...reserve]).filter(b => b.h === 2).length, 3);
 });
 
-test('five playable models progress from duck to fruit, sports car, and castle', () => {
-    assert.deepEqual(catalog.map(level => level.id), ['duck', 'apple', 'pineapple', 'sports-car', 'castle']);
-    assert.deepEqual(catalog.map(level => level.order), [1, 2, 3, 4, 5]);
-    assert.deepEqual(catalog.map(level => level.title), ['Little Duck', 'Apple', 'Pineapple', 'Sports Car', 'Castle']);
-    const targets = [29, 34, 49, 78, 79];
-    for (const [index, level] of catalog.entries()) {
-        assert.equal(level.bricks.length, targets[index]);
-        if (index) assert.ok(level.bricks.length > catalog[index - 1].bricks.length);
-        assert.deepEqual(new Set(buildOrder(level).map(p => p.id)), new Set(level.bricks.map(p => p.id)));
+test('seven collections have ordered models and independent unlock paths', () => {
+    const expected = new Map([
+        ['starter', ['duck', 'apple', 'pineapple', 'sports-car', 'castle']],
+        ['land-animal', ['rabbit', 'fox', 'elephant']],
+        ['fruit', ['cherry', 'watermelon', 'pear']],
+        ['bird', ['chick', 'owl', 'parrot']],
+        ['car', ['compact-car', 'pickup-truck', 'race-car']],
+        ['ocean', ['fish', 'sea-turtle', 'shark']],
+        ['dinosaur', ['stegosaurus', 'triceratops', 't-rex']]
+    ]);
+    assert.equal(catalog.length, 23);
+    for (const [collection, ids] of expected) {
+        const group = catalog.filter(level => level.collection === collection).sort((a, b) => a.order - b.order);
+        assert.deepEqual(group.map(level => level.id), ids);
+        assert.deepEqual(group.map(level => level.order), ids.map((_, index) => index + 1));
+        assert.ok(group.every((level, index) => index === 0 || level.bricks.length > group[index - 1].bricks.length),
+            `${collection}: piece counts should increase`);
+        for (const level of group) assert.deepEqual(
+            new Set(buildOrder(level).map(piece => piece.id)), new Set(level.bricks.map(piece => piece.id)));
     }
-    assert.deepEqual(catalog.map(level => level.version), [6, 2, 2, 1, 2], 'changed models invalidate older partial builds');
+    assert.deepEqual(collections.map(item => item.id), [...expected.keys()]);
+    for (const [collection, ids] of expected) {
+        const group = collectionLevels(catalog, collection);
+        assert.deepEqual(group.map(level => level.id), ids);
+        assert.equal(modelUnlocked(group, 0, []), true);
+        assert.equal(modelUnlocked(group, 1, []), false);
+        assert.equal(modelUnlocked(group, 1, [group[0].id]), true);
+        const other = catalog.find(level => level.collection !== collection);
+        assert.equal(modelUnlocked(group, 1, [other.id]), false);
+    }
+    const starter = catalog.filter(level => level.collection === 'starter').sort((a, b) => a.order - b.order);
+    assert.deepEqual(starter.map(level => level.version), [6, 2, 2, 1, 2]);
 });
 
 test('every catalog model can be built from its replenishing pile and resumed at every step', () => {
@@ -227,22 +254,30 @@ const THREE = await import('three');
 const { brickPosition, brickMesh, BRICK_HEIGHT } = await import(sceneModule('brick3d'));
 const { createBreakupBuffer, createBrickRainBuffer } = await import(sceneModule('sound'));
 
-test('intro cues have nonzero attacks, a trailing rain, and bounded peaks', () => {
-    const context = { sampleRate: 44100, createBuffer(_channels, length) {
-        const samples = new Float32Array(length);
-        return { duration: length / this.sampleRate, getChannelData: () => samples };
+test('intro cues have an immediate, dense stereo rain with bounded peaks', () => {
+    const context = { sampleRate: 44100, createBuffer(channels, length) {
+        const samples = Array.from({ length: channels }, () => new Float32Array(length));
+        return { numberOfChannels: channels, duration: length / this.sampleRate,
+            getChannelData: channel => samples[channel] };
     } };
     const breakup = createBreakupBuffer(context);
     const rain = createBrickRainBuffer(context);
-    for (const buffer of [breakup, rain]) {
-        const samples = buffer.getChannelData(0);
-        assert.ok(samples.some(sample => Math.abs(sample) > 0.05));
+    for (const buffer of [breakup, rain]) for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
+        const samples = buffer.getChannelData(channel);
+        assert.ok(samples.some(sample => Math.abs(sample) > 0.03));
         assert.ok(samples.every(Number.isFinite));
-        assert.ok(Math.max(...samples.slice(0, 10000).map(Math.abs)) <= 0.76);
+        assert.ok(samples.every(sample => Math.abs(sample) <= 0.76));
     }
     assert.ok(breakup.duration < 0.5);
-    assert.ok(rain.duration > 1 && rain.duration < 1.3);
-    assert.ok(rain.getChannelData(0).slice(30000).some(sample => Math.abs(sample) > 0.02));
+    assert.ok(rain.duration > 1 && rain.duration < 1.2);
+    assert.equal(rain.numberOfChannels, 2);
+    const left = rain.getChannelData(0), right = rain.getChannelData(1);
+    for (const time of [0, 0.18, 0.4, 0.65, 0.85]) {
+        const start = Math.floor(time * context.sampleRate);
+        assert.ok(left.slice(start, start + 0.1 * context.sampleRate)
+            .some(sample => Math.abs(sample) > 0.01));
+    }
+    assert.ok(left.some((sample, index) => Math.abs(sample - right[index]) > 0.01));
 });
 
 test('height-2 meshes share the original bottom and top bounds with studs only on top', () => {
@@ -371,6 +406,10 @@ test('mystery intro hides finished bricks and launches every piece in one burst'
         assert.ok(scene.flights.every(flight => flight.start === launch && flight.landingPosition));
         scene.advanceFlights(launch);
         assert.ok(scene.flights.every(flight => flight.mesh.scale.x === 0));
+        scene.advanceFlights(launch + 299);
+        assert.deepEqual(cues, ['breakup']);
+        scene.advanceFlights(launch + 300);
+        assert.deepEqual(cues, ['breakup', 'rain']);
         scene.advanceFlights(launch + 1200);
         assert.deepEqual(cues, ['breakup', 'rain']);
         assert.equal(scene.flights.length, 0);
@@ -391,8 +430,9 @@ test('skipping a burst in flight removes overlays and preserves the pile invento
     });
     scene.startLevel(duck, [], true, () => {});
     scene.advanceIntro(scene.introNext);
+    scene.advanceFlights(scene.introNext + 300);
     scene.skipIntro();
-    assert.deepEqual(cues, ['breakup', 'cancel']);
+    assert.deepEqual(cues, ['breakup', 'rain', 'cancel']);
     assert.equal(scene.overlayScene.children.length, 0);
     assert.equal(scene.flights.length, 0);
     assert.equal(scene.mystery, null);
