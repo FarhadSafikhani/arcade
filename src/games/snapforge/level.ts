@@ -5,6 +5,7 @@ export interface SnapBrick {
     z: number;
     w: number;
     d: number;
+    h?: 1 | 2;
     color: string;
 }
 
@@ -55,14 +56,19 @@ export function validateLevel(input: unknown): SnapLevel {
                 throw new Error(`${id}/${brick.id}: ${field} must be a ${field === 'w' || field === 'd' ? 'positive' : 'non-negative'} integer`);
             }
         }
+        if (brick.h !== undefined && brick.h !== 1 && brick.h !== 2) {
+            throw new Error(`${id}/${brick.id}: h must be 1 or 2`);
+        }
         if (typeof brick.color !== 'string' || !(brick.color in palette)) {
             throw new Error(`${id}/${brick.id}: color must name a palette entry`);
         }
         for (let x = Number(brick.x); x < Number(brick.x) + Number(brick.w); x++) {
             for (let y = Number(brick.y); y < Number(brick.y) + Number(brick.d); y++) {
-                const key = cellKey(x, y, Number(brick.z));
-                if (occupied.has(key)) throw new Error(`${id}/${brick.id}: overlaps ${occupied.get(key)} at ${key}`);
-                occupied.set(key, brick.id);
+                for (let z = Number(brick.z); z < Number(brick.z) + Number(brick.h ?? 1); z++) {
+                    const key = cellKey(x, y, z);
+                    if (occupied.has(key)) throw new Error(`${id}/${brick.id}: overlaps ${occupied.get(key)} at ${key}`);
+                    occupied.set(key, brick.id);
+                }
             }
         }
     }
@@ -103,7 +109,7 @@ export function buildOrder(level: SnapLevel): SnapBrick[] {
 }
 
 export function pieceMatches(piece: SnapBrick, target: SnapBrick): boolean {
-    return piece.color === target.color &&
+    return piece.color === target.color && (piece.h ?? 1) === (target.h ?? 1) &&
         Math.min(piece.w, piece.d) === Math.min(target.w, target.d) &&
         Math.max(piece.w, piece.d) === Math.max(target.w, target.d);
 }

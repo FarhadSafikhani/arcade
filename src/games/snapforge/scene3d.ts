@@ -193,7 +193,7 @@ export class SnapScene3D {
             const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
             const maxWidth = Math.max(...data.bricks.map(brick => brick.x + brick.w));
             const maxDepth = Math.max(...data.bricks.map(brick => brick.y + brick.d));
-            const maxHeight = Math.max(...data.bricks.map(brick => brick.z + 1)) * BRICK_HEIGHT;
+            const maxHeight = Math.max(...data.bricks.map(brick => brick.z + (brick.h ?? 1))) * BRICK_HEIGHT;
             const radius = Math.max(maxWidth, maxDepth, maxHeight * 1.6) * 1.8;
             camera.position.set(radius * 0.65, radius * 0.62, radius * 0.85);
             camera.lookAt(0, maxHeight / 2, 0);
@@ -216,7 +216,7 @@ export class SnapScene3D {
         this.introDone = onIntroDone;
         const maxWidth = Math.max(...level.bricks.map(brick => brick.x + brick.w));
         const maxDepth = Math.max(...level.bricks.map(brick => brick.y + brick.d));
-        const maxHeight = Math.max(...level.bricks.map(brick => brick.z + 1)) * BRICK_HEIGHT;
+        const maxHeight = Math.max(...level.bricks.map(brick => brick.z + (brick.h ?? 1))) * BRICK_HEIGHT;
         this.targetHeight = maxHeight / 2;
         this.modelRadius = Math.max(maxWidth, maxDepth, maxHeight * 1.7) * 1.9;
         const placed = new Set(placedIds);
@@ -314,7 +314,7 @@ export class SnapScene3D {
                 w: Math.cos(index * 0.47) })
             .setLinearDamping(0.24).setAngularDamping(0.45).setCcdEnabled(true));
         this.world.createCollider(RAPIER.ColliderDesc.cuboid(brick.w / 2 - 0.03,
-            BRICK_HEIGHT / 2, brick.d / 2 - 0.03).setFriction(0.69).setRestitution(0.25), body);
+            BRICK_HEIGHT * (brick.h ?? 1) / 2, brick.d / 2 - 0.03).setFriction(0.69).setRestitution(0.25), body);
         const mesh = brickMesh(brick, this.level.palette[brick.color]);
         mesh.userData.brickId = brick.id;
         mesh.position.set(x, y, z);
@@ -446,7 +446,7 @@ export class SnapScene3D {
                 blending: THREE.AdditiveBlending
             }));
         this.targetShimmer.rotation.x = -Math.PI / 2;
-        this.targetShimmer.position.y = BRICK_HEIGHT / 2 + 0.004;
+        this.targetShimmer.position.y = BRICK_HEIGHT * (target.h ?? 1) / 2 + 0.004;
         this.targetShimmer.renderOrder = 2;
         this.ghost.add(this.targetShimmer);
         this.ghost.position.copy(brickPosition(target, this.level));

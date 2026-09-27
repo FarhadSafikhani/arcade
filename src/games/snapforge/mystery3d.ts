@@ -10,7 +10,7 @@ const COLORS: Record<string, string> = {
 /** Seamless volumes, with a stencil rim around only the combined silhouette. */
 export function mysteryModel(level: SnapLevel): THREE.Group {
     const group = new THREE.Group();
-    const center = Math.max(...level.bricks.map(brick => brick.z + 1)) * BRICK_HEIGHT / 2;
+    const center = Math.max(...level.bricks.map(brick => brick.z + (brick.h ?? 1))) * BRICK_HEIGHT / 2;
     const fill = new THREE.MeshBasicMaterial({ color: COLORS[level.id] ?? '#50799c',
         stencilWrite: true, stencilRef: 1, stencilFunc: THREE.AlwaysStencilFunc,
         stencilZPass: THREE.ReplaceStencilOp });
@@ -21,7 +21,7 @@ export function mysteryModel(level: SnapLevel): THREE.Group {
     glow.transparent = true;
     glow.opacity = 0.16;
     for (const brick of level.bricks) {
-        const geometry = new THREE.BoxGeometry(brick.w, BRICK_HEIGHT, brick.d);
+        const geometry = new THREE.BoxGeometry(brick.w, BRICK_HEIGHT * (brick.h ?? 1), brick.d);
         const position = brickPosition(brick, level);
         for (const [material, scale, order] of [[fill, 1, 1], [rim, 1.04, 2], [glow, 1.08, 3]] as const) {
             const mesh = new THREE.Mesh(geometry, material);

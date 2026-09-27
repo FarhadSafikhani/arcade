@@ -287,17 +287,29 @@ class SnapforgeGame {
     private renderGallery(): void {
         this.galleryTrack.replaceChildren();
         for (const [index, item] of catalog.entries()) {
+            const isUnlocked = this.unlocked(index);
+            const isCompleted = this.progress.completed.includes(item.id);
+            const isInProgress = Boolean(this.partial(item.level));
             const card = document.createElement('article');
             card.className = 'gallery-card';
-            card.setAttribute('aria-label', `${item.title}, ${this.unlocked(index) ? 'ready to build' : 'locked'}`);
+            card.setAttribute('aria-label', `${item.title}, ${!isUnlocked ? 'locked' : isInProgress ? 'in progress' : isCompleted ? 'completed' : 'ready to build'}`);
             const visual = document.createElement('div');
             visual.className = 'card-visual';
             visual.id = `preview-${item.id}`;
-            const badge = document.createElement('span');
-            badge.className = 'card-badge';
-            badge.textContent = !this.unlocked(index) ? 'LOCKED' :
-                this.partial(item.level) ? 'IN PROGRESS' : this.progress.completed.includes(item.id) ? 'COMPLETED' : 'READY';
-            visual.appendChild(badge);
+            if (!isUnlocked || isCompleted && !isInProgress) {
+                const icon = document.createElement('span');
+                icon.className = 'card-status-icon';
+                icon.setAttribute('aria-hidden', 'true');
+                icon.innerHTML = !isUnlocked
+                    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>'
+                    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"/></svg>';
+                visual.appendChild(icon);
+            } else if (isInProgress) {
+                const badge = document.createElement('span');
+                badge.className = 'card-badge';
+                badge.textContent = 'IN PROGRESS';
+                visual.appendChild(badge);
+            }
             const copy = document.createElement('div');
             copy.className = 'card-copy';
             const eyebrow = document.createElement('small');

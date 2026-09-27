@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -15,17 +16,79 @@ const catalog = readdirSync(resolve('src/games/snapforge/levels')).filter(name =
     .map(name => validateLevel(JSON.parse(readFileSync(resolve('src/games/snapforge/levels', name), 'utf8'))))
     .sort((a, b) => a.order - b.order);
 
+test('merged models preserve the original occupied cells and colors', () => {
+    // Fingerprints captured from the height-1 catalog before merging pairs.
+    const original = {
+        duck: 'ebf55d3ded6afef3bbe7ca9c5c09329f0c85a5ddae391aa841f14fa52730c08c',
+        apple: '065af5061391b2a9ab78bd1bd35b61699c08f389cb3f94e3cac68a3040064bf9',
+        pineapple: 'da38f5a8cbc917d5b8e9fdb6c198280762fa5ba51943cae0c8a181e3b8c9d1df',
+        'sports-car': '2e6374299b3b3e21e4cb1c0acedcc2ec8e52940a39c20d3a0a929d1edd5c4cc9',
+        castle: 'e4adc50d66a66ba964bea8483b6b22b96130c0483dfe12ac414f38d0a825b62b'
+    };
+    for (const level of catalog) {
+        const cells = [];
+        for (const b of level.bricks)
+            for (let x = b.x; x < b.x + b.w; x++)
+                for (let y = b.y; y < b.y + b.d; y++)
+                    for (let z = b.z; z < b.z + (b.h ?? 1); z++)
+                        cells.push(`${x},${y},${z}:${level.palette[b.color]}`);
+        assert.equal(createHash('sha256').update(cells.sort().join('\n')).digest('hex'), original[level.id]);
+        for (const b of level.bricks.filter(b => (b.h ?? 1) === 1)) {
+            assert.ok(!level.bricks.some(t => (t.h ?? 1) === 1 && t.z === b.z + 1 &&
+                t.x === b.x && t.y === b.y && t.w === b.w && t.d === b.d && t.color === b.color),
+            `${level.id}: unmerged pair above ${b.id}`);
+        }
+    }
+});
+
+const unit = { id: 'base', x: 0, y: 0, z: 0, w: 2, d: 1, color: 'yellow' };
+const heightLevel = bricks => ({ id: 'height-test', title: 'Height test', description: '',
+    order: 1, version: 1, palette: { yellow: '#FFD233' }, bricks });
+
+test('height defaults to one and accepts only explicit one or two', () => {
+    for (const b of [unit, { ...unit, h: 1 }, { ...unit, h: 2 }]) {
+        assert.doesNotThrow(() => validateLevel(heightLevel([b])));
+    }
+    for (const h of [0, -1, 3, 1.5, '2', null, false]) {
+        assert.throws(() => validateLevel(heightLevel([{ ...unit, h }])), /h must be 1 or 2/);
+    }
+});
+
+test('tall bricks occupy both layers and support bricks on their top face', () => {
+    const base = { ...unit, h: 2 };
+    const upper = { ...unit, id: 'upper', z: 2 };
+    assert.doesNotThrow(() => validateLevel(heightLevel([base, upper])));
+    assert.throws(() => validateLevel(heightLevel([base, { ...upper, z: 1 }])), /overlaps/);
+    assert.throws(() => validateLevel(heightLevel([{ ...upper, z: 1 }, base])), /overlaps/);
+    assert.throws(() => validateLevel(heightLevel([base, { ...upper, z: 3 }])), /floating/);
+    assert.throws(() => validateLevel(heightLevel([{ ...base, z: 1 }])), /floating/);
+});
+
+test('height participates in rotated matching, resume validation, and pile grouping', () => {
+    const tall = { ...unit, h: 2 };
+    assert.ok(pieceMatches(unit, { ...unit, h: 1 }));
+    assert.ok(pieceMatches(tall, { ...tall, w: 1, d: 2 }));
+    assert.ok(!pieceMatches(tall, unit));
+    assert.ok(!pieceMatches(unit, tall));
+    const level = heightLevel([tall, { ...unit, id: 'top', z: 2 }]);
+    assert.ok(validPlacedIds(level, ['base']));
+    assert.ok(!validPlacedIds(level, ['top']));
+    const active = Array.from({ length: 30 }, (_, i) => ({ ...unit, id: `short-${i}` }));
+    const reserve = Array.from({ length: 5 }, (_, i) => ({ ...tall, id: `tall-${i}` }));
+    assert.equal(pileAdditions([], [...active, ...reserve]).filter(b => b.h === 2).length, 3);
+});
+
 test('five playable models progress from duck to fruit, sports car, and castle', () => {
     assert.deepEqual(catalog.map(level => level.id), ['duck', 'apple', 'pineapple', 'sports-car', 'castle']);
     assert.deepEqual(catalog.map(level => level.order), [1, 2, 3, 4, 5]);
     assert.deepEqual(catalog.map(level => level.title), ['Little Duck', 'Apple', 'Pineapple', 'Sports Car', 'Castle']);
-    const targets = [35, 40, 55, 75, 100];
+    const targets = [29, 34, 49, 78, 79];
     for (const [index, level] of catalog.entries()) {
-        assert.ok(Math.abs(level.bricks.length - targets[index]) <= 5);
+        assert.equal(level.bricks.length, targets[index]);
         if (index) assert.ok(level.bricks.length > catalog[index - 1].bricks.length);
         assert.deepEqual(new Set(buildOrder(level).map(p => p.id)), new Set(level.bricks.map(p => p.id)));
     }
-    assert.equal(duck.version, 5, 'existing duck saves stay compatible');
+    assert.deepEqual(catalog.map(level => level.version), [6, 2, 2, 1, 2], 'changed models invalidate older partial builds');
 });
 
 test('every catalog model can be built from its replenishing pile and resumed at every step', () => {
@@ -159,7 +222,66 @@ function sceneModule(name) {
 globalThis.matchMedia = () => ({ matches: false });
 const { SnapScene3D } = await import(sceneModule('scene3d'));
 const THREE = await import('three');
-const { brickPosition } = await import(sceneModule('brick3d'));
+const { brickPosition, brickMesh, BRICK_HEIGHT } = await import(sceneModule('brick3d'));
+
+test('height-2 meshes share the original bottom and top bounds with studs only on top', () => {
+    const short = brickMesh(unit, '#FFD233');
+    const tallBrick = { ...unit, h: 2, z: 3 };
+    const level = heightLevel([tallBrick]);
+    const tall = brickMesh(tallBrick, '#FFD233');
+    assert.notEqual(short.children[0].geometry, tall.children[0].geometry);
+    assert.equal(tall.children.length, 1 + unit.w * unit.d);
+    assert.equal(brickPosition(tallBrick, level).y, 4 * BRICK_HEIGHT);
+    for (const [mesh, h] of [[short, 1], [tall, 2]]) {
+        const body = mesh.children[0];
+        body.geometry.computeBoundingBox();
+        const size = body.geometry.boundingBox.getSize(new THREE.Vector3());
+        assert.ok(Math.abs(size.y - (h * BRICK_HEIGHT - 0.035)) < 1e-6);
+        assert.ok(Math.abs(size.x - (unit.w - 0.045)) < 1e-6);
+        for (const stud of mesh.children.slice(1)) {
+            assert.ok(Math.abs(stud.position.y - (h * BRICK_HEIGHT / 2 + 0.06)) < 1e-6);
+        }
+    }
+    const ghost = brickMesh(tallBrick, '#FFD233', true);
+    assert.equal(ghost.children[0].geometry, tall.children[0].geometry);
+    assert.ok(ghost.children[0].material.transparent);
+});
+
+test('height-2 pile colliders match the tall body and rest above the floor', async () => {
+    const { default: RAPIER } = await import('@dimforge/rapier3d-compat');
+    await RAPIER.init();
+    const world = new RAPIER.World({ x: 0, y: -19, z: 0 });
+    try {
+        world.createCollider(RAPIER.ColliderDesc.cuboid(10, 0.1, 10).setTranslation(0, -0.1, 0));
+        const brick = { ...unit, h: 2 };
+        const scene = Object.create(SnapScene3D.prototype);
+        Object.assign(scene, { world, level: heightLevel([brick]), order: [brick],
+            loose: new Map(), pileScene: new THREE.Scene() });
+        scene.spawnLoose(brick, false, new THREE.Vector3(0, 3, 0));
+        const body = scene.loose.get(brick.id).body;
+        assert.ok(Math.abs(body.collider(0).halfExtents().y - BRICK_HEIGHT) < 1e-6);
+        for (let i = 0; i < 240; i++) world.step();
+        assert.ok(Math.abs(body.translation().y - BRICK_HEIGHT) < 0.04);
+    } finally {
+        world.free();
+    }
+});
+
+test('height-2 mystery volumes and camera framing include the top layer', async () => {
+    const { mysteryModel, disposeMystery } = await import(sceneModule('mystery3d'));
+    const brick = { ...unit, h: 2 };
+    const level = heightLevel([brick]);
+    const mystery = mysteryModel(level);
+    const fill = mystery.children[0];
+    fill.geometry.computeBoundingBox();
+    assert.ok(Math.abs(fill.geometry.boundingBox.max.y + fill.position.y - 2 * BRICK_HEIGHT) < 1e-6);
+    assert.ok(Math.abs(fill.geometry.boundingBox.min.y + fill.position.y) < 1e-6);
+    disposeMystery(mystery);
+    const scene = sceneHarness();
+    scene.startLevel(level, [], false, () => {});
+    assert.equal(scene.targetHeight, BRICK_HEIGHT);
+});
+
 function sceneHarness() {
     const scene = Object.create(SnapScene3D.prototype);
     Object.assign(scene, {
