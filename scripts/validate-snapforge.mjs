@@ -36,8 +36,8 @@ for (const file of targets) {
     }
 }
 if (!files.length) {
-    const expected = new Map([['starter', 7], ['land-animal', 3], ['fruit', 3], ['bird', 3],
-        ['car', 3], ['ocean', 3], ['dinosaur', 3]]);
+    const expected = new Map([['starter', 4], ['land-animal', 3], ['fruit', 4], ['bird', 3],
+        ['car', 4], ['landmarks', 1], ['ocean', 3], ['dinosaur', 3]]);
     for (const [collection, count] of expected)
         if (collectionCounts.get(collection) !== count) {
             failed = true;

@@ -3,7 +3,7 @@
   "title": "Race Car",
   "description": "Build a brick-built race car.",
   "collection": "car",
-  "order": 3,
+  "order": 4,
   "version": 1,
   "palette": {
     "body": "#DE4E57",

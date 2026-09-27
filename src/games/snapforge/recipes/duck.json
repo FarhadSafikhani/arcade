@@ -1,0 +1,316 @@
+{
+  "id": "duck",
+  "title": "Little Duck",
+  "description": "A sunny duckling with plump wings, an upturned tail, and a broad orange bill.",
+  "collection": "starter",
+  "order": 3,
+  "version": 7,
+  "targetParts": 35,
+  "palette": {
+    "yellow": "#FFD233",
+    "orange": "#FF7843",
+    "black": "#24283B"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 4
+  },
+  "volumes": [
+    {
+      "name": "left-foot",
+      "x": 6,
+      "y": 2,
+      "z": 0,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "orange"
+    },
+    {
+      "name": "left-webbed-toes",
+      "x": 8,
+      "y": 1,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "right-foot",
+      "x": 6,
+      "y": 5,
+      "z": 0,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "orange"
+    },
+    {
+      "name": "right-webbed-toes",
+      "x": 8,
+      "y": 5,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "lower-belly",
+      "x": 3,
+      "y": 2,
+      "z": 1,
+      "w": 6,
+      "d": 4,
+      "h": 1,
+      "color": "yellow"
+    },
+    {
+      "name": "round-body",
+      "x": 2,
+      "y": 2,
+      "z": 2,
+      "w": 8,
+      "d": 4,
+      "h": 2,
+      "color": "yellow"
+    },
+    {
+      "name": "round-body-wide",
+      "x": 3,
+      "y": 1,
+      "z": 2,
+      "w": 6,
+      "d": 6,
+      "h": 2,
+      "color": "yellow",
+      "overlay": true
+    },
+    {
+      "name": "body-foundation",
+      "x": 2,
+      "y": 1,
+      "z": 2,
+      "w": 8,
+      "d": 6,
+      "h": 1,
+      "color": "yellow",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "upper-back",
+      "x": 3,
+      "y": 2,
+      "z": 4,
+      "w": 6,
+      "d": 4,
+      "h": 2,
+      "color": "yellow"
+    },
+    {
+      "name": "breast",
+      "x": 8,
+      "y": 2,
+      "z": 4,
+      "w": 2,
+      "d": 4,
+      "h": 2,
+      "color": "yellow",
+      "overlay": true
+    },
+    {
+      "name": "tail-base",
+      "x": 0,
+      "y": 3,
+      "z": 3,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "yellow",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "tail-tip",
+      "x": 0,
+      "y": 3,
+      "z": 4,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "yellow"
+    },
+    {
+      "name": "left-wing",
+      "x": 2,
+      "y": 0,
+      "z": 3,
+      "w": 5,
+      "d": 2,
+      "h": 1,
+      "color": "yellow",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "left-wing-middle",
+      "x": 3,
+      "y": 0,
+      "z": 4,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "yellow",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "right-wing",
+      "x": 2,
+      "y": 6,
+      "z": 3,
+      "w": 5,
+      "d": 2,
+      "h": 1,
+      "color": "yellow",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "right-wing-middle",
+      "x": 3,
+      "y": 6,
+      "z": 4,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "yellow",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "left-wing-top",
+      "x": 4,
+      "y": 1,
+      "z": 5,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "yellow"
+    },
+    {
+      "name": "right-wing-top",
+      "x": 4,
+      "y": 6,
+      "z": 5,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "yellow"
+    },
+    {
+      "name": "neck",
+      "x": 7,
+      "y": 2,
+      "z": 6,
+      "w": 3,
+      "d": 4,
+      "h": 2,
+      "color": "yellow"
+    },
+    {
+      "name": "head",
+      "x": 6,
+      "y": 2,
+      "z": 8,
+      "w": 5,
+      "d": 4,
+      "h": 3,
+      "color": "yellow"
+    },
+    {
+      "name": "head-cheeks",
+      "x": 7,
+      "y": 1,
+      "z": 8,
+      "w": 3,
+      "d": 6,
+      "h": 3,
+      "color": "yellow",
+      "overlay": true
+    },
+    {
+      "name": "head-foundation",
+      "x": 6,
+      "y": 1,
+      "z": 8,
+      "w": 5,
+      "d": 6,
+      "h": 1,
+      "color": "yellow",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "bill",
+      "x": 9,
+      "y": 2,
+      "z": 9,
+      "w": 3,
+      "d": 4,
+      "h": 1,
+      "color": "orange",
+      "overlay": true
+    },
+    {
+      "name": "bill-tip",
+      "x": 10,
+      "y": 3,
+      "z": 9,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "orange",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "left-eye",
+      "x": 9,
+      "y": 1,
+      "z": 10,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "black",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "right-eye",
+      "x": 9,
+      "y": 6,
+      "z": 10,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "black",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "crown",
+      "x": 7,
+      "y": 2,
+      "z": 11,
+      "w": 3,
+      "d": 4,
+      "h": 1,
+      "color": "yellow"
+    }
+  ]
+}

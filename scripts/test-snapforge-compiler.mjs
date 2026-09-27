@@ -80,7 +80,7 @@ test('redesigned apple reproduces its recipe, preserves the sculpt, and mirrors 
     assert.equal(level.targetParts, 30);
     assert.equal(level.order, 2);
     assert.equal(level.version, 3);
-    assert.equal(level.vetted, 0);
+    assert.equal(level.vetted, 1);
     const expected = [...expandRecipe(recipe)].map(([key, c]) => `${key}:${c.color}`).sort();
     assert.deepEqual(level.bricks.flatMap(b => brickCells(b).map(key => `${key}:${b.color}`)).sort(), expected);
     for (const b of level.bricks) assert.ok(level.bricks.some(other => other.x === b.x && other.y === 8 - b.y - b.d &&
@@ -94,8 +94,8 @@ test('metadata and authored build sequences validate; legacy ordering remains un
     for (const sequence of [[], [turtle.bricks[0].id], turtle.bricks.map(() => turtle.bricks[0].id)])
         assert.throws(() => validateLevel({ ...turtle, buildSequence: sequence }), /buildSequence/);
     assert.throws(() => validateLevel({ ...turtle, buildSequence: [...turtle.buildSequence].reverse() }), /before its support/);
-    const duck = JSON.parse(readFileSync(new URL('../src/games/snapforge/levels/duck.json', import.meta.url)));
-    assert.deepEqual(buildOrder(duck), [...duck.bricks].sort((a, b) => a.z - b.z || a.x + a.y - b.x - b.y || a.y - b.y || a.id.localeCompare(b.id)));
+    const legacy = JSON.parse(readFileSync(new URL('../src/games/snapforge/levels/chick.json', import.meta.url)));
+    assert.deepEqual(buildOrder(legacy), [...legacy.bricks].sort((a, b) => a.z - b.z || a.x + a.y - b.x - b.y || a.y - b.y || a.id.localeCompare(b.id)));
 });
 
 test('compiler never promotes vetting, preserves explicit vetting only unchanged, and guards saved versions', () => {
@@ -168,4 +168,22 @@ test('CLI generates, checks without writing, rejects stale artifacts and out-of-
         assert.match(run().stderr, /Outside N/);
         assert.equal(readFileSync(outputPath, 'utf8'), before);
     } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('redesigned duck preserves recipe cells, mirrored seams, and its supported 35-part budget', () => {
+    const input = JSON.parse(readFileSync(new URL('../src/games/snapforge/recipes/duck.json', import.meta.url)));
+    const saved = JSON.parse(readFileSync(new URL('../src/games/snapforge/levels/duck.json', import.meta.url)));
+    const {level, report} = compileRecipe(input, saved);
+    assert.deepEqual(level, saved);
+    assert.equal(level.targetParts, 35);
+    assert.equal(level.version, 7);
+    assert.equal(level.order, 3);
+    assert.equal(level.collection, 'starter');
+    assert.equal(level.vetted, 1);
+    assert.equal(report.withinBudget, true);
+    assert.deepEqual(report.mergeOpportunities, []);
+    assert.deepEqual(level.bricks.flatMap(b => brickCells(b).map(k => k + ':' + b.color)).sort(),
+        [...expandRecipe(input)].map(([k,c]) => k + ':' + c.color).sort());
+    for (const b of level.bricks) assert.ok(level.bricks.some(o => o.x === b.x && o.y === 8 - b.y - b.d &&
+        o.z === b.z && o.w === b.w && o.d === b.d && o.h === b.h && o.color === b.color));
 });

@@ -23,6 +23,8 @@ const SHIMMER_SWEEP_DURATION = 500;
 const SHIMMER_PAUSE_DURATION = 5000;
 const REJECTION_FLASH_DURATION = 420;
 const GRAVITY = 19;
+/** Tuned by ear: the pour feels in sync when it starts this long before the first physical impact. */
+const POUR_LEAD = 800;
 const REJECTION_RED = new THREE.Color(0xff2038);
 
 function litScene(background: number): THREE.Scene {
@@ -193,7 +195,7 @@ export class SnapScene3D {
         };
         const collectionBackgrounds: Record<string, number> = {
             'land-animal': 0xe8dccb, fruit: 0xffe0d7, bird: 0xffedc3,
-            car: 0xdbe5ed, ocean: 0xcde9ec, dinosaur: 0xe2e5ca
+            car: 0xdbe5ed, landmarks: 0xe1d4fb, ocean: 0xcde9ec, dinosaur: 0xe2e5ca
         };
         const background = (entry: typeof entries[number]) =>
             backgrounds[entry.id] ?? collectionBackgrounds[entry.level.collection] ?? 0xcfe7f7;
@@ -822,7 +824,8 @@ export class SnapScene3D {
             const duration = 720 + Math.random() * 360;
             // The flight hands the brick to physics mid-air; its first impact comes after a free fall to the table.
             const drop = Math.max(0, landingPosition.y - BRICK_HEIGHT * (brick.h ?? 1) / 2);
-            this.introRainAt = Math.min(this.introRainAt, now + duration + Math.sqrt(2 * drop / GRAVITY) * 1000);
+            this.introRainAt = Math.min(this.introRainAt,
+                now + duration + Math.sqrt(2 * drop / GRAVITY) * 1000 - POUR_LEAD);
             this.flights.push({ brick, mesh, from, to, start: now,
                 duration, kind: 'intro', landingPosition,
                 fromRotation: mesh.quaternion.clone(), arcHeight: 90 + Math.random() * 100,

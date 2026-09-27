@@ -6,6 +6,7 @@ export const collections = [
     { id: 'fruit', name: 'Fruit Collection' },
     { id: 'bird', name: 'Bird Collection' },
     { id: 'car', name: 'Car Collection' },
+    { id: 'landmarks', name: 'Landmarks Collection' },
     { id: 'ocean', name: 'Ocean Collection' },
     { id: 'dinosaur', name: 'Dinosaur Collection' }
 ] as const;

@@ -2,8 +2,8 @@
   "id": "castle",
   "title": "Castle",
   "description": "Four flag-topped towers guard a castle with an open gateway.",
-  "collection": "starter",
-  "order": 7,
+  "collection": "landmarks",
+  "order": 1,
   "version": 2,
   "palette": {
     "stone": "#adb4bf",

@@ -2,8 +2,8 @@
   "id": "pineapple",
   "title": "Pineapple",
   "description": "A golden pineapple topped with a spiky green crown.",
-  "collection": "starter",
-  "order": 5,
+  "collection": "fruit",
+  "order": 3,
   "version": 2,
   "palette": {
     "yellow": "#f5ba32",

@@ -2,8 +2,8 @@
   "id": "sports-car",
   "title": "Sports Car",
   "description": "A low red sports car with dark windows and a rear wing.",
-  "collection": "starter",
-  "order": 6,
+  "collection": "car",
+  "order": 2,
   "version": 1,
   "palette": {
     "red": "#e83e35",

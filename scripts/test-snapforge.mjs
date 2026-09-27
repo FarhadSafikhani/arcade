@@ -25,7 +25,6 @@ const catalog = readdirSync(resolve('src/games/snapforge/levels')).filter(name =
 test('merged models preserve the original occupied cells and colors', () => {
     // Fingerprints captured from the height-1 catalog before merging pairs.
     const original = {
-        duck: 'ebf55d3ded6afef3bbe7ca9c5c09329f0c85a5ddae391aa841f14fa52730c08c',
         pineapple: 'da38f5a8cbc917d5b8e9fdb6c198280762fa5ba51943cae0c8a181e3b8c9d1df',
         'sports-car': '2e6374299b3b3e21e4cb1c0acedcc2ec8e52940a39c20d3a0a929d1edd5c4cc9',
         castle: 'e4adc50d66a66ba964bea8483b6b22b96130c0483dfe12ac414f38d0a825b62b'
@@ -83,13 +82,14 @@ test('height participates in rotated matching, resume validation, and pile group
     assert.equal(pileAdditions([], [...active, ...reserve]).filter(b => b.h === 2).length, 3);
 });
 
-test('seven collections have ordered models and independent unlock paths', () => {
+test('eight collections have ordered models and independent unlock paths', () => {
     const expected = new Map([
-        ['starter', ['turtle', 'apple', 'duck', 'house', 'pineapple', 'sports-car', 'castle']],
+        ['starter', ['turtle', 'apple', 'duck', 'house']],
         ['land-animal', ['rabbit', 'fox', 'elephant']],
-        ['fruit', ['cherry', 'watermelon', 'pear']],
+        ['fruit', ['cherry', 'watermelon', 'pineapple', 'pear']],
         ['bird', ['chick', 'owl', 'parrot']],
-        ['car', ['compact-car', 'pickup-truck', 'race-car']],
+        ['car', ['compact-car', 'sports-car', 'pickup-truck', 'race-car']],
+        ['landmarks', ['castle']],
         ['ocean', ['fish', 'sea-turtle', 'shark']],
         ['dinosaur', ['stegosaurus', 'triceratops', 't-rex']]
     ]);
@@ -108,13 +108,15 @@ test('seven collections have ordered models and independent unlock paths', () =>
         const group = collectionLevels(catalog, collection);
         assert.deepEqual(group.map(level => level.id), ids);
         assert.equal(modelUnlocked(group, 0, []), true);
-        assert.equal(modelUnlocked(group, 1, []), false);
-        assert.equal(modelUnlocked(group, 1, [group[0].id]), true);
-        const other = catalog.find(level => level.collection !== collection);
-        assert.equal(modelUnlocked(group, 1, [other.id]), false);
+        if (group.length > 1) {
+            assert.equal(modelUnlocked(group, 1, []), false);
+            assert.equal(modelUnlocked(group, 1, [group[0].id]), true);
+            const other = catalog.find(level => level.collection !== collection);
+            assert.equal(modelUnlocked(group, 1, [other.id]), false);
+        }
     }
     const starter = catalog.filter(level => level.collection === 'starter').sort((a, b) => a.order - b.order);
-    assert.deepEqual(starter.map(level => level.version), [1, 3, 6, 2, 2, 1, 2]);
+    assert.deepEqual(starter.map(level => level.version), [1, 3, 7, 2]);
 });
 
 test('every catalog model can be built from its replenishing pile and resumed at every step', () => {
@@ -137,9 +139,9 @@ test('every catalog model can be built from its replenishing pile and resumed at
     }
 });
 
-test('duck is a supported, connected 25–35 brick model with a complete build order', () => {
+test('duck is a supported, connected 35 ±2 brick model with a complete build order', () => {
     const level = validateLevel(duck);
-    assert.ok(level.bricks.length >= 25 && level.bricks.length <= 35);
+    assert.ok(level.targetParts === 35 && Math.abs(level.bricks.length - 35) <= 2);
     const ordered = buildOrder(level);
     assert.deepEqual(new Set(ordered.map(brick => brick.id)), new Set(level.bricks.map(brick => brick.id)));
     assert.equal(ordered[0].z, 0);
@@ -148,7 +150,7 @@ test('duck is a supported, connected 25–35 brick model with a complete build o
 
 test('rejects overlapping bricks', () => {
     const candidate = structuredClone(duck);
-    candidate.bricks[1].x = candidate.bricks[0].x;
+    candidate.bricks[1] = { ...candidate.bricks[0], id: candidate.bricks[1].id };
     assert.throws(() => validateLevel(candidate), /overlaps/);
 });
 
@@ -362,7 +364,7 @@ test('fresh start and skipped breakup leave zero solid model bricks and preserve
 
 test('resume restores built target positions rather than original interchangeable piece locations', () => {
     const order = buildOrder(duck);
-    const consumed = order.find(p => p.z > 0 && pieceMatches(p, order[0]));
+    const consumed = order.find(p => p.id !== order[0].id && pieceMatches(p, order[0]));
     assert.ok(consumed);
     const scene = sceneHarness();
     const cues = [];
@@ -403,13 +405,12 @@ test('mystery intro hides finished bricks and launches every piece in one burst'
         assert.ok(scene.flights.every(flight => flight.start === launch && flight.landingPosition));
         scene.advanceFlights(launch);
         assert.ok(scene.flights.every(flight => flight.mesh.scale.x === 0));
-        // The pour waits for the first brick to fall from its flight's end onto the table.
-        const firstImpact = scene.introRainAt;
-        assert.ok(firstImpact > Math.min(...scene.flights.map(flight => flight.start + flight.duration)));
-        assert.ok(firstImpact - launch > 1000 && firstImpact - launch < 1900);
-        scene.advanceFlights(firstImpact - 1);
+        // The pour leads the first brick's fall from its flight's end onto the table.
+        const pourAt = scene.introRainAt;
+        assert.ok(pourAt - launch > 600 && pourAt - launch < 1300);
+        scene.advanceFlights(pourAt - 1);
         assert.deepEqual(cues, ['breakup']);
-        scene.advanceFlights(firstImpact);
+        scene.advanceFlights(pourAt);
         assert.deepEqual(cues, ['breakup', 'rain']);
         scene.advanceFlights(launch + 3000);
         assert.deepEqual(cues, ['breakup', 'rain']);

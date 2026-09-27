@@ -3,7 +3,7 @@
   "title": "Pickup Truck",
   "description": "Build a brick-built pickup truck.",
   "collection": "car",
-  "order": 2,
+  "order": 3,
   "version": 1,
   "palette": {
     "body": "#E08057",

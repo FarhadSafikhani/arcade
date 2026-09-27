@@ -3,7 +3,7 @@
   "title": "Pear",
   "description": "Build a rounded green pear.",
   "collection": "fruit",
-  "order": 3,
+  "order": 4,
   "version": 1,
   "palette": {
     "green": "#99C957",
