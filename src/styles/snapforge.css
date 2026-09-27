@@ -252,36 +252,73 @@ button:disabled { cursor: default; }
 }
 .text-button { border-color: transparent; background: transparent; color: var(--coral); }
 .hint-button:disabled { opacity: 0.4; }
-.dev-snap-button {
+.dev-panel {
     position: fixed;
     bottom: 16px;
     left: 16px;
-    z-index: 3;
-    padding: 9px 13px;
+    z-index: 20;
+    width: max-content;
+    max-width: calc(100vw - 32px);
     border: 1px solid #27334d;
     border-radius: 10px;
     background: #27334d;
     color: white;
     font-size: 12px;
     font-weight: 900;
+    box-shadow: 0 4px 16px #27334d33;
 }
-.dev-snap-button:disabled { opacity: 0.45; }
+.dev-panel summary {
+    cursor: pointer;
+    padding: 9px 13px;
+    list-style: none;
+}
+.dev-panel summary::-webkit-details-marker { display: none; }
+.dev-panel summary:focus-visible, .dev-actions button:focus-visible { outline: 2px solid #ffedb8; outline-offset: 2px; }
+.dev-actions { display: flex; flex-direction: column; gap: 6px; padding: 0 7px 7px; }
+.dev-actions button {
+    min-height: 34px;
+    padding: 7px 10px;
+    border: 1px solid #ffffff66;
+    border-radius: 6px;
+    background: #27334d;
+    color: white;
+    font-size: 12px;
+    font-weight: 900;
+    text-align: left;
+}
+.dev-actions button:hover:not(:disabled) { background: #3c4a68; }
+.dev-actions button:disabled { opacity: 0.45; }
 .completion {
-    position: fixed;
-    inset: 0;
-    z-index: 10;
-    display: grid;
-    place-items: center;
-    padding: 24px;
-    background: #27334d52;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: calc(100dvh - 100px);
+    padding: 14px 0 24px;
     isolation: isolate;
     overflow: hidden;
 }
+.is-complete > .play-header, .is-complete > .studio-layout { display: none; }
+.completion-stage {
+    width: min(1100px, 100%);
+    display: flex;
+    height: clamp(280px, 53dvh, 660px);
+    flex: 1 0 auto;
+    border: 1px solid #e7d39b;
+    border-radius: 30px;
+    overflow: hidden;
+    box-shadow: 0 12px 40px #aa853312;
+}
+.completion-stage .model-viewport { width: 100%; min-height: 0; }
+.completion-stage:focus-within { outline: 3px solid var(--coral); outline-offset: -4px; }
+.completion-footer { text-align: center; padding-top: 12px; }
+.completion-actions button { min-height: 44px; }
 .completion-burst {
     position: absolute;
     inset: 0;
     overflow: hidden;
     pointer-events: none;
+    z-index: 2;
 }
 .completion-burst::before, .completion-burst::after {
     content: '';
@@ -311,19 +348,14 @@ button:disabled { cursor: default; }
 .completion-card {
     position: relative;
     z-index: 1;
-    width: min(430px, 100%);
-    padding: 35px 30px;
-    border: 1px solid #e7d39b;
-    border-radius: 23px;
-    background: #fffdf4;
-    box-shadow: 0 26px 90px #202a3d52, 0 0 0 8px #fff7de55;
+    width: 100%;
+    padding: 0 12px 16px;
     text-align: center;
     animation: completion-pop 620ms cubic-bezier(.18,1.4,.4,1) both;
 }
 .completion-card h2 { margin: 9px 0; font-size: clamp(39px, 7vw, 48px); line-height: 1; letter-spacing: -2px; }
-.completion-card p { margin: 15px 0 20px; color: #6c7781; font-size: 14px; }
+.completion-card p { margin: 10px 0 0; color: #6c7781; font-size: 14px; }
 .completion-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; }
-.completion-actions button:last-child { background: #e8ebec; color: var(--ink); }
 @keyframes completion-pop {
     from { opacity: 0; transform: translateY(30px) scale(.72) rotate(-3deg); }
     65% { opacity: 1; transform: translateY(-9px) scale(1.04) rotate(1deg); }
@@ -361,8 +393,9 @@ button:disabled { cursor: default; }
     .panel-instruction { font-size: 10px; }
     .build-status, .pile-actions { min-height: 49px; }
     .build-status p, .pile-actions { font-size: 11px; }
-    .completion { padding: 16px; }
-    .completion-card { padding: 29px 20px; }
+    .completion { padding: 12px 0 16px; min-height: calc(100dvh - 86px); }
+    .completion-card { padding: 0 8px 16px; }
+    .completion-stage { height: clamp(280px, 45dvh, 600px); border-radius: 20px; }
 }
 @media (max-width: 390px) {
     .pile-actions > span { display: none; }

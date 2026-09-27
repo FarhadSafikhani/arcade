@@ -52,17 +52,20 @@
                     </div>
                 </section>
             </div>
-            <div id="completion" class="completion" role="status" hidden>
+            <section id="completion" class="completion" aria-labelledby="completionTitle" hidden>
                 <div id="completionBurst" class="completion-burst" aria-hidden="true"></div>
                 <div class="completion-card">
                     <span class="eyebrow">✳ BUILD COMPLETE ✳</span>
-                    <h2>You made it!</h2>
-                    <p>Take a look at your finished creation.</p>
+                    <h2 id="completionTitle" tabindex="-1">You made it!</h2>
+                    <p id="completionDescription" role="status"></p>
+                </div>
+                <div id="completionStage" class="completion-stage"></div>
+                <div class="completion-footer">
                     <div class="completion-actions">
-                        <button id="completionGalleryButton" type="button">Gallery</button>
+                        <button id="completionGalleryButton" type="button">Back to gallery</button>
                     </div>
                 </div>
-            </div>
+            </section>
         </section>
     </main>
     <script type="module" src="/src/games/snapforge/game.ts"></script>

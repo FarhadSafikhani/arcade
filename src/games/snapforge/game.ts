@@ -62,18 +62,42 @@ class SnapforgeGame {
     private clickBuffer: AudioBuffer | null = null;
     private connectionBuffer: AudioBuffer | null = null;
     private devSnap: HTMLButtonElement | null = null;
+    private devFinish: HTMLButtonElement | null = null;
 
     constructor() {
         this.renderGallery();
         this.updateSound();
         if (import.meta.env.DEV) {
+            const panel = document.createElement('details');
+            panel.className = 'dev-panel';
+            const toggle = document.createElement('summary');
+            toggle.textContent = '[DEV]';
+            const actions = document.createElement('div');
+            actions.className = 'dev-actions';
             this.devSnap = document.createElement('button');
             this.devSnap.type = 'button';
-            this.devSnap.className = 'dev-snap-button';
             this.devSnap.textContent = 'Snap next piece';
             this.devSnap.disabled = true;
             this.devSnap.addEventListener('click', () => this.scene?.snapNextPiece());
-            this.play.appendChild(this.devSnap);
+            this.devFinish = document.createElement('button');
+            this.devFinish.type = 'button';
+            this.devFinish.textContent = 'Finish model';
+            this.devFinish.disabled = true;
+            this.devFinish.addEventListener('click', () => {
+                if (!this.current || !this.scene) return;
+                this.scene.skipIntro();
+                while (this.current && this.placedIds.length < this.current.bricks.length && this.scene.snapNextPiece()) { /* Place each remaining piece. */ }
+            });
+            const reset = document.createElement('button');
+            reset.type = 'button';
+            reset.textContent = 'Fresh start';
+            reset.addEventListener('click', () => {
+                localStorage.clear();
+                window.location.reload();
+            });
+            actions.append(this.devSnap, this.devFinish, reset);
+            panel.append(toggle, actions);
+            this.root.appendChild(panel);
         }
         // Placement completes in an animation frame, so unlock audio during a user gesture.
         this.root.addEventListener('pointerdown', () => this.prepareAudio(), { passive: true });
@@ -126,6 +150,12 @@ class SnapforgeGame {
             }
         });
         byId<HTMLButtonElement>('completionGalleryButton').addEventListener('click', () => this.showGallery());
+        this.model.addEventListener('keydown', event => {
+            if (this.completion.hidden || !['ArrowLeft', 'ArrowRight', 'Home'].includes(event.key)) return;
+            event.preventDefault();
+            if (event.key === 'Home') this.scene?.resetShowcase();
+            else this.scene?.rotateShowcase(event.key === 'ArrowLeft' ? -Math.PI / 12 : Math.PI / 12);
+        });
         void this.initializeScene();
     }
 
@@ -354,9 +384,19 @@ class SnapforgeGame {
         byId<HTMLButtonElement>('galleryPrevious').disabled = this.selectedIndex === 0;
         byId<HTMLButtonElement>('galleryNext').disabled = this.selectedIndex === catalog.length - 1;
     }
+    private closeShowcase(): void {
+        this.completion.hidden = true;
+        this.play.classList.remove('is-complete');
+        this.play.querySelector('.model-panel')!.insertBefore(this.model, this.play.querySelector('.build-status'));
+        this.model.removeAttribute('tabindex');
+        this.model.setAttribute('aria-label', 'Drag to turn the model');
+    }
     private showGallery(): void {
+        this.closeShowcase();
         this.scene?.leaveLevel();
         this.current = null;
+        if (this.devSnap) this.devSnap.disabled = true;
+        if (this.devFinish) this.devFinish.disabled = true;
         this.play.hidden = true;
         this.gallery.hidden = false;
         this.root.classList.remove('is-playing');
@@ -369,6 +409,7 @@ class SnapforgeGame {
     }
     private startLevel(level: SnapLevel, resume: boolean): void {
         if (!this.scene) return;
+        this.closeShowcase();
         this.current = level;
         this.placedIds = resume ? [...(this.partial(level)?.placedIds ?? [])] : [];
         this.progress.partials[level.id] = { version: level.version, placedIds: [...this.placedIds] };
@@ -383,6 +424,7 @@ class SnapforgeGame {
         this.skip.hidden = resume;
         this.hint.disabled = !resume;
         if (this.devSnap) this.devSnap.disabled = !resume;
+        if (this.devFinish) this.devFinish.disabled = false;
         this.message.textContent = resume ? '' : 'Watch the model come apart…';
         byId<HTMLElement>('colorCue').style.backgroundColor = 'transparent';
         this.updateStep();
@@ -430,10 +472,18 @@ class SnapforgeGame {
         this.counter.textContent = `${this.placedIds.length} / ${this.placedIds.length}`;
         this.hint.disabled = true;
         if (this.devSnap) this.devSnap.disabled = true;
+        if (this.devFinish) this.devFinish.disabled = true;
         this.celebrate();
+        this.play.classList.add('is-complete');
         this.completion.hidden = false;
+        byId<HTMLElement>('completionStage').appendChild(this.model);
+        this.model.tabIndex = 0;
+        this.model.setAttribute('aria-label', `${this.current.title}, completed model. Drag or use arrow keys to rotate.`);
+        byId<HTMLElement>('completionDescription').textContent = `${this.current.title} · ${this.placedIds.length} pieces, all snapped into place.`;
+        this.scene?.showcase();
         this.fanfare();
-        byId<HTMLButtonElement>('completionGalleryButton').focus();
+        byId<HTMLElement>('completionTitle').focus({ preventScroll: true });
+        this.root.scrollIntoView({ block: 'start', behavior: 'instant' });
     }
 }
 

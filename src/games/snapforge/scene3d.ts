@@ -84,6 +84,9 @@ export class SnapScene3D {
     private orbiting = false;
     private targetHeight = 2;
     private modelRadius = 18;
+    private showcasing = false;
+    private revealRemaining = 0;
+    private showcaseBounds = new THREE.Sphere();
     private hintId = '';
     private hintUntil = 0;
     private hintMarker = new THREE.Mesh(new THREE.TorusGeometry(1.15, 0.08, 8, 40),
@@ -247,6 +250,13 @@ export class SnapScene3D {
     }
 
     private clearLevel(): void {
+        this.showcasing = false;
+        this.revealRemaining = 0;
+        if (this.orbitPointer !== null && this.modelElement.hasPointerCapture(this.orbitPointer))
+            this.modelElement.releasePointerCapture(this.orbitPointer);
+        this.orbitPointer = null;
+        this.orbiting = false;
+        this.yaw = this.restingYaw;
         this.clearMystery();
         if (this.drag) disposeBrick(this.drag.overlay);
         this.drag = null;
@@ -272,6 +282,26 @@ export class SnapScene3D {
     }
 
     leaveLevel(): void { this.playing = false; this.clearLevel(); this.level = null; }
+
+    showcase(): void {
+        this.showcasing = true;
+        this.clearTarget();
+        new THREE.Box3().setFromObject(this.modelGroup).getBoundingSphere(this.showcaseBounds);
+        this.revealRemaining = REDUCED_MOTION.matches ? 0 : Math.PI * 2;
+        this.resize();
+    }
+
+    rotateShowcase(amount: number): void {
+        if (!this.showcasing) return;
+        this.revealRemaining = 0;
+        this.yaw += amount;
+    }
+
+    resetShowcase(): void {
+        if (!this.showcasing) return;
+        this.revealRemaining = 0;
+        this.yaw = this.restingYaw;
+    }
 
     private spawnLoose(brick: SnapBrick, intro = false, landingPosition?: THREE.Vector3): void {
         if (!this.level || this.loose.has(brick.id)) return;
@@ -451,7 +481,8 @@ export class SnapScene3D {
     }
 
     private modelDown = (event: PointerEvent): void => {
-        if (!this.playing || !this.interactive) return;
+        if (!this.playing || !this.interactive || event.button !== 0 || this.orbitPointer !== null) return;
+        this.revealRemaining = 0;
         this.orbitPointer = event.pointerId;
         this.orbitLastX = event.clientX;
         this.orbiting = true;
@@ -647,7 +678,12 @@ export class SnapScene3D {
                 this.hintBeacon.position.set(position.x, height + 1.15 + Math.sin(now / 120) * 0.12, position.z);
                 this.hintMarker.scale.setScalar(1 + 0.09 * Math.sin(now / 100));
             }
-            if (!this.orbiting) {
+            if (this.showcasing && !this.orbiting && this.revealRemaining > 0) {
+                const turn = Math.min(this.revealRemaining, delta * Math.PI * 0.8);
+                this.yaw += turn;
+                this.revealRemaining -= turn;
+                if (REDUCED_MOTION.matches) this.revealRemaining = 0;
+            } else if (!this.orbiting && !this.showcasing) {
                 const difference = Math.atan2(Math.sin(this.restingYaw - this.yaw), Math.cos(this.restingYaw - this.yaw));
                 this.yaw += difference * Math.min(1, delta * 4.5);
             }
@@ -657,6 +693,16 @@ export class SnapScene3D {
             this.modelCamera.position.set(Math.sin(angle) * radius, this.targetHeight + radius * 0.62,
                 Math.cos(angle) * radius);
             this.modelCamera.lookAt(0, this.targetHeight, 0);
+            if (this.showcasing) {
+                // Fit a bounding sphere so even a long model stays in frame at every angle.
+                const verticalFov = THREE.MathUtils.degToRad(this.modelCamera.fov / 2);
+                const limitingFov = Math.min(verticalFov, Math.atan(Math.tan(verticalFov) * this.modelCamera.aspect));
+                const distance = this.showcaseBounds.radius / Math.sin(limitingFov) * 1.12;
+                const center = this.showcaseBounds.center;
+                this.modelCamera.position.set(Math.sin(angle), 0.5, Math.cos(angle))
+                    .normalize().multiplyScalar(distance).add(center);
+                this.modelCamera.lookAt(center);
+            }
             if (this.drag) {
                 const turn = REDUCED_MOTION.matches ? 1 :
                     Math.min(1, (now - this.drag.rotationStart) / HELD_ROTATION_DURATION);
