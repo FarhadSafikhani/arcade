@@ -108,6 +108,27 @@ export function pieceMatches(piece: SnapBrick, target: SnapBrick): boolean {
         Math.max(piece.w, piece.d) === Math.max(target.w, target.d);
 }
 
+/** Populate every shape/color first, then fill a small pile up to 30 pieces. */
+export function pileAdditions(active: SnapBrick[], reserve: SnapBrick[]): SnapBrick[] {
+    const visible = [...active];
+    const additions: SnapBrick[] = [];
+    for (const brick of reserve) {
+        if (visible.filter(piece => pieceMatches(piece, brick)).length >= 3) continue;
+        visible.push(brick);
+        additions.push(brick);
+    }
+    for (const brick of reserve) {
+        if (visible.length >= 30) break;
+        if (additions.includes(brick)) continue;
+        visible.push(brick);
+        additions.push(brick);
+    }
+    // Once the pile is small, keep it at 30 rather than growing it again
+    // while it contains duplicates admitted by the small-pile exception.
+    return active.length > 0 && active.length <= 30
+        ? additions.slice(0, 30 - active.length) : additions;
+}
+
 export function validPlacedIds(level: SnapLevel, placedIds: unknown): placedIds is string[] {
     if (!Array.isArray(placedIds) || placedIds.length >= level.bricks.length) return false;
     const byId = new Map(level.bricks.map(brick => [brick.id, brick]));

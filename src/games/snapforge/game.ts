@@ -5,7 +5,7 @@ import { createClickBuffer, createConnectionBuffer } from './sound';
 
 interface PartialBuild { version: number; placedIds: string[]; }
 interface Progress { completed: string[]; partials: Record<string, PartialBuild>; seenIntro: string[]; muted: boolean; }
-interface CatalogItem { id: string; title: string; description: string; order: number; level?: SnapLevel; }
+interface CatalogItem { id: string; title: string; order: number; level?: SnapLevel; }
 
 const STORAGE_KEY = 'snapforge-3d-progress-v1';
 const levels = new Map<string, SnapLevel>();
@@ -14,15 +14,15 @@ for (const input of Object.values(import.meta.glob('./levels/*.json', { eager: t
     catch (error) { console.error('Invalid Snapforge level', error); }
 }
 const teasers: CatalogItem[] = [
-    { id: 'duck', title: 'Little Duck', description: 'Build a bright little pond friend.', order: 1 },
-    { id: 'race-car', title: 'Race Car', description: 'A speedy build is coming soon.', order: 2 },
-    { id: 'rocket', title: 'Rocket', description: 'A tiny trip to the stars is coming soon.', order: 3 },
-    { id: 'castle', title: 'Castle', description: 'A little kingdom is coming soon.', order: 4 }
+    { id: 'duck', title: 'Little Duck', order: 1 },
+    { id: 'race-car', title: 'Race Car', order: 2 },
+    { id: 'rocket', title: 'Rocket', order: 3 },
+    { id: 'castle', title: 'Castle', order: 4 }
 ];
 const catalog = [...teasers.map(item => ({ ...item, level: levels.get(item.id) })),
     ...[...levels.values()].filter(level => !teasers.some(item => item.id === level.id))
-        .map(level => ({ id: level.id, title: level.title, description: level.description,
-            order: level.order, level }))].sort((a, b) => a.order - b.order);
+        .map(level => ({ id: level.id, title: level.title, order: level.order, level }))]
+    .sort((a, b) => a.order - b.order);
 
 function byId<T extends HTMLElement>(id: string): T {
     const result = document.getElementById(id);
@@ -141,8 +141,7 @@ class SnapforgeGame {
         try {
             this.scene = await SnapScene3D.create(this.root, this.model, this.pile);
             this.scene.setCallbacks(id => this.placed(id), () => this.wrong(), () => this.playEffect('click'));
-            this.scene.setPreviews(catalog.map(item => ({ id: item.id,
-                element: byId<HTMLElement>(`preview-${item.id}`), level: item.level })));
+            this.scene.setPreviews(this.previewEntries());
             byId<HTMLElement>('loadingNote').hidden = true;
         } catch (error) {
             console.error('Snapforge 3D could not start', error);
@@ -260,7 +259,8 @@ class SnapforgeGame {
     }
     private previewEntries() {
         return catalog.map(item => ({ id: item.id,
-            element: byId<HTMLElement>(`preview-${item.id}`), level: item.level }));
+            element: byId<HTMLElement>(`preview-${item.id}`), level: item.level,
+            completed: this.progress.completed.includes(item.id) }));
     }
     private renderGallery(): void {
         this.galleryTrack.replaceChildren();
@@ -281,7 +281,13 @@ class SnapforgeGame {
             const eyebrow = document.createElement('small');
             eyebrow.textContent = `MODEL ${String(item.order).padStart(2, '0')}`;
             const title = document.createElement('h2'); title.textContent = item.title;
-            const description = document.createElement('p'); description.textContent = item.description;
+            const pieceCount = document.createElement('p');
+            pieceCount.className = 'card-piece-count';
+            if (item.level) {
+                const count = item.level.bricks.length;
+                pieceCount.textContent = `${count} ${count === 1 ? 'piece' : 'pieces'}`;
+                card.setAttribute('aria-label', `${card.getAttribute('aria-label')}, ${pieceCount.textContent}`);
+            }
             const action = document.createElement('span');
             action.className = 'card-action';
             if (item.level && this.unlocked(index)) {
@@ -297,12 +303,12 @@ class SnapforgeGame {
                     }
                 });
                 action.textContent = this.partial(level) ? 'Continue build →' :
-                    this.progress.completed.includes(item.id) ? 'Build again →' : 'Start building →';
+                    this.progress.completed.includes(item.id) ? 'Replay' : 'Start building →';
             } else {
                 action.textContent = item.level ? 'Finish previous model' : 'Coming soon';
                 action.classList.add('is-disabled');
             }
-            copy.append(eyebrow, title, description, action);
+            copy.append(eyebrow, title, pieceCount, action);
             card.append(visual, copy);
             this.galleryTrack.appendChild(card);
         }
@@ -401,7 +407,7 @@ class SnapforgeGame {
         if (!this.current) return;
         const order = buildOrder(this.current);
         const step = this.placedIds.length;
-        this.counter.textContent = `${Math.min(step + 1, order.length)} / ${order.length}`;
+        this.counter.textContent = `${step} / ${order.length}`;
         const target = order[step];
         if (target && !this.skip.hidden) return;
         this.message.textContent = target ?

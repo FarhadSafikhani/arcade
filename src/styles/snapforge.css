@@ -156,7 +156,7 @@ button:disabled { cursor: default; }
 .card-copy { min-height: 173px; padding: 17px 20px 20px; border-radius: 0 0 23px 23px; background: white; }
 .card-copy small { color: var(--coral); font-size: 11px; font-weight: 900; letter-spacing: 1.2px; }
 .card-copy h2 { margin: 4px 0; font-size: 26px; letter-spacing: -1px; }
-.card-copy p { margin: 0 0 15px; color: #788292; font-size: 13px; min-height: 34px; }
+.card-piece-count { margin: 0 0 15px; color: #788292; font-size: 13px; min-height: 34px; }
 .card-action, .completion-actions button {
     display: inline-flex;
     align-items: center;

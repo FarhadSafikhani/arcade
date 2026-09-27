@@ -1,14 +1,15 @@
 import * as THREE from 'three';
 import RAPIER from '@dimforge/rapier3d-compat';
 import { brickMesh, brickPosition, BRICK_HEIGHT, disposeBrick } from './brick3d';
-import { buildOrder, pieceMatches, SnapBrick, SnapLevel } from './level';
+import { buildOrder, pieceMatches, pileAdditions, SnapBrick, SnapLevel } from './level';
 import { configureOverlayCamera, overlayRotation, overlayToScreen, screenToOverlay } from './overlay3d';
 
 interface LooseBrick { brick: SnapBrick; mesh: THREE.Group; body: RAPIER.RigidBody; }
 interface Flight { brick: SnapBrick; mesh: THREE.Group; from: THREE.Vector2; to: THREE.Vector2;
     start: number; duration: number; kind: 'intro' | 'placement' | 'rejection' | 'return';
     fromRotation?: THREE.Quaternion; landingPosition?: THREE.Vector3; }
-interface Preview { element: HTMLElement; scene: THREE.Scene; camera: THREE.PerspectiveCamera; model: THREE.Group; }
+interface Preview { element: HTMLElement; scene: THREE.Scene; camera: THREE.PerspectiveCamera; model: THREE.Group;
+    dispose: () => void; }
 interface Drag { loose: LooseBrick; overlay: THREE.Group; lastX: number; lastY: number;
     lastTime: number; velocityX: number; velocityY: number;
     rotationStart: number; fromRotation: THREE.Quaternion; }
@@ -86,6 +87,8 @@ export class SnapScene3D {
     private flights: Flight[] = [];
     private introQueue: SnapBrick[] = [];
     private introNext = 0;
+    private reserve: SnapBrick[] = [];
+    private nextRefill = 0;
     private introDone: (() => void) | null = null;
     private drag: Drag | null = null;
     private orbitPointer: number | null = null;
@@ -182,8 +185,11 @@ export class SnapScene3D {
         this.onPlaced = onPlaced; this.onWrong = onWrong; this.onAction = onAction;
     }
 
-    setPreviews(entries: { id: string; element: HTMLElement; level?: SnapLevel }[]): void {
+    setPreviews(entries: { id: string; element: HTMLElement; level?: SnapLevel; completed: boolean }[]): void {
+        for (const preview of this.previewTargets) preview.dispose();
         this.previewTargets = entries.map(entry => {
+            const geometries = new Set<THREE.BufferGeometry>();
+            const materials = new Set<THREE.Material>();
             const scene = litScene(entry.id === 'duck' ? 0xffdb61 : entry.id === 'race-car' ? 0xffd7c5 :
                 entry.id === 'rocket' ? 0xcfe7f7 : 0xe1d4fb);
             const model = new THREE.Group();
@@ -199,6 +205,8 @@ export class SnapScene3D {
                 const tireMaterial = new THREE.MeshStandardMaterial({ color: '#263247', roughness: 0.78 });
                 const hubGeometry = new THREE.CylinderGeometry(0.28, 0.28, 0.4, 20);
                 const hubMaterial = new THREE.MeshStandardMaterial({ color: '#d9e2e5', metalness: 0.2, roughness: 0.45 });
+                geometries.add(tireGeometry); geometries.add(hubGeometry);
+                materials.add(tireMaterial); materials.add(hubMaterial);
                 for (const x of [-1.9, 1.9]) for (const side of [-1, 1]) {
                     const tire = new THREE.Mesh(tireGeometry, tireMaterial);
                     tire.rotation.x = Math.PI / 2;
@@ -211,6 +219,28 @@ export class SnapScene3D {
                     model.add(hub);
                 }
             }
+            if (!entry.completed) {
+                const material = new THREE.LineBasicMaterial({ color: '#596879' });
+                const hiddenSurface = new THREE.MeshBasicMaterial({ visible: false });
+                materials.add(material);
+                materials.add(hiddenSurface);
+                const edges = new Map<THREE.BufferGeometry, THREE.EdgesGeometry>();
+                // Outline the bricks and studs without revealing their solid colors.
+                model.traverse(child => {
+                    if (!(child instanceof THREE.Mesh)) return;
+                    let geometry = edges.get(child.geometry);
+                    if (!geometry) {
+                        geometry = new THREE.EdgesGeometry(child.geometry, 20);
+                        edges.set(child.geometry, geometry);
+                        geometries.add(geometry);
+                    }
+                    child.add(new THREE.LineSegments(geometry, material));
+                    // Hide only the mesh surface; its outline remains visible.
+                    child.material = hiddenSurface;
+                    child.castShadow = false;
+                    child.receiveShadow = false;
+                });
+            }
             scene.add(model);
             const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
             const maxWidth = Math.max(...data.bricks.map(brick => brick.x + brick.w));
@@ -219,7 +249,13 @@ export class SnapScene3D {
             const radius = Math.max(maxWidth, maxDepth, maxHeight * 1.6) * 1.8;
             camera.position.set(radius * 0.65, radius * 0.62, radius * 0.85);
             camera.lookAt(0, maxHeight / 2, 0);
-            return { element: entry.element, scene, camera, model };
+            return { element: entry.element, scene, camera, model, dispose: () => {
+                for (const geometry of geometries) geometry.dispose();
+                for (const material of materials) material.dispose();
+                scene.traverse(child => {
+                    if (child instanceof THREE.DirectionalLight) child.shadow.dispose();
+                });
+            } };
         });
     }
 
@@ -237,8 +273,12 @@ export class SnapScene3D {
         this.targetHeight = maxHeight / 2;
         this.modelRadius = Math.max(maxWidth, maxDepth, maxHeight * 1.7) * 1.9;
         const placed = new Set(placedIds);
-        for (const brick of this.order) {
-            if (!intro && !placed.has(brick.id)) continue;
+        const remaining = this.order.filter(brick => !placed.has(brick.id));
+        const initialPile = pileAdditions([], remaining);
+        const initialIds = new Set(initialPile.map(brick => brick.id));
+        this.reserve = remaining.filter(brick => !initialIds.has(brick.id));
+        // Saved IDs identify consumed pieces; built positions follow the build order.
+        for (const brick of intro ? this.order : this.order.slice(0, placedIds.length)) {
             const mesh = brickMesh(brick, level.palette[brick.color]);
             mesh.position.copy(brickPosition(brick, level));
             this.modelGroup.add(mesh);
@@ -248,7 +288,7 @@ export class SnapScene3D {
             this.introQueue = this.order.filter(brick => !placed.has(brick.id)).reverse();
             this.introNext = performance.now() + (REDUCED_MOTION.matches ? 100 : 850);
         } else {
-            for (const brick of this.order) if (!placed.has(brick.id)) this.spawnLoose(brick, true);
+            for (const brick of initialPile) this.spawnLoose(brick, true);
             this.updateTarget();
             onIntroDone();
         }
@@ -268,6 +308,8 @@ export class SnapScene3D {
         this.flights = [];
         this.clearTarget();
         this.introQueue = [];
+        this.reserve = [];
+        this.nextRefill = 0;
         this.introDone = null;
         this.interactive = false;
         this.placementPending = false;
@@ -303,7 +345,9 @@ export class SnapScene3D {
         this.flights = [];
         for (const mesh of this.staticMeshes.values()) disposeBrick(mesh);
         this.staticMeshes.clear();
-        for (const brick of this.order) if (!this.placedIds.includes(brick.id)) this.spawnLoose(brick);
+        for (const brick of this.order) {
+            if (!this.placedIds.includes(brick.id) && !this.reserve.includes(brick)) this.spawnLoose(brick);
+        }
         this.introQueue = [];
         this.finishIntro();
     }
@@ -664,6 +708,7 @@ export class SnapScene3D {
             }
             this.advanceIntro(now);
             this.advanceFlights(now);
+            this.refillPile(now);
         }
         for (const preview of this.previewTargets) preview.model.rotation.y = REDUCED_MOTION.matches ? 0.35 : now * 0.00021;
         this.renderer.setScissorTest(false);
@@ -685,6 +730,18 @@ export class SnapScene3D {
         this.renderer.setScissorTest(false);
     };
 
+    private refillPile(now: number): void {
+        if (!this.interactive || this.drag || this.placementPending || now < this.nextRefill) return;
+        const active = [...this.loose.values()].map(item => item.brick);
+        const brick = pileAdditions(active, this.reserve)[0];
+        if (!brick) return;
+        this.reserve.splice(this.reserve.indexOf(brick), 1);
+        const height = Math.max(6, ...[...this.loose.values()].map(item => item.body.translation().y + 2));
+        this.spawnLoose(brick, true, new THREE.Vector3(
+            (Math.random() - 0.5) * 2, height, (Math.random() - 0.5) * 2));
+        this.nextRefill = now + 220;
+    }
+
     private advanceIntro(now: number): void {
         if (!this.introQueue.length || !this.level) return;
         const delay = REDUCED_MOTION.matches ? 3 : 65;
@@ -698,6 +755,7 @@ export class SnapScene3D {
             const from = this.screenPoint(this.modelElement, this.modelCamera, modelMesh.position);
             disposeBrick(modelMesh);
             this.staticMeshes.delete(brick.id);
+            if (this.reserve.includes(brick)) continue;
             const pileRect = this.pileElement.getBoundingClientRect();
             const rootRect = this.root.getBoundingClientRect();
             const to = new THREE.Vector2(pileRect.left - rootRect.left + pileRect.width * (0.36 + Math.random() * 0.28),
@@ -777,6 +835,7 @@ export class SnapScene3D {
         this.pileElement.removeEventListener('pointerup', this.pileUp);
         this.pileElement.removeEventListener('pointercancel', this.pileUp);
         this.clearLevel();
+        for (const preview of this.previewTargets) preview.dispose();
         this.world.free();
         this.renderer.dispose();
         this.canvas.remove();
