@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import RAPIER from '@dimforge/rapier3d-compat';
+import { mysteryModel, disposeMystery } from './mystery3d';
 import { brickMesh, brickPosition, BRICK_HEIGHT, disposeBrick } from './brick3d';
 import { buildOrder, pieceMatches, pileAdditions, SnapBrick, SnapLevel } from './level';
 import { configureOverlayCamera, overlayRotation, overlayToScreen, screenToOverlay } from './overlay3d';
@@ -7,7 +8,8 @@ import { configureOverlayCamera, overlayRotation, overlayToScreen, screenToOverl
 interface LooseBrick { brick: SnapBrick; mesh: THREE.Group; body: RAPIER.RigidBody; }
 interface Flight { brick: SnapBrick; mesh: THREE.Group; from: THREE.Vector2; to: THREE.Vector2;
     start: number; duration: number; kind: 'intro' | 'placement' | 'rejection' | 'return';
-    fromRotation?: THREE.Quaternion; landingPosition?: THREE.Vector3; }
+    fromRotation?: THREE.Quaternion; landingPosition?: THREE.Vector3;
+    arcHeight?: number; arcSide?: number; spin?: THREE.Vector3; }
 interface Preview { element: HTMLElement; scene: THREE.Scene; camera: THREE.PerspectiveCamera; model: THREE.Group;
     dispose: () => void; }
 interface Drag { loose: LooseBrick; overlay: THREE.Group; lastX: number; lastY: number;
@@ -36,23 +38,6 @@ function litScene(background: number): THREE.Scene {
     sun.shadow.bias = -0.0003;
     scene.add(sun);
     return scene;
-}
-
-function previewBricks(id: string): { bricks: SnapBrick[]; palette: Record<string, string> } {
-    const rows: [number, number, number, number, number, string][] = id === 'race-car' ? [
-        [0, 0, 0, 6, 3, 'red'], [1, 0, 1, 4, 3, 'red'], [2, 0, 2, 2, 3, 'cream']
-    ] : id === 'rocket' ? [
-        [1, 1, 0, 3, 3, 'blue'], [1, 1, 1, 3, 3, 'cream'], [1, 1, 2, 3, 3, 'cream'],
-        [1, 1, 3, 3, 3, 'red'], [2, 2, 4, 1, 1, 'red'], [0, 1, 0, 1, 3, 'red'], [4, 1, 0, 1, 3, 'red']
-    ] : [
-        [0, 0, 0, 7, 2, 'purple'], [0, 3, 0, 7, 2, 'purple'], [0, 2, 0, 2, 1, 'purple'],
-        [5, 2, 0, 2, 1, 'purple'], [0, 0, 1, 2, 2, 'lavender'], [5, 0, 1, 2, 2, 'lavender'],
-        [0, 3, 1, 2, 2, 'lavender'], [5, 3, 1, 2, 2, 'lavender'], [0, 0, 2, 2, 2, 'purple'],
-        [5, 0, 2, 2, 2, 'purple'], [0, 3, 2, 2, 2, 'purple'], [5, 3, 2, 2, 2, 'purple']
-    ];
-    return { bricks: rows.map(([x, y, z, w, d, color], index) => ({ id: `${id}-${index}`, x, y, z, w, d, color })),
-        palette: { red: '#f05248', cream: '#fff2dc', dark: '#303d55', blue: '#5279c9',
-            purple: '#9171d8', lavender: '#c5a5f7' } };
 }
 
 export class SnapScene3D {
@@ -87,6 +72,7 @@ export class SnapScene3D {
     private flights: Flight[] = [];
     private introQueue: SnapBrick[] = [];
     private introNext = 0;
+    private mystery: THREE.Group | null = null;
     private reserve: SnapBrick[] = [];
     private nextRefill = 0;
     private introDone: (() => void) | null = null;
@@ -122,7 +108,7 @@ export class SnapScene3D {
 
     private constructor(root: HTMLElement, modelElement: HTMLElement, pileElement: HTMLElement) {
         this.root = root; this.modelElement = modelElement; this.pileElement = pileElement;
-        this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, stencil: true });
         this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75));
         this.renderer.shadowMap.enabled = true;
         this.renderer.autoClear = false;
@@ -185,61 +171,20 @@ export class SnapScene3D {
         this.onPlaced = onPlaced; this.onWrong = onWrong; this.onAction = onAction;
     }
 
-    setPreviews(entries: { id: string; element: HTMLElement; level?: SnapLevel; completed: boolean }[]): void {
+    setPreviews(entries: { id: string; element: HTMLElement; level: SnapLevel; completed: boolean }[]): void {
         for (const preview of this.previewTargets) preview.dispose();
         this.previewTargets = entries.map(entry => {
-            const geometries = new Set<THREE.BufferGeometry>();
-            const materials = new Set<THREE.Material>();
-            const scene = litScene(entry.id === 'duck' ? 0xffdb61 : entry.id === 'race-car' ? 0xffd7c5 :
-                entry.id === 'rocket' ? 0xcfe7f7 : 0xe1d4fb);
-            const model = new THREE.Group();
-            const data = entry.level ?? previewBricks(entry.id);
-            const proxy = { bricks: data.bricks } as SnapLevel;
-            for (const brick of data.bricks) {
+            const backgrounds: Record<string, number> = {
+                duck: 0xffdb61, apple: 0xffd9d3, pineapple: 0xe0ecc4,
+                'sports-car': 0xffd7c5, castle: 0xe1d4fb
+            };
+            const scene = litScene(backgrounds[entry.id] ?? 0xcfe7f7);
+            const data = entry.level;
+            const model = entry.completed ? new THREE.Group() : mysteryModel(data);
+            for (const brick of entry.completed ? data.bricks : []) {
                 const mesh = brickMesh(brick, data.palette[brick.color]);
-                mesh.position.copy(brickPosition(brick, proxy));
+                mesh.position.copy(brickPosition(brick, data));
                 model.add(mesh);
-            }
-            if (entry.id === 'race-car' && !entry.level) {
-                const tireGeometry = new THREE.CylinderGeometry(0.59, 0.59, 0.38, 20);
-                const tireMaterial = new THREE.MeshStandardMaterial({ color: '#263247', roughness: 0.78 });
-                const hubGeometry = new THREE.CylinderGeometry(0.28, 0.28, 0.4, 20);
-                const hubMaterial = new THREE.MeshStandardMaterial({ color: '#d9e2e5', metalness: 0.2, roughness: 0.45 });
-                geometries.add(tireGeometry); geometries.add(hubGeometry);
-                materials.add(tireMaterial); materials.add(hubMaterial);
-                for (const x of [-1.9, 1.9]) for (const side of [-1, 1]) {
-                    const tire = new THREE.Mesh(tireGeometry, tireMaterial);
-                    tire.rotation.x = Math.PI / 2;
-                    tire.position.set(x, 0.5, side * 1.62);
-                    tire.castShadow = true;
-                    model.add(tire);
-                    const hub = new THREE.Mesh(hubGeometry, hubMaterial);
-                    hub.rotation.x = Math.PI / 2;
-                    hub.position.set(x, 0.5, side * 1.66);
-                    model.add(hub);
-                }
-            }
-            if (!entry.completed) {
-                const material = new THREE.LineBasicMaterial({ color: '#596879' });
-                const hiddenSurface = new THREE.MeshBasicMaterial({ visible: false });
-                materials.add(material);
-                materials.add(hiddenSurface);
-                const edges = new Map<THREE.BufferGeometry, THREE.EdgesGeometry>();
-                // Outline the bricks and studs without revealing their solid colors.
-                model.traverse(child => {
-                    if (!(child instanceof THREE.Mesh)) return;
-                    let geometry = edges.get(child.geometry);
-                    if (!geometry) {
-                        geometry = new THREE.EdgesGeometry(child.geometry, 20);
-                        edges.set(child.geometry, geometry);
-                        geometries.add(geometry);
-                    }
-                    child.add(new THREE.LineSegments(geometry, material));
-                    // Hide only the mesh surface; its outline remains visible.
-                    child.material = hiddenSurface;
-                    child.castShadow = false;
-                    child.receiveShadow = false;
-                });
             }
             scene.add(model);
             const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
@@ -250,8 +195,7 @@ export class SnapScene3D {
             camera.position.set(radius * 0.65, radius * 0.62, radius * 0.85);
             camera.lookAt(0, maxHeight / 2, 0);
             return { element: entry.element, scene, camera, model, dispose: () => {
-                for (const geometry of geometries) geometry.dispose();
-                for (const material of materials) material.dispose();
+                if (!entry.completed) disposeMystery(model);
                 scene.traverse(child => {
                     if (child instanceof THREE.DirectionalLight) child.shadow.dispose();
                 });
@@ -281,10 +225,13 @@ export class SnapScene3D {
         for (const brick of intro ? this.order : this.order.slice(0, placedIds.length)) {
             const mesh = brickMesh(brick, level.palette[brick.color]);
             mesh.position.copy(brickPosition(brick, level));
+            mesh.visible = !intro;
             this.modelGroup.add(mesh);
             this.staticMeshes.set(brick.id, mesh);
         }
         if (intro) {
+            this.mystery = mysteryModel(level);
+            this.modelGroup.add(this.mystery);
             this.introQueue = this.order.filter(brick => !placed.has(brick.id)).reverse();
             this.introNext = performance.now() + (REDUCED_MOTION.matches ? 100 : 850);
         } else {
@@ -294,7 +241,13 @@ export class SnapScene3D {
         }
     }
 
+    private clearMystery(): void {
+        if (this.mystery) disposeMystery(this.mystery);
+        this.mystery = null;
+    }
+
     private clearLevel(): void {
+        this.clearMystery();
         if (this.drag) disposeBrick(this.drag.overlay);
         this.drag = null;
         for (const item of this.loose.values()) {
@@ -341,6 +294,7 @@ export class SnapScene3D {
 
     skipIntro(): void {
         if (!this.playing || !this.level || this.interactive) return;
+        this.clearMystery();
         for (const flight of this.flights) disposeBrick(flight.mesh);
         this.flights = [];
         for (const mesh of this.staticMeshes.values()) disposeBrick(mesh);
@@ -350,6 +304,32 @@ export class SnapScene3D {
         }
         this.introQueue = [];
         this.finishIntro();
+    }
+
+    snapNextPiece(): boolean {
+        if (!this.playing || !this.interactive || this.drag || this.placementPending || !this.level) return false;
+        const target = this.order[this.placedIds.length];
+        if (!target) return false;
+        const piece = [...this.loose.values()].find(item => pieceMatches(item.brick, target));
+        let placedId: string;
+        if (piece) {
+            placedId = piece.brick.id;
+            this.world.removeRigidBody(piece.body);
+            this.loose.delete(placedId);
+            disposeBrick(piece.mesh);
+        } else {
+            const reserveIndex = this.reserve.findIndex(brick => pieceMatches(brick, target));
+            if (reserveIndex < 0) return false;
+            placedId = this.reserve.splice(reserveIndex, 1)[0].id;
+        }
+        const mesh = brickMesh(target, this.level.palette[target.color]);
+        mesh.position.copy(brickPosition(target, this.level));
+        this.modelGroup.add(mesh);
+        this.staticMeshes.set(target.id, mesh);
+        this.placedIds.push(placedId);
+        this.updateTarget();
+        this.onPlaced(placedId);
+        return true;
     }
 
     private finishIntro(): void {
@@ -710,7 +690,9 @@ export class SnapScene3D {
             this.advanceFlights(now);
             this.refillPile(now);
         }
-        for (const preview of this.previewTargets) preview.model.rotation.y = REDUCED_MOTION.matches ? 0.35 : now * 0.00021;
+        for (const preview of this.previewTargets) {
+            preview.model.rotation.y = REDUCED_MOTION.matches ? 0 : now * 0.00006;
+        }
         this.renderer.setScissorTest(false);
         this.renderer.setClearColor(0xffffff, 0);
         this.renderer.clear(true, true, true);
@@ -744,10 +726,10 @@ export class SnapScene3D {
 
     private advanceIntro(now: number): void {
         if (!this.introQueue.length || !this.level) return;
-        const delay = REDUCED_MOTION.matches ? 3 : 65;
-        const count = Math.min(this.introQueue.length, now >= this.introNext ?
-            Math.floor((now - this.introNext) / delay) + 1 : 0);
-        this.introNext += count * delay;
+        if (now < this.introNext) return;
+        this.clearMystery();
+        if (REDUCED_MOTION.matches) { this.skipIntro(); return; }
+        const count = this.introQueue.length;
         for (let index = 0; index < count; index++) {
             const brick = this.introQueue.shift()!;
             const modelMesh = this.staticMeshes.get(brick.id);
@@ -755,17 +737,19 @@ export class SnapScene3D {
             const from = this.screenPoint(this.modelElement, this.modelCamera, modelMesh.position);
             disposeBrick(modelMesh);
             this.staticMeshes.delete(brick.id);
-            if (this.reserve.includes(brick)) continue;
-            const pileRect = this.pileElement.getBoundingClientRect();
-            const rootRect = this.root.getBoundingClientRect();
-            const to = new THREE.Vector2(pileRect.left - rootRect.left + pileRect.width * (0.36 + Math.random() * 0.28),
-                pileRect.top - rootRect.top + pileRect.height * (0.30 + Math.random() * 0.2));
+            const landingPosition = new THREE.Vector3((Math.random() - 0.5) * 10,
+                3.5 + Math.random() * 2, (Math.random() - 0.5) * 6);
+            const to = this.screenPoint(this.pileElement, this.pileCamera, landingPosition);
             const mesh = brickMesh(brick, this.level.palette[brick.color]);
             mesh.quaternion.copy(overlayRotation(this.modelCamera, modelMesh.quaternion));
             mesh.scale.setScalar(24);
             this.overlayScene.add(mesh);
             this.flights.push({ brick, mesh, from, to, start: now,
-                duration: REDUCED_MOTION.matches ? 1 : 500, kind: 'intro' });
+                duration: 720 + Math.random() * 360, kind: 'intro', landingPosition,
+                fromRotation: mesh.quaternion.clone(), arcHeight: 90 + Math.random() * 100,
+                arcSide: (Math.random() - 0.5) * 180,
+                spin: new THREE.Vector3((Math.random() - 0.5) * 2, (Math.random() - 0.5) * 3,
+                    (Math.random() - 0.5) * 1.5) });
         }
     }
 
@@ -773,18 +757,24 @@ export class SnapScene3D {
         for (let index = this.flights.length - 1; index >= 0; index--) {
             const flight = this.flights[index];
             const t = Math.min(1, (now - flight.start) / flight.duration);
-            const eased = flight.kind === 'return' ? t * t * t * (t * (t * 6 - 15) + 10) :
+            const eased = flight.kind === 'intro' ? 1 - Math.pow(1 - t, 2) : flight.kind === 'return' ? t * t * t * (t * (t * 6 - 15) + 10) :
                 t * t * (3 - 2 * t);
-            const arc = flight.kind === 'return' ?
+            const arc = flight.kind === 'intro' ? Math.sin(Math.PI * t) * flight.arcHeight! : flight.kind === 'return' ?
                 Math.pow(Math.sin(Math.PI * t), 1.5) * 130 : Math.sin(Math.PI * t) * 55;
-            flight.mesh.position.copy(screenToOverlay(THREE.MathUtils.lerp(flight.from.x, flight.to.x, eased),
+            flight.mesh.position.copy(screenToOverlay(THREE.MathUtils.lerp(flight.from.x, flight.to.x, eased) +
+                (flight.arcSide ?? 0) * Math.sin(Math.PI * t),
                 THREE.MathUtils.lerp(flight.from.y, flight.to.y, eased) - arc,
                 this.canvas.clientHeight));
             if (flight.kind === 'placement' || flight.kind === 'rejection') flight.mesh.quaternion.copy(flight.fromRotation!).slerp(
                 this.targetOverlayRotation(flight.brick), eased);
             else if (flight.kind === 'return') flight.mesh.quaternion.copy(flight.fromRotation!).slerp(
                 overlayRotation(this.pileCamera), eased);
-            else flight.mesh.rotation.y += 0.035;
+            else {
+                const spin = flight.spin!;
+                flight.mesh.quaternion.copy(flight.fromRotation!).multiply(new THREE.Quaternion().setFromEuler(
+                    new THREE.Euler(spin.x * t, spin.y * t, spin.z * t)));
+                flight.mesh.scale.setScalar(24 * Math.min(1, t / 0.12));
+            }
             if (t < 1) continue;
             if (flight.kind === 'rejection') {
                 const landingPosition = new THREE.Vector3((Math.random() - 0.5) * 6, 3.6,
@@ -817,7 +807,9 @@ export class SnapScene3D {
             } else if (flight.kind === 'return') {
                 this.spawnLoose(flight.brick, true, flight.landingPosition);
                 this.placementPending = false;
-            } else this.spawnLoose(flight.brick, true);
+            } else if (!this.reserve.includes(flight.brick)) {
+                this.spawnLoose(flight.brick, true, flight.landingPosition);
+            }
         }
         if (this.playing && !this.interactive && this.introQueue.length === 0 &&
             this.flights.length === 0 && this.loose.size > 0) this.finishIntro();

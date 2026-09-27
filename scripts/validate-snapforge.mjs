@@ -15,15 +15,11 @@ const targets = files.length ? files.map(path => resolve(path)) :
     readdirSync(levelDir).filter(name => name.endsWith('.json')).map(name => resolve(levelDir, name));
 const ids = new Set();
 const orders = new Set();
-const reserved = new Map([[1, 'duck'], [2, 'race-car'], [3, 'rocket'], [4, 'castle']]);
 let failed = false;
 
 for (const file of targets) {
     try {
         const level = validateLevel(JSON.parse(readFileSync(file, 'utf8')));
-        if (reserved.has(level.order) && reserved.get(level.order) !== level.id) {
-            throw new Error(`gallery order ${level.order} is reserved for ${reserved.get(level.order)}`);
-        }
         if (ids.has(level.id)) throw new Error(`duplicate level id: ${level.id}`);
         if (orders.has(level.order)) throw new Error(`duplicate level order: ${level.order}`);
         ids.add(level.id);

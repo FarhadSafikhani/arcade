@@ -5,7 +5,6 @@ import { createClickBuffer, createConnectionBuffer } from './sound';
 
 interface PartialBuild { version: number; placedIds: string[]; }
 interface Progress { completed: string[]; partials: Record<string, PartialBuild>; seenIntro: string[]; muted: boolean; }
-interface CatalogItem { id: string; title: string; order: number; level?: SnapLevel; }
 
 const STORAGE_KEY = 'snapforge-3d-progress-v1';
 const levels = new Map<string, SnapLevel>();
@@ -13,15 +12,8 @@ for (const input of Object.values(import.meta.glob('./levels/*.json', { eager: t
     try { const level = validateLevel(input); levels.set(level.id, level); }
     catch (error) { console.error('Invalid Snapforge level', error); }
 }
-const teasers: CatalogItem[] = [
-    { id: 'duck', title: 'Little Duck', order: 1 },
-    { id: 'race-car', title: 'Race Car', order: 2 },
-    { id: 'rocket', title: 'Rocket', order: 3 },
-    { id: 'castle', title: 'Castle', order: 4 }
-];
-const catalog = [...teasers.map(item => ({ ...item, level: levels.get(item.id) })),
-    ...[...levels.values()].filter(level => !teasers.some(item => item.id === level.id))
-        .map(level => ({ id: level.id, title: level.title, order: level.order, level }))]
+const catalog = [...levels.values()]
+    .map(level => ({ id: level.id, title: level.title, order: level.order, level }))
     .sort((a, b) => a.order - b.order);
 
 function byId<T extends HTMLElement>(id: string): T {
@@ -56,7 +48,6 @@ class SnapforgeGame {
     private hint = byId<HTMLButtonElement>('hintButton');
     private completion = byId<HTMLElement>('completion');
     private completionBurst = byId<HTMLElement>('completionBurst');
-    private next = byId<HTMLButtonElement>('nextButton');
     private back = byId<HTMLAnchorElement>('backButton');
     private backLabel = byId<HTMLElement>('backLabel');
     private sound = byId<HTMLButtonElement>('soundButton');
@@ -70,10 +61,20 @@ class SnapforgeGame {
     private audio: AudioContext | null = null;
     private clickBuffer: AudioBuffer | null = null;
     private connectionBuffer: AudioBuffer | null = null;
+    private devSnap: HTMLButtonElement | null = null;
 
     constructor() {
         this.renderGallery();
         this.updateSound();
+        if (import.meta.env.DEV) {
+            this.devSnap = document.createElement('button');
+            this.devSnap.type = 'button';
+            this.devSnap.className = 'dev-snap-button';
+            this.devSnap.textContent = 'Snap next piece';
+            this.devSnap.disabled = true;
+            this.devSnap.addEventListener('click', () => this.scene?.snapNextPiece());
+            this.play.appendChild(this.devSnap);
+        }
         // Placement completes in an animation frame, so unlock audio during a user gesture.
         this.root.addEventListener('pointerdown', () => this.prepareAudio(), { passive: true });
         this.root.addEventListener('keydown', () => this.prepareAudio());
@@ -124,16 +125,7 @@ class SnapforgeGame {
                 window.setTimeout(() => this.updateStep(), 2300);
             }
         });
-        byId<HTMLButtonElement>('replayButton').addEventListener('click', () => {
-            if (this.current) this.startLevel(this.current, false);
-        });
         byId<HTMLButtonElement>('completionGalleryButton').addEventListener('click', () => this.showGallery());
-        this.next.addEventListener('click', () => {
-            if (!this.current) return;
-            const index = catalog.findIndex(item => item.id === this.current!.id);
-            const next = catalog[index + 1];
-            if (next?.level) this.startLevel(next.level, false);
-        });
         void this.initializeScene();
     }
 
@@ -195,7 +187,7 @@ class SnapforgeGame {
                 oscillator.frequency.setValueAtTime(pitch, this.audio!.currentTime + delay);
                 oscillator.frequency.exponentialRampToValueAtTime(pitch * 0.79, this.audio!.currentTime + delay + duration);
                 gain.gain.setValueAtTime(0.0001, this.audio!.currentTime + delay);
-                gain.gain.exponentialRampToValueAtTime(0.085, this.audio!.currentTime + delay + 0.012);
+                gain.gain.exponentialRampToValueAtTime(0.09775, this.audio!.currentTime + delay + 0.012);
                 gain.gain.exponentialRampToValueAtTime(0.0001, this.audio!.currentTime + delay + duration);
                 oscillator.connect(gain).connect(this.audio!.destination);
                 oscillator.start(this.audio!.currentTime + delay);
@@ -267,13 +259,13 @@ class SnapforgeGame {
         for (const [index, item] of catalog.entries()) {
             const card = document.createElement('article');
             card.className = 'gallery-card';
-            card.setAttribute('aria-label', `${item.title}, ${item.level ? this.unlocked(index) ? 'ready to build' : 'locked' : 'coming soon'}`);
+            card.setAttribute('aria-label', `${item.title}, ${this.unlocked(index) ? 'ready to build' : 'locked'}`);
             const visual = document.createElement('div');
             visual.className = 'card-visual';
             visual.id = `preview-${item.id}`;
             const badge = document.createElement('span');
             badge.className = 'card-badge';
-            badge.textContent = !item.level ? 'COMING SOON' : !this.unlocked(index) ? 'LOCKED' :
+            badge.textContent = !this.unlocked(index) ? 'LOCKED' :
                 this.partial(item.level) ? 'IN PROGRESS' : this.progress.completed.includes(item.id) ? 'COMPLETED' : 'READY';
             visual.appendChild(badge);
             const copy = document.createElement('div');
@@ -283,14 +275,12 @@ class SnapforgeGame {
             const title = document.createElement('h2'); title.textContent = item.title;
             const pieceCount = document.createElement('p');
             pieceCount.className = 'card-piece-count';
-            if (item.level) {
-                const count = item.level.bricks.length;
-                pieceCount.textContent = `${count} ${count === 1 ? 'piece' : 'pieces'}`;
-                card.setAttribute('aria-label', `${card.getAttribute('aria-label')}, ${pieceCount.textContent}`);
-            }
+            const count = item.level.bricks.length;
+            pieceCount.textContent = `${count} ${count === 1 ? 'piece' : 'pieces'}`;
+            card.setAttribute('aria-label', `${card.getAttribute('aria-label')}, ${pieceCount.textContent}`);
             const action = document.createElement('span');
             action.className = 'card-action';
-            if (item.level && this.unlocked(index)) {
+            if (this.unlocked(index)) {
                 const level = item.level;
                 card.classList.add('is-available');
                 card.setAttribute('role', 'button');
@@ -305,7 +295,7 @@ class SnapforgeGame {
                 action.textContent = this.partial(level) ? 'Continue build →' :
                     this.progress.completed.includes(item.id) ? 'Replay' : 'Start building →';
             } else {
-                action.textContent = item.level ? 'Finish previous model' : 'Coming soon';
+                action.textContent = 'Finish previous model';
                 action.classList.add('is-disabled');
             }
             copy.append(eyebrow, title, pieceCount, action);
@@ -392,12 +382,14 @@ class SnapforgeGame {
         byId<HTMLElement>('playTitle').textContent = level.title;
         this.skip.hidden = resume;
         this.hint.disabled = !resume;
+        if (this.devSnap) this.devSnap.disabled = !resume;
         this.message.textContent = resume ? '' : 'Watch the model come apart…';
         byId<HTMLElement>('colorCue').style.backgroundColor = 'transparent';
         this.updateStep();
         this.scene.startLevel(level, this.placedIds, !resume, () => {
             this.skip.hidden = true;
             this.hint.disabled = false;
+            if (this.devSnap) this.devSnap.disabled = false;
             if (!this.progress.seenIntro.includes(level.id)) this.progress.seenIntro.push(level.id);
             this.save();
             this.updateStep();
@@ -437,12 +429,11 @@ class SnapforgeGame {
         this.message.textContent = 'You built it!';
         this.counter.textContent = `${this.placedIds.length} / ${this.placedIds.length}`;
         this.hint.disabled = true;
-        const index = catalog.findIndex(item => item.id === this.current!.id);
-        this.next.hidden = !catalog[index + 1]?.level;
+        if (this.devSnap) this.devSnap.disabled = true;
         this.celebrate();
         this.completion.hidden = false;
         this.fanfare();
-        byId<HTMLButtonElement>('replayButton').focus();
+        byId<HTMLButtonElement>('completionGalleryButton').focus();
     }
 }
 

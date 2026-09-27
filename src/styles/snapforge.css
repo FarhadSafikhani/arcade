@@ -252,6 +252,20 @@ button:disabled { cursor: default; }
 }
 .text-button { border-color: transparent; background: transparent; color: var(--coral); }
 .hint-button:disabled { opacity: 0.4; }
+.dev-snap-button {
+    position: fixed;
+    bottom: 16px;
+    left: 16px;
+    z-index: 3;
+    padding: 9px 13px;
+    border: 1px solid #27334d;
+    border-radius: 10px;
+    background: #27334d;
+    color: white;
+    font-size: 12px;
+    font-weight: 900;
+}
+.dev-snap-button:disabled { opacity: 0.45; }
 .completion {
     position: fixed;
     inset: 0;
