@@ -13,6 +13,7 @@ export interface SnapLevel {
     id: string;
     title: string;
     description: string;
+    collection: string;
     order: number;
     version: number;
     palette: Record<string, string>;
@@ -29,10 +30,12 @@ const cellKey = (x: number, y: number, z: number): string => `${x},${y},${z}`;
 
 export function validateLevel(input: unknown): SnapLevel {
     if (!isRecord(input)) throw new Error('Level must be a JSON object');
-    const { id, title, description, order, version, palette, bricks } = input;
+    const { id, title, description, collection, order, version, palette, bricks } = input;
     if (typeof id !== 'string' || !/^[a-z0-9-]+$/.test(id)) throw new Error('id must be a lowercase slug');
     if (typeof title !== 'string' || !title.trim()) throw new Error(`${id}: title is required`);
     if (typeof description !== 'string') throw new Error(`${id}: description is required`);
+    if (typeof collection !== 'string' || !['starter', 'land-animal', 'fruit', 'bird', 'car', 'ocean', 'dinosaur'].includes(collection))
+        throw new Error(`${id}: collection must name a known collection`);
     if (!isNatural(order) || !isNatural(version) || version < 1) throw new Error(`${id}: order and version must be non-negative integers (version ≥ 1)`);
     if (!isRecord(palette) || Object.keys(palette).length === 0) throw new Error(`${id}: palette is required`);
     for (const [name, color] of Object.entries(palette)) {

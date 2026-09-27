@@ -1,0 +1,22 @@
+import type { SnapLevel } from './level';
+
+export const collections = [
+    { id: 'starter', name: 'Starter Collection' },
+    { id: 'land-animal', name: 'Land Animal Collection' },
+    { id: 'fruit', name: 'Fruit Collection' },
+    { id: 'bird', name: 'Bird Collection' },
+    { id: 'car', name: 'Car Collection' },
+    { id: 'ocean', name: 'Ocean Collection' },
+    { id: 'dinosaur', name: 'Dinosaur Collection' }
+] as const;
+
+export type CollectionId = typeof collections[number]['id'];
+
+export function collectionLevels(levels: Iterable<SnapLevel>, collection: CollectionId): SnapLevel[] {
+    return [...levels].filter(level => level.collection === collection)
+        .sort((a, b) => a.order - b.order);
+}
+
+export function modelUnlocked(levels: SnapLevel[], index: number, completed: readonly string[]): boolean {
+    return index === 0 || index > 0 && completed.includes(levels[index - 1].id);
+}

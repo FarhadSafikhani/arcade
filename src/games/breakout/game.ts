@@ -1,4 +1,4 @@
-import { Application, Container, Graphics, Text, TextStyle } from 'pixi.js';
+import { Application, Container, Graphics } from 'pixi.js';
 import { Paddle } from './paddle';
 import { Ball, BallType } from './ball';
 import { Brick } from './brick';
@@ -176,7 +176,7 @@ export class BreakoutGame {
             this.paddle.setPosition(clampedX, paddleY);
         };
 
-        const handleMouseClick = (event: Event) => {
+        const handleMouseClick = () => {
             if (this.isGameOver || this.isPaused) return;
             
             if (!this.isGameStarted) {
@@ -279,7 +279,7 @@ export class BreakoutGame {
             }
         };
 
-        const handleTouchEnd = (event: TouchEvent) => {
+        const handleTouchEnd = () => {
             isDragging = false;
             hasStartedDragging = false;
         };
@@ -328,7 +328,7 @@ export class BreakoutGame {
         this.paddle.setPosition(BASE_GAME_WIDTH / 2 - this.currentPaddleWidth / 2, BASE_GAME_HEIGHT - PADDLE_HEIGHT - 10);
     }
 
-    update(delta: number): void {
+    update(_delta: number): void {
         if (this.isGameOver || this.isPaused) return;
 
         // Time-based update for consistent game speed
@@ -699,14 +699,6 @@ export class BreakoutGame {
                 this.gameContainer.addChild(blueBall.container);
                 break;
         }
-    }
-
-    private movePaddle(dx: number): void {
-        if (this.isGameOver || this.isPaused) return;
-        
-        const newX = Math.max(0, Math.min(BASE_GAME_WIDTH - this.currentPaddleWidth, this.paddle.x + dx));
-        const paddleY = BASE_GAME_HEIGHT - PADDLE_HEIGHT - 10;
-        this.paddle.setPosition(newX, paddleY);
     }
 
     returnToMainMenu(): void {

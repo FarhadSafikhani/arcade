@@ -1,0 +1,235 @@
+{
+  "id": "cherry",
+  "title": "Cherry",
+  "description": "Build a pair of bright red cherries.",
+  "collection": "fruit",
+  "order": 1,
+  "version": 1,
+  "palette": {
+    "red": "#D94050",
+    "shine": "#F7777F",
+    "green": "#428D5A",
+    "dark": "#69472F"
+  },
+  "bricks": [
+    {
+      "x": 1,
+      "y": 1,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "color": "red",
+      "h": 2,
+      "id": "brick-001"
+    },
+    {
+      "x": 3,
+      "y": 1,
+      "z": 0,
+      "w": 1,
+      "d": 2,
+      "color": "red",
+      "h": 2,
+      "id": "brick-002"
+    },
+    {
+      "x": 5,
+      "y": 1,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "color": "red",
+      "h": 2,
+      "id": "brick-003"
+    },
+    {
+      "x": 7,
+      "y": 1,
+      "z": 0,
+      "w": 1,
+      "d": 2,
+      "color": "red",
+      "h": 2,
+      "id": "brick-004"
+    },
+    {
+      "x": 4,
+      "y": 2,
+      "z": 0,
+      "w": 1,
+      "d": 1,
+      "color": "dark",
+      "h": 2,
+      "id": "brick-005"
+    },
+    {
+      "x": 1,
+      "y": 3,
+      "z": 0,
+      "w": 2,
+      "d": 1,
+      "color": "red",
+      "h": 2,
+      "id": "brick-006"
+    },
+    {
+      "x": 3,
+      "y": 3,
+      "z": 0,
+      "w": 1,
+      "d": 1,
+      "color": "red",
+      "h": 2,
+      "id": "brick-007"
+    },
+    {
+      "x": 5,
+      "y": 3,
+      "z": 0,
+      "w": 2,
+      "d": 1,
+      "color": "red",
+      "h": 2,
+      "id": "brick-008"
+    },
+    {
+      "x": 7,
+      "y": 3,
+      "z": 0,
+      "w": 1,
+      "d": 1,
+      "color": "red",
+      "h": 2,
+      "id": "brick-009"
+    },
+    {
+      "x": 1,
+      "y": 1,
+      "z": 2,
+      "w": 1,
+      "d": 1,
+      "color": "shine",
+      "id": "brick-010"
+    },
+    {
+      "x": 2,
+      "y": 1,
+      "z": 2,
+      "w": 2,
+      "d": 2,
+      "color": "red",
+      "id": "brick-011"
+    },
+    {
+      "x": 5,
+      "y": 1,
+      "z": 2,
+      "w": 1,
+      "d": 1,
+      "color": "shine",
+      "id": "brick-012"
+    },
+    {
+      "x": 6,
+      "y": 1,
+      "z": 2,
+      "w": 2,
+      "d": 2,
+      "color": "red",
+      "id": "brick-013"
+    },
+    {
+      "x": 1,
+      "y": 2,
+      "z": 2,
+      "w": 1,
+      "d": 2,
+      "color": "red",
+      "id": "brick-014"
+    },
+    {
+      "x": 4,
+      "y": 2,
+      "z": 2,
+      "w": 1,
+      "d": 1,
+      "color": "dark",
+      "h": 2,
+      "id": "brick-015"
+    },
+    {
+      "x": 5,
+      "y": 2,
+      "z": 2,
+      "w": 1,
+      "d": 2,
+      "color": "red",
+      "id": "brick-016"
+    },
+    {
+      "x": 2,
+      "y": 3,
+      "z": 2,
+      "w": 2,
+      "d": 1,
+      "color": "red",
+      "id": "brick-017"
+    },
+    {
+      "x": 6,
+      "y": 3,
+      "z": 2,
+      "w": 2,
+      "d": 1,
+      "color": "red",
+      "id": "brick-018"
+    },
+    {
+      "x": 2,
+      "y": 2,
+      "z": 3,
+      "w": 2,
+      "d": 1,
+      "color": "green",
+      "h": 2,
+      "id": "brick-019"
+    },
+    {
+      "x": 5,
+      "y": 2,
+      "z": 3,
+      "w": 2,
+      "d": 1,
+      "color": "green",
+      "id": "brick-020"
+    },
+    {
+      "x": 4,
+      "y": 2,
+      "z": 4,
+      "w": 2,
+      "d": 1,
+      "color": "green",
+      "id": "brick-021"
+    },
+    {
+      "x": 6,
+      "y": 2,
+      "z": 4,
+      "w": 1,
+      "d": 1,
+      "color": "green",
+      "id": "brick-022"
+    },
+    {
+      "x": 4,
+      "y": 2,
+      "z": 5,
+      "w": 1,
+      "d": 1,
+      "color": "dark",
+      "h": 2,
+      "id": "brick-023"
+    }
+  ]
+}

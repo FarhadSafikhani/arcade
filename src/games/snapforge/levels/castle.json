@@ -2,6 +2,7 @@
   "id": "castle",
   "title": "Castle",
   "description": "Four flag-topped towers guard a castle with an open gateway.",
+  "collection": "starter",
   "order": 5,
   "version": 2,
   "palette": {
@@ -10,84 +11,738 @@
     "brown": "#705035"
   },
   "bricks": [
-    {"id":"tower-1","x":0,"y":0,"z":0,"w":3,"d":3,"color":"stone","h":2},
-    {"id":"tower-2","x":0,"y":7,"z":0,"w":3,"d":3,"color":"stone","h":2},
-    {"id":"tower-3","x":9,"y":0,"z":0,"w":3,"d":3,"color":"stone","h":2},
-    {"id":"tower-4","x":9,"y":7,"z":0,"w":3,"d":3,"color":"stone","h":2},
-    {"id":"tower-9","x":0,"y":0,"z":2,"w":3,"d":3,"color":"stone","h":2},
-    {"id":"tower-10","x":0,"y":7,"z":2,"w":3,"d":3,"color":"stone","h":2},
-    {"id":"tower-11","x":9,"y":0,"z":2,"w":3,"d":3,"color":"stone","h":2},
-    {"id":"tower-12","x":9,"y":7,"z":2,"w":3,"d":3,"color":"stone","h":2},
-    {"id":"tower-17","x":0,"y":0,"z":4,"w":3,"d":3,"color":"stone"},
-    {"id":"tower-18","x":0,"y":7,"z":4,"w":3,"d":3,"color":"stone"},
-    {"id":"tower-19","x":9,"y":0,"z":4,"w":3,"d":3,"color":"stone"},
-    {"id":"tower-20","x":9,"y":7,"z":4,"w":3,"d":3,"color":"stone"},
-    {"id":"back-wall-21","x":3,"y":8,"z":0,"w":3,"d":2,"color":"stone","h":2},
-    {"id":"back-wall-22","x":6,"y":8,"z":0,"w":3,"d":2,"color":"stone","h":2},
-    {"id":"side-wall-23","x":0,"y":3,"z":0,"w":2,"d":2,"color":"stone","h":2},
-    {"id":"side-wall-24","x":0,"y":5,"z":0,"w":2,"d":2,"color":"stone","h":2},
-    {"id":"side-wall-25","x":10,"y":3,"z":0,"w":2,"d":2,"color":"stone","h":2},
-    {"id":"side-wall-26","x":10,"y":5,"z":0,"w":2,"d":2,"color":"stone","h":2},
-    {"id":"gate-side-27","x":3,"y":0,"z":0,"w":2,"d":2,"color":"stone","h":2},
-    {"id":"gate-side-28","x":7,"y":0,"z":0,"w":2,"d":2,"color":"stone","h":2},
-    {"id":"back-wall-37","x":3,"y":8,"z":2,"w":3,"d":2,"color":"stone","h":2},
-    {"id":"back-wall-38","x":6,"y":8,"z":2,"w":3,"d":2,"color":"stone","h":2},
-    {"id":"side-wall-39","x":0,"y":3,"z":2,"w":2,"d":2,"color":"stone","h":2},
-    {"id":"side-wall-40","x":0,"y":5,"z":2,"w":2,"d":2,"color":"stone","h":2},
-    {"id":"side-wall-41","x":10,"y":3,"z":2,"w":2,"d":2,"color":"stone","h":2},
-    {"id":"side-wall-42","x":10,"y":5,"z":2,"w":2,"d":2,"color":"stone","h":2},
-    {"id":"gate-side-43","x":3,"y":0,"z":2,"w":2,"d":2,"color":"stone"},
-    {"id":"gate-side-44","x":7,"y":0,"z":2,"w":2,"d":2,"color":"stone"},
-    {"id":"gate-lintel-51","x":3,"y":0,"z":3,"w":3,"d":2,"color":"stone"},
-    {"id":"gate-lintel-52","x":6,"y":0,"z":3,"w":3,"d":2,"color":"stone"},
-    {"id":"back-battlement-53","x":3,"y":8,"z":4,"w":1,"d":2,"color":"stone"},
-    {"id":"back-battlement-54","x":5,"y":8,"z":4,"w":2,"d":2,"color":"stone"},
-    {"id":"back-battlement-55","x":8,"y":8,"z":4,"w":1,"d":2,"color":"stone"},
-    {"id":"side-battlement-56","x":0,"y":3,"z":4,"w":2,"d":1,"color":"stone"},
-    {"id":"side-battlement-57","x":0,"y":6,"z":4,"w":2,"d":1,"color":"stone"},
-    {"id":"side-battlement-58","x":10,"y":3,"z":4,"w":2,"d":1,"color":"stone"},
-    {"id":"side-battlement-59","x":10,"y":6,"z":4,"w":2,"d":1,"color":"stone"},
-    {"id":"gate-battlement-60","x":3,"y":0,"z":4,"w":1,"d":2,"color":"stone"},
-    {"id":"gate-battlement-61","x":8,"y":0,"z":4,"w":1,"d":2,"color":"stone"},
-    {"id":"tower-rim-62","x":0,"y":0,"z":5,"w":3,"d":1,"color":"stone"},
-    {"id":"tower-rim-63","x":0,"y":2,"z":5,"w":3,"d":1,"color":"stone"},
-    {"id":"tower-rim-64","x":0,"y":1,"z":5,"w":1,"d":1,"color":"stone"},
-    {"id":"tower-rim-65","x":2,"y":1,"z":5,"w":1,"d":1,"color":"stone"},
-    {"id":"tower-battlement-66","x":0,"y":0,"z":6,"w":1,"d":1,"color":"stone"},
-    {"id":"tower-battlement-67","x":0,"y":2,"z":6,"w":1,"d":1,"color":"stone"},
-    {"id":"tower-battlement-68","x":2,"y":0,"z":6,"w":1,"d":1,"color":"stone"},
-    {"id":"tower-battlement-69","x":2,"y":2,"z":6,"w":1,"d":1,"color":"stone"},
-    {"id":"flagpole-70","x":0,"y":0,"z":7,"w":1,"d":1,"color":"brown"},
-    {"id":"flag-71","x":0,"y":0,"z":8,"w":2,"d":1,"color":"red"},
-    {"id":"tower-rim-72","x":0,"y":7,"z":5,"w":3,"d":1,"color":"stone"},
-    {"id":"tower-rim-73","x":0,"y":9,"z":5,"w":3,"d":1,"color":"stone"},
-    {"id":"tower-rim-74","x":0,"y":8,"z":5,"w":1,"d":1,"color":"stone"},
-    {"id":"tower-rim-75","x":2,"y":8,"z":5,"w":1,"d":1,"color":"stone"},
-    {"id":"tower-battlement-76","x":0,"y":7,"z":6,"w":1,"d":1,"color":"stone"},
-    {"id":"tower-battlement-77","x":0,"y":9,"z":6,"w":1,"d":1,"color":"stone"},
-    {"id":"tower-battlement-78","x":2,"y":7,"z":6,"w":1,"d":1,"color":"stone"},
-    {"id":"tower-battlement-79","x":2,"y":9,"z":6,"w":1,"d":1,"color":"stone"},
-    {"id":"flagpole-80","x":0,"y":7,"z":7,"w":1,"d":1,"color":"brown"},
-    {"id":"flag-81","x":0,"y":7,"z":8,"w":2,"d":1,"color":"red"},
-    {"id":"tower-rim-82","x":9,"y":0,"z":5,"w":3,"d":1,"color":"stone"},
-    {"id":"tower-rim-83","x":9,"y":2,"z":5,"w":3,"d":1,"color":"stone"},
-    {"id":"tower-rim-84","x":9,"y":1,"z":5,"w":1,"d":1,"color":"stone"},
-    {"id":"tower-rim-85","x":11,"y":1,"z":5,"w":1,"d":1,"color":"stone"},
-    {"id":"tower-battlement-86","x":9,"y":0,"z":6,"w":1,"d":1,"color":"stone"},
-    {"id":"tower-battlement-87","x":9,"y":2,"z":6,"w":1,"d":1,"color":"stone"},
-    {"id":"tower-battlement-88","x":11,"y":0,"z":6,"w":1,"d":1,"color":"stone"},
-    {"id":"tower-battlement-89","x":11,"y":2,"z":6,"w":1,"d":1,"color":"stone"},
-    {"id":"flagpole-90","x":9,"y":0,"z":7,"w":1,"d":1,"color":"brown"},
-    {"id":"flag-91","x":9,"y":0,"z":8,"w":2,"d":1,"color":"red"},
-    {"id":"tower-rim-92","x":9,"y":7,"z":5,"w":3,"d":1,"color":"stone"},
-    {"id":"tower-rim-93","x":9,"y":9,"z":5,"w":3,"d":1,"color":"stone"},
-    {"id":"tower-rim-94","x":9,"y":8,"z":5,"w":1,"d":1,"color":"stone"},
-    {"id":"tower-rim-95","x":11,"y":8,"z":5,"w":1,"d":1,"color":"stone"},
-    {"id":"tower-battlement-96","x":9,"y":7,"z":6,"w":1,"d":1,"color":"stone"},
-    {"id":"tower-battlement-97","x":9,"y":9,"z":6,"w":1,"d":1,"color":"stone"},
-    {"id":"tower-battlement-98","x":11,"y":7,"z":6,"w":1,"d":1,"color":"stone"},
-    {"id":"tower-battlement-99","x":11,"y":9,"z":6,"w":1,"d":1,"color":"stone"},
-    {"id":"flagpole-100","x":9,"y":7,"z":7,"w":1,"d":1,"color":"brown"},
-    {"id":"flag-101","x":9,"y":7,"z":8,"w":2,"d":1,"color":"red"}
+    {
+      "id": "tower-1",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "w": 3,
+      "d": 3,
+      "color": "stone",
+      "h": 2
+    },
+    {
+      "id": "tower-2",
+      "x": 0,
+      "y": 7,
+      "z": 0,
+      "w": 3,
+      "d": 3,
+      "color": "stone",
+      "h": 2
+    },
+    {
+      "id": "tower-3",
+      "x": 9,
+      "y": 0,
+      "z": 0,
+      "w": 3,
+      "d": 3,
+      "color": "stone",
+      "h": 2
+    },
+    {
+      "id": "tower-4",
+      "x": 9,
+      "y": 7,
+      "z": 0,
+      "w": 3,
+      "d": 3,
+      "color": "stone",
+      "h": 2
+    },
+    {
+      "id": "tower-9",
+      "x": 0,
+      "y": 0,
+      "z": 2,
+      "w": 3,
+      "d": 3,
+      "color": "stone",
+      "h": 2
+    },
+    {
+      "id": "tower-10",
+      "x": 0,
+      "y": 7,
+      "z": 2,
+      "w": 3,
+      "d": 3,
+      "color": "stone",
+      "h": 2
+    },
+    {
+      "id": "tower-11",
+      "x": 9,
+      "y": 0,
+      "z": 2,
+      "w": 3,
+      "d": 3,
+      "color": "stone",
+      "h": 2
+    },
+    {
+      "id": "tower-12",
+      "x": 9,
+      "y": 7,
+      "z": 2,
+      "w": 3,
+      "d": 3,
+      "color": "stone",
+      "h": 2
+    },
+    {
+      "id": "tower-17",
+      "x": 0,
+      "y": 0,
+      "z": 4,
+      "w": 3,
+      "d": 3,
+      "color": "stone"
+    },
+    {
+      "id": "tower-18",
+      "x": 0,
+      "y": 7,
+      "z": 4,
+      "w": 3,
+      "d": 3,
+      "color": "stone"
+    },
+    {
+      "id": "tower-19",
+      "x": 9,
+      "y": 0,
+      "z": 4,
+      "w": 3,
+      "d": 3,
+      "color": "stone"
+    },
+    {
+      "id": "tower-20",
+      "x": 9,
+      "y": 7,
+      "z": 4,
+      "w": 3,
+      "d": 3,
+      "color": "stone"
+    },
+    {
+      "id": "back-wall-21",
+      "x": 3,
+      "y": 8,
+      "z": 0,
+      "w": 3,
+      "d": 2,
+      "color": "stone",
+      "h": 2
+    },
+    {
+      "id": "back-wall-22",
+      "x": 6,
+      "y": 8,
+      "z": 0,
+      "w": 3,
+      "d": 2,
+      "color": "stone",
+      "h": 2
+    },
+    {
+      "id": "side-wall-23",
+      "x": 0,
+      "y": 3,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "color": "stone",
+      "h": 2
+    },
+    {
+      "id": "side-wall-24",
+      "x": 0,
+      "y": 5,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "color": "stone",
+      "h": 2
+    },
+    {
+      "id": "side-wall-25",
+      "x": 10,
+      "y": 3,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "color": "stone",
+      "h": 2
+    },
+    {
+      "id": "side-wall-26",
+      "x": 10,
+      "y": 5,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "color": "stone",
+      "h": 2
+    },
+    {
+      "id": "gate-side-27",
+      "x": 3,
+      "y": 0,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "color": "stone",
+      "h": 2
+    },
+    {
+      "id": "gate-side-28",
+      "x": 7,
+      "y": 0,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "color": "stone",
+      "h": 2
+    },
+    {
+      "id": "back-wall-37",
+      "x": 3,
+      "y": 8,
+      "z": 2,
+      "w": 3,
+      "d": 2,
+      "color": "stone",
+      "h": 2
+    },
+    {
+      "id": "back-wall-38",
+      "x": 6,
+      "y": 8,
+      "z": 2,
+      "w": 3,
+      "d": 2,
+      "color": "stone",
+      "h": 2
+    },
+    {
+      "id": "side-wall-39",
+      "x": 0,
+      "y": 3,
+      "z": 2,
+      "w": 2,
+      "d": 2,
+      "color": "stone",
+      "h": 2
+    },
+    {
+      "id": "side-wall-40",
+      "x": 0,
+      "y": 5,
+      "z": 2,
+      "w": 2,
+      "d": 2,
+      "color": "stone",
+      "h": 2
+    },
+    {
+      "id": "side-wall-41",
+      "x": 10,
+      "y": 3,
+      "z": 2,
+      "w": 2,
+      "d": 2,
+      "color": "stone",
+      "h": 2
+    },
+    {
+      "id": "side-wall-42",
+      "x": 10,
+      "y": 5,
+      "z": 2,
+      "w": 2,
+      "d": 2,
+      "color": "stone",
+      "h": 2
+    },
+    {
+      "id": "gate-side-43",
+      "x": 3,
+      "y": 0,
+      "z": 2,
+      "w": 2,
+      "d": 2,
+      "color": "stone"
+    },
+    {
+      "id": "gate-side-44",
+      "x": 7,
+      "y": 0,
+      "z": 2,
+      "w": 2,
+      "d": 2,
+      "color": "stone"
+    },
+    {
+      "id": "gate-lintel-51",
+      "x": 3,
+      "y": 0,
+      "z": 3,
+      "w": 3,
+      "d": 2,
+      "color": "stone"
+    },
+    {
+      "id": "gate-lintel-52",
+      "x": 6,
+      "y": 0,
+      "z": 3,
+      "w": 3,
+      "d": 2,
+      "color": "stone"
+    },
+    {
+      "id": "back-battlement-53",
+      "x": 3,
+      "y": 8,
+      "z": 4,
+      "w": 1,
+      "d": 2,
+      "color": "stone"
+    },
+    {
+      "id": "back-battlement-54",
+      "x": 5,
+      "y": 8,
+      "z": 4,
+      "w": 2,
+      "d": 2,
+      "color": "stone"
+    },
+    {
+      "id": "back-battlement-55",
+      "x": 8,
+      "y": 8,
+      "z": 4,
+      "w": 1,
+      "d": 2,
+      "color": "stone"
+    },
+    {
+      "id": "side-battlement-56",
+      "x": 0,
+      "y": 3,
+      "z": 4,
+      "w": 2,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "side-battlement-57",
+      "x": 0,
+      "y": 6,
+      "z": 4,
+      "w": 2,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "side-battlement-58",
+      "x": 10,
+      "y": 3,
+      "z": 4,
+      "w": 2,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "side-battlement-59",
+      "x": 10,
+      "y": 6,
+      "z": 4,
+      "w": 2,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "gate-battlement-60",
+      "x": 3,
+      "y": 0,
+      "z": 4,
+      "w": 1,
+      "d": 2,
+      "color": "stone"
+    },
+    {
+      "id": "gate-battlement-61",
+      "x": 8,
+      "y": 0,
+      "z": 4,
+      "w": 1,
+      "d": 2,
+      "color": "stone"
+    },
+    {
+      "id": "tower-rim-62",
+      "x": 0,
+      "y": 0,
+      "z": 5,
+      "w": 3,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-rim-63",
+      "x": 0,
+      "y": 2,
+      "z": 5,
+      "w": 3,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-rim-64",
+      "x": 0,
+      "y": 1,
+      "z": 5,
+      "w": 1,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-rim-65",
+      "x": 2,
+      "y": 1,
+      "z": 5,
+      "w": 1,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-battlement-66",
+      "x": 0,
+      "y": 0,
+      "z": 6,
+      "w": 1,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-battlement-67",
+      "x": 0,
+      "y": 2,
+      "z": 6,
+      "w": 1,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-battlement-68",
+      "x": 2,
+      "y": 0,
+      "z": 6,
+      "w": 1,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-battlement-69",
+      "x": 2,
+      "y": 2,
+      "z": 6,
+      "w": 1,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "flagpole-70",
+      "x": 0,
+      "y": 0,
+      "z": 7,
+      "w": 1,
+      "d": 1,
+      "color": "brown"
+    },
+    {
+      "id": "flag-71",
+      "x": 0,
+      "y": 0,
+      "z": 8,
+      "w": 2,
+      "d": 1,
+      "color": "red"
+    },
+    {
+      "id": "tower-rim-72",
+      "x": 0,
+      "y": 7,
+      "z": 5,
+      "w": 3,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-rim-73",
+      "x": 0,
+      "y": 9,
+      "z": 5,
+      "w": 3,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-rim-74",
+      "x": 0,
+      "y": 8,
+      "z": 5,
+      "w": 1,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-rim-75",
+      "x": 2,
+      "y": 8,
+      "z": 5,
+      "w": 1,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-battlement-76",
+      "x": 0,
+      "y": 7,
+      "z": 6,
+      "w": 1,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-battlement-77",
+      "x": 0,
+      "y": 9,
+      "z": 6,
+      "w": 1,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-battlement-78",
+      "x": 2,
+      "y": 7,
+      "z": 6,
+      "w": 1,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-battlement-79",
+      "x": 2,
+      "y": 9,
+      "z": 6,
+      "w": 1,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "flagpole-80",
+      "x": 0,
+      "y": 7,
+      "z": 7,
+      "w": 1,
+      "d": 1,
+      "color": "brown"
+    },
+    {
+      "id": "flag-81",
+      "x": 0,
+      "y": 7,
+      "z": 8,
+      "w": 2,
+      "d": 1,
+      "color": "red"
+    },
+    {
+      "id": "tower-rim-82",
+      "x": 9,
+      "y": 0,
+      "z": 5,
+      "w": 3,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-rim-83",
+      "x": 9,
+      "y": 2,
+      "z": 5,
+      "w": 3,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-rim-84",
+      "x": 9,
+      "y": 1,
+      "z": 5,
+      "w": 1,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-rim-85",
+      "x": 11,
+      "y": 1,
+      "z": 5,
+      "w": 1,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-battlement-86",
+      "x": 9,
+      "y": 0,
+      "z": 6,
+      "w": 1,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-battlement-87",
+      "x": 9,
+      "y": 2,
+      "z": 6,
+      "w": 1,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-battlement-88",
+      "x": 11,
+      "y": 0,
+      "z": 6,
+      "w": 1,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-battlement-89",
+      "x": 11,
+      "y": 2,
+      "z": 6,
+      "w": 1,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "flagpole-90",
+      "x": 9,
+      "y": 0,
+      "z": 7,
+      "w": 1,
+      "d": 1,
+      "color": "brown"
+    },
+    {
+      "id": "flag-91",
+      "x": 9,
+      "y": 0,
+      "z": 8,
+      "w": 2,
+      "d": 1,
+      "color": "red"
+    },
+    {
+      "id": "tower-rim-92",
+      "x": 9,
+      "y": 7,
+      "z": 5,
+      "w": 3,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-rim-93",
+      "x": 9,
+      "y": 9,
+      "z": 5,
+      "w": 3,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-rim-94",
+      "x": 9,
+      "y": 8,
+      "z": 5,
+      "w": 1,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-rim-95",
+      "x": 11,
+      "y": 8,
+      "z": 5,
+      "w": 1,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-battlement-96",
+      "x": 9,
+      "y": 7,
+      "z": 6,
+      "w": 1,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-battlement-97",
+      "x": 9,
+      "y": 9,
+      "z": 6,
+      "w": 1,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-battlement-98",
+      "x": 11,
+      "y": 7,
+      "z": 6,
+      "w": 1,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "tower-battlement-99",
+      "x": 11,
+      "y": 9,
+      "z": 6,
+      "w": 1,
+      "d": 1,
+      "color": "stone"
+    },
+    {
+      "id": "flagpole-100",
+      "x": 9,
+      "y": 7,
+      "z": 7,
+      "w": 1,
+      "d": 1,
+      "color": "brown"
+    },
+    {
+      "id": "flag-101",
+      "x": 9,
+      "y": 7,
+      "z": 8,
+      "w": 2,
+      "d": 1,
+      "color": "red"
+    }
   ]
 }

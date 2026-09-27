@@ -1,0 +1,420 @@
+{
+  "id": "elephant",
+  "title": "Elephant",
+  "description": "Build a brick-built elephant.",
+  "collection": "land-animal",
+  "order": 3,
+  "version": 1,
+  "palette": {
+    "main": "#91A5AF",
+    "accent": "#BAC5C9",
+    "dark": "#27334D",
+    "light": "#FFF9E7"
+  },
+  "bricks": [
+    {
+      "x": 7,
+      "y": 0,
+      "z": 0,
+      "w": 2,
+      "d": 1,
+      "color": "accent",
+      "h": 2,
+      "id": "brick-001"
+    },
+    {
+      "x": 2,
+      "y": 1,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "color": "main",
+      "h": 2,
+      "id": "brick-002"
+    },
+    {
+      "x": 4,
+      "y": 1,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "color": "main",
+      "h": 2,
+      "id": "brick-003"
+    },
+    {
+      "x": 6,
+      "y": 1,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "color": "main",
+      "h": 2,
+      "id": "brick-004"
+    },
+    {
+      "x": 8,
+      "y": 1,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "color": "main",
+      "h": 2,
+      "id": "brick-005"
+    },
+    {
+      "x": 10,
+      "y": 2,
+      "z": 0,
+      "w": 1,
+      "d": 2,
+      "color": "main",
+      "h": 2,
+      "id": "brick-006"
+    },
+    {
+      "x": 2,
+      "y": 3,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "color": "main",
+      "h": 2,
+      "id": "brick-007"
+    },
+    {
+      "x": 4,
+      "y": 3,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "color": "main",
+      "h": 2,
+      "id": "brick-008"
+    },
+    {
+      "x": 6,
+      "y": 3,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "color": "main",
+      "h": 2,
+      "id": "brick-009"
+    },
+    {
+      "x": 8,
+      "y": 3,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "color": "main",
+      "h": 2,
+      "id": "brick-010"
+    },
+    {
+      "x": 7,
+      "y": 5,
+      "z": 0,
+      "w": 2,
+      "d": 1,
+      "color": "accent",
+      "h": 2,
+      "id": "brick-011"
+    },
+    {
+      "x": 7,
+      "y": 0,
+      "z": 2,
+      "w": 2,
+      "d": 1,
+      "color": "accent",
+      "h": 2,
+      "id": "brick-012"
+    },
+    {
+      "x": 2,
+      "y": 1,
+      "z": 2,
+      "w": 2,
+      "d": 2,
+      "color": "main",
+      "h": 2,
+      "id": "brick-013"
+    },
+    {
+      "x": 4,
+      "y": 1,
+      "z": 2,
+      "w": 2,
+      "d": 2,
+      "color": "main",
+      "h": 2,
+      "id": "brick-014"
+    },
+    {
+      "x": 6,
+      "y": 1,
+      "z": 2,
+      "w": 2,
+      "d": 2,
+      "color": "main",
+      "h": 2,
+      "id": "brick-015"
+    },
+    {
+      "x": 8,
+      "y": 1,
+      "z": 2,
+      "w": 2,
+      "d": 2,
+      "color": "main",
+      "h": 2,
+      "id": "brick-016"
+    },
+    {
+      "x": 10,
+      "y": 2,
+      "z": 2,
+      "w": 1,
+      "d": 2,
+      "color": "main",
+      "h": 2,
+      "id": "brick-017"
+    },
+    {
+      "x": 2,
+      "y": 3,
+      "z": 2,
+      "w": 2,
+      "d": 2,
+      "color": "main",
+      "h": 2,
+      "id": "brick-018"
+    },
+    {
+      "x": 4,
+      "y": 3,
+      "z": 2,
+      "w": 2,
+      "d": 2,
+      "color": "main",
+      "h": 2,
+      "id": "brick-019"
+    },
+    {
+      "x": 6,
+      "y": 3,
+      "z": 2,
+      "w": 2,
+      "d": 2,
+      "color": "main",
+      "h": 2,
+      "id": "brick-020"
+    },
+    {
+      "x": 8,
+      "y": 3,
+      "z": 2,
+      "w": 2,
+      "d": 2,
+      "color": "main",
+      "h": 2,
+      "id": "brick-021"
+    },
+    {
+      "x": 7,
+      "y": 5,
+      "z": 2,
+      "w": 2,
+      "d": 1,
+      "color": "accent",
+      "h": 2,
+      "id": "brick-022"
+    },
+    {
+      "x": 7,
+      "y": 0,
+      "z": 4,
+      "w": 2,
+      "d": 1,
+      "color": "accent",
+      "h": 2,
+      "id": "brick-023"
+    },
+    {
+      "x": 2,
+      "y": 1,
+      "z": 4,
+      "w": 2,
+      "d": 2,
+      "color": "main",
+      "id": "brick-024"
+    },
+    {
+      "x": 4,
+      "y": 1,
+      "z": 4,
+      "w": 2,
+      "d": 2,
+      "color": "main",
+      "id": "brick-025"
+    },
+    {
+      "x": 6,
+      "y": 1,
+      "z": 4,
+      "w": 2,
+      "d": 2,
+      "color": "main",
+      "id": "brick-026"
+    },
+    {
+      "x": 8,
+      "y": 1,
+      "z": 4,
+      "w": 2,
+      "d": 2,
+      "color": "main",
+      "id": "brick-027"
+    },
+    {
+      "x": 10,
+      "y": 2,
+      "z": 4,
+      "w": 1,
+      "d": 2,
+      "color": "main",
+      "id": "brick-028"
+    },
+    {
+      "x": 2,
+      "y": 3,
+      "z": 4,
+      "w": 2,
+      "d": 2,
+      "color": "main",
+      "id": "brick-029"
+    },
+    {
+      "x": 4,
+      "y": 3,
+      "z": 4,
+      "w": 2,
+      "d": 2,
+      "color": "main",
+      "id": "brick-030"
+    },
+    {
+      "x": 6,
+      "y": 3,
+      "z": 4,
+      "w": 2,
+      "d": 2,
+      "color": "main",
+      "id": "brick-031"
+    },
+    {
+      "x": 8,
+      "y": 3,
+      "z": 4,
+      "w": 2,
+      "d": 2,
+      "color": "main",
+      "id": "brick-032"
+    },
+    {
+      "x": 7,
+      "y": 5,
+      "z": 4,
+      "w": 2,
+      "d": 1,
+      "color": "accent",
+      "h": 2,
+      "id": "brick-033"
+    },
+    {
+      "x": 7,
+      "y": 1,
+      "z": 5,
+      "w": 1,
+      "d": 1,
+      "color": "light",
+      "id": "brick-034"
+    },
+    {
+      "x": 8,
+      "y": 1,
+      "z": 5,
+      "w": 1,
+      "d": 1,
+      "color": "dark",
+      "id": "brick-035"
+    },
+    {
+      "x": 9,
+      "y": 1,
+      "z": 5,
+      "w": 1,
+      "d": 2,
+      "color": "main",
+      "h": 2,
+      "id": "brick-036"
+    },
+    {
+      "x": 7,
+      "y": 2,
+      "z": 5,
+      "w": 2,
+      "d": 2,
+      "color": "main",
+      "id": "brick-037"
+    },
+    {
+      "x": 9,
+      "y": 3,
+      "z": 5,
+      "w": 1,
+      "d": 2,
+      "color": "main",
+      "h": 2,
+      "id": "brick-038"
+    },
+    {
+      "x": 7,
+      "y": 4,
+      "z": 5,
+      "w": 1,
+      "d": 1,
+      "color": "light",
+      "id": "brick-039"
+    },
+    {
+      "x": 8,
+      "y": 4,
+      "z": 5,
+      "w": 1,
+      "d": 1,
+      "color": "dark",
+      "id": "brick-040"
+    },
+    {
+      "x": 7,
+      "y": 1,
+      "z": 6,
+      "w": 2,
+      "d": 2,
+      "color": "main",
+      "id": "brick-041"
+    },
+    {
+      "x": 7,
+      "y": 3,
+      "z": 6,
+      "w": 2,
+      "d": 2,
+      "color": "main",
+      "id": "brick-042"
+    }
+  ]
+}

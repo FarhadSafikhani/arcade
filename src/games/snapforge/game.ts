@@ -1,5 +1,6 @@
 /// <reference types="vite/client" />
 import { GalleryMotion } from './gallery-motion';
+import { collectionLevels, collections, CollectionId, modelUnlocked } from './collections';
 import { buildOrder, SnapLevel, validPlacedIds, validateLevel } from './level';
 import { SnapScene3D } from './scene3d';
 import { createBreakupBuffer, createBrickRainBuffer, createClickBuffer, createConnectionBuffer } from './sound';
@@ -7,15 +8,14 @@ import { createBreakupBuffer, createBrickRainBuffer, createClickBuffer, createCo
 interface PartialBuild { version: number; placedIds: string[]; }
 interface Progress { completed: string[]; partials: Record<string, PartialBuild>; seenIntro: string[]; muted: boolean; }
 
-const STORAGE_KEY = 'snapforge-3d-progress-v1';
+const STORAGE_KEY = 'snapforge-3d-progress-v2';
 const levels = new Map<string, SnapLevel>();
 for (const input of Object.values(import.meta.glob('./levels/*.json', { eager: true, import: 'default' }))) {
     try { const level = validateLevel(input); levels.set(level.id, level); }
     catch (error) { console.error('Invalid Snapforge level', error); }
 }
-const catalog = [...levels.values()]
-    .map(level => ({ id: level.id, title: level.title, order: level.order, level }))
-    .sort((a, b) => a.order - b.order);
+const catalog = new Map(collections.map(collection => [collection.id,
+    collectionLevels(levels.values(), collection.id)]));
 
 function byId<T extends HTMLElement>(id: string): T {
     const result = document.getElementById(id);
@@ -38,6 +38,9 @@ function loadProgress(): Progress {
 class SnapforgeGame {
     private root = byId<HTMLElement>('snapforge');
     private gallery = byId<HTMLElement>('galleryScreen');
+    private collectionList = byId<HTMLElement>('collectionList');
+    private collectionPanel = byId<HTMLElement>('collectionPanel');
+    private collectionTitle = byId<HTMLElement>('collectionTitle');
     private galleryTrack = byId<HTMLElement>('galleryTrack');
     private play = byId<HTMLElement>('playScreen');
     private model = byId<HTMLElement>('modelViewport');
@@ -57,6 +60,8 @@ class SnapforgeGame {
     private current: SnapLevel | null = null;
     private placedIds: string[] = [];
     private selectedIndex = 0;
+    private activeCollection: CollectionId = 'starter';
+    private selectedByCollection = new Map<CollectionId, number>();
     private galleryMotion!: GalleryMotion;
     private audio: AudioContext | null = null;
     private clickBuffer: AudioBuffer | null = null;
@@ -68,6 +73,7 @@ class SnapforgeGame {
     private devFinish: HTMLButtonElement | null = null;
 
     constructor() {
+        this.renderCollections();
         this.renderGallery();
         this.updateSound();
         if (import.meta.env.DEV) {
@@ -134,7 +140,9 @@ class SnapforgeGame {
             this.showGallery();
         });
         this.galleryMotion = new GalleryMotion(this.galleryTrack, index => {
-            this.selectedIndex = index; this.updateGalleryControls();
+            this.selectedIndex = index;
+            this.selectedByCollection.set(this.activeCollection, index);
+            this.updateGalleryControls();
         });
         byId<HTMLButtonElement>('galleryPrevious').addEventListener('click', () => this.galleryMotion.step(-1));
         byId<HTMLButtonElement>('galleryNext').addEventListener('click', () => this.galleryMotion.step(1));
@@ -301,8 +309,44 @@ class SnapforgeGame {
         this.completionBurst.replaceChildren(pieces);
     }
 
+    private activeLevels(): SnapLevel[] {
+        return catalog.get(this.activeCollection) ?? [];
+    }
     private unlocked(index: number): boolean {
-        return index === 0 || this.progress.completed.includes(catalog[index - 1].id);
+        return modelUnlocked(this.activeLevels(), index, this.progress.completed);
+    }
+    private renderCollections(): void {
+        for (const collection of collections) {
+            const row = document.createElement('section');
+            row.className = 'collection-row';
+            row.dataset.collection = collection.id;
+            const heading = document.createElement('h2');
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'collection-name';
+            button.textContent = collection.name;
+            button.setAttribute('aria-expanded', String(collection.id === this.activeCollection));
+            button.setAttribute('aria-controls', 'collectionPanel');
+            button.addEventListener('click', () => this.selectCollection(collection.id));
+            heading.appendChild(button);
+            row.appendChild(heading);
+            this.collectionList.appendChild(row);
+        }
+        this.collectionList.firstElementChild?.appendChild(this.collectionPanel);
+        this.collectionPanel.hidden = false;
+    }
+    private selectCollection(id: CollectionId): void {
+        if (id === this.activeCollection) return;
+        this.galleryMotion.suspend();
+        this.activeCollection = id;
+        this.selectedIndex = this.selectedByCollection.get(id) ?? 0;
+        const row = this.collectionList.querySelector<HTMLElement>(`[data-collection="${id}"]`)!;
+        row.appendChild(this.collectionPanel);
+        for (const button of this.collectionList.querySelectorAll<HTMLButtonElement>('.collection-name'))
+            button.setAttribute('aria-expanded', String(button === row.querySelector('button')));
+        this.renderGallery();
+        this.scene?.setPreviews(this.galleryTrack, this.previewEntries());
+        this.galleryMotion.reset(this.selectedIndex);
     }
     private partial(level?: SnapLevel): PartialBuild | null {
         if (!level) return null;
@@ -311,14 +355,17 @@ class SnapforgeGame {
             partial.placedIds.length > 0 ? partial : null;
     }
     private previewEntries() {
-        return catalog.map(item => ({ id: item.id,
-            element: byId<HTMLElement>(`preview-${item.id}`), level: item.level,
-            completed: this.progress.completed.includes(item.id) }));
+        return this.activeLevels().map(level => ({ id: level.id,
+            element: byId<HTMLElement>(`preview-${level.id}`), level,
+            completed: this.progress.completed.includes(level.id) }));
     }
     private renderGallery(): void {
         this.galleryMotion?.suspend();
         this.galleryTrack.replaceChildren();
-        for (const [index, item] of catalog.entries()) {
+        const items = this.activeLevels();
+        this.collectionTitle.textContent = collections.find(item => item.id === this.activeCollection)!.name;
+        for (const [index, level] of items.entries()) {
+            const item = { id: level.id, title: level.title, order: level.order, level };
             const isUnlocked = this.unlocked(index);
             const isCompleted = this.progress.completed.includes(item.id);
             const isInProgress = Boolean(this.partial(item.level));
@@ -379,9 +426,9 @@ class SnapforgeGame {
         this.updateGalleryControls();
     }
     private updateGalleryControls(): void {
-        this.previewCount.textContent = `${String(this.selectedIndex + 1).padStart(2, '0')} / ${String(catalog.length).padStart(2, '0')}`;
+        this.previewCount.textContent = `${this.selectedIndex + 1} / ${this.activeLevels().length}`;
         byId<HTMLButtonElement>('galleryPrevious').disabled = this.selectedIndex === 0;
-        byId<HTMLButtonElement>('galleryNext').disabled = this.selectedIndex === catalog.length - 1;
+        byId<HTMLButtonElement>('galleryNext').disabled = this.selectedIndex === this.activeLevels().length - 1;
     }
     private closeShowcase(): void {
         this.completion.hidden = true;

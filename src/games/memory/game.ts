@@ -1,4 +1,4 @@
-import { Application, Container, Graphics, Text, TextStyle } from 'pixi.js';
+import { Application, Container, Graphics } from 'pixi.js';
 import { Card } from './card';
 
 // Game constants - fixed base dimensions
@@ -18,8 +18,7 @@ const calculateCardSize = () => {
     
     // Calculate card size based on width constraint
     const cardWidthFromWidth = (availableWidth - (GRID_COLS - 1) * CARD_SPACING) / GRID_COLS;
-    const cardHeightFromWidth = cardWidthFromWidth / CARD_ASPECT_RATIO;
-    
+
     // Calculate card size based on height constraint
     const cardHeightFromHeight = (availableHeight - (GRID_ROWS - 1) * CARD_SPACING) / GRID_ROWS;
     const cardWidthFromHeight = cardHeightFromHeight * CARD_ASPECT_RATIO;
@@ -95,7 +94,6 @@ export class MemoryGame {
     private gameTime: number = 0;
     private isGameOver: boolean = false;
     private isPaused: boolean = false;
-    private canFlip: boolean = true;
     private removeInputHandler?: () => void;
     private removeTopBarHandler?: () => void;
     private gameStarted: boolean = false;
@@ -179,7 +177,7 @@ export class MemoryGame {
     }
 
     private positionCards(): void {
-        const { gameWidth, gameHeight, scale } = getGameDimensions();
+        const { gameWidth, gameHeight } = getGameDimensions();
         const startX = (gameWidth - (GRID_COLS * (CARD_DIMENSIONS.cardWidth + CARD_DIMENSIONS.cardPadding) - CARD_DIMENSIONS.cardPadding)) / 2;
         const startY = (gameHeight - (GRID_ROWS * (CARD_DIMENSIONS.cardHeight + CARD_DIMENSIONS.cardPadding) - CARD_DIMENSIONS.cardPadding)) / 2;
         
@@ -214,7 +212,7 @@ export class MemoryGame {
         };
     }
 
-    update(delta: number): void {
+    update(_delta: number): void {
         if (this.isPaused) return;
         
         // Update game time only if game has started
@@ -247,7 +245,6 @@ export class MemoryGame {
             this.flippedCards[0].flip();
             this.flippedCards[1].flip();
             this.flippedCards = [];
-            this.canFlip = true;
             return;
         }
 
@@ -258,7 +255,6 @@ export class MemoryGame {
         // Check if we have two cards flipped
         if (this.flippedCards.length === 2) {
             this.moves++;
-            this.canFlip = false;
             
             // Check for match
             if (this.flippedCards[0].emoji === this.flippedCards[1].emoji) {
@@ -273,14 +269,12 @@ export class MemoryGame {
                 }
                 
                 this.flippedCards = [];
-                this.canFlip = true;
             } else {
                 // No match, flip back after delay
                 this.flipTimeout = setTimeout(() => {
                     this.flippedCards[0].flip();
                     this.flippedCards[1].flip();
                     this.flippedCards = [];
-                    this.canFlip = true;
                     this.flipTimeout = undefined;
                 }, 1000);
             }
@@ -352,7 +346,6 @@ export class MemoryGame {
         this.gameTime = 0;
         this.isGameOver = false;
         this.isPaused = false;
-        this.canFlip = true;
         this.gameStarted = false;
         this.flippedCards = [];
         

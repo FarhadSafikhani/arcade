@@ -476,7 +476,7 @@ export class StickersGame {
         };
     }
 
-    update(delta: number): void {
+    update(_delta: number): void {
         // Game update logic can be added here
     }
 
@@ -598,11 +598,6 @@ async function initGame() {
     window.togglePause = () => {
         game.togglePause();
     };
-}
-
-// Game loop
-function gameLoop(delta: number) {
-    // Main game loop logic
 }
 
 // Initialize when page loads

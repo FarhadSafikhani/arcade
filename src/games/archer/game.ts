@@ -885,7 +885,7 @@ export class ArcherGame {
         this.simpleArcher.updateArrowPosition(this.currentPower, MAX_POWER);
     }
 
-    private onPointerUp(event: FederatedPointerEvent): void {
+    private onPointerUp(_event: FederatedPointerEvent): void {
         if (this.isGameOver || this.isPaused || this.isWaitingToStart) return;
         
         if (this.isDragging && this.powerCharging) {

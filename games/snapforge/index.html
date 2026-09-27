@@ -21,15 +21,18 @@
         </header>
         <section id="galleryScreen" class="gallery-screen" aria-label="Model gallery">
             <h1 class="gallery-title"><span class="gallery-title-mark" aria-hidden="true">✳</span><span>SNAP<span class="gallery-title-accent">FORGE</span></span></h1>
-            <div class="gallery-toolbar">
-                <div><span class="eyebrow">CHOOSE A MODEL</span><strong id="galleryCount"></strong></div>
-                <div class="gallery-arrows">
-                    <button id="galleryPrevious" type="button" aria-label="Previous model">←</button>
-                    <button id="galleryNext" type="button" aria-label="Next model">→</button>
-                </div>
-            </div>
             <span id="loadingNote" role="status">Warming up the 3D studio…</span>
-            <div id="galleryTrack" class="gallery-track" tabindex="0" aria-label="Snapforge models"></div>
+            <div id="collectionList" class="collection-list"></div>
+            <div id="collectionPanel" class="collection-panel" hidden>
+                <div class="gallery-toolbar">
+                    <div><span id="collectionTitle" class="eyebrow"></span><strong id="galleryCount"></strong></div>
+                    <div class="gallery-arrows">
+                        <button id="galleryPrevious" type="button" aria-label="Previous model">←</button>
+                        <button id="galleryNext" type="button" aria-label="Next model">→</button>
+                    </div>
+                </div>
+                <div id="galleryTrack" class="gallery-track" tabindex="0" aria-label="Snapforge models"></div>
+            </div>
         </section>
         <section id="playScreen" class="play-screen" aria-label="Build model" hidden>
             <div class="play-header">

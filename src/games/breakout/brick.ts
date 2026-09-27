@@ -6,14 +6,12 @@ export class Brick {
     public y: number = 0;
     private width: number;
     private height: number;
-    private maxHealth: number;
     private health: number;
     private graphics!: Graphics;
 
     constructor(width: number, height: number, maxHealth: number) {
         this.width = width;
         this.height = height;
-        this.maxHealth = maxHealth;
         this.health = maxHealth;
         this.container = new Container();
         

@@ -214,7 +214,7 @@ export class StickerMaker {
         });
     }
 
-    private handleStartDrag(chunk: Chunk, event: FederatedPointerEvent): void {
+    private handleStartDrag(chunk: Chunk, _event: FederatedPointerEvent): void {
         if (this.activeChunk) return;
         this.activeChunk = chunk;
     }
@@ -303,18 +303,18 @@ export class StickerMaker {
                 
                 if (useSquare) {
                     // Try to create square - method will check visibility internally
-                    this.createDraggableSquareFromTexture(x1, y1, x2, y2, stickerTexture, data, canvas.width, canvas.height);
+                    this.createDraggableSquareFromTexture(x1, y1, x2, y2, stickerTexture, data, canvas.width);
                 } else {
                     // Try to create triangles - each method will check visibility internally
                     const diagonal = Math.random() > 0.5;
                     if (diagonal) {
                         // Diagonal from top-left to bottom-right
-                        this.createDraggableTriangleFromTexture(x1, y1, x2, y1, x1, y2, stickerTexture, data, canvas.width, canvas.height);
-                        this.createDraggableTriangleFromTexture(x2, y1, x2, y2, x1, y2, stickerTexture, data, canvas.width, canvas.height);
+                        this.createDraggableTriangleFromTexture(x1, y1, x2, y1, x1, y2, stickerTexture, data, canvas.width);
+                        this.createDraggableTriangleFromTexture(x2, y1, x2, y2, x1, y2, stickerTexture, data, canvas.width);
                     } else {
                         // Diagonal from top-right to bottom-left
-                        this.createDraggableTriangleFromTexture(x1, y1, x2, y1, x2, y2, stickerTexture, data, canvas.width, canvas.height);
-                        this.createDraggableTriangleFromTexture(x1, y1, x2, y2, x1, y2, stickerTexture, data, canvas.width, canvas.height);
+                        this.createDraggableTriangleFromTexture(x1, y1, x2, y1, x2, y2, stickerTexture, data, canvas.width);
+                        this.createDraggableTriangleFromTexture(x1, y1, x2, y2, x1, y2, stickerTexture, data, canvas.width);
                     }
                 }
             }
@@ -336,7 +336,7 @@ export class StickerMaker {
         return !(hasNeg && hasPos);
     }
 
-    private createDraggableSquareFromTexture(x1: number, y1: number, x2: number, y2: number, texture: Texture, data: Uint8ClampedArray, canvasWidth: number, canvasHeight: number): void {
+    private createDraggableSquareFromTexture(x1: number, y1: number, x2: number, y2: number, texture: Texture, data: Uint8ClampedArray, canvasWidth: number): void {
 
         if (!this.currentStickerSprite) {
             throw new Error('Sticker sprite not found');
@@ -391,7 +391,7 @@ export class StickerMaker {
         this.paintHoleFromSprite(chunk, x2 - x1, y2 - y1);
     }
 
-    private createDraggableTriangleFromTexture(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, texture: Texture, data: Uint8ClampedArray, canvasWidth: number, canvasHeight: number): void {
+    private createDraggableTriangleFromTexture(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, texture: Texture, data: Uint8ClampedArray, canvasWidth: number): void {
 
         if (!this.currentStickerSprite) {
             throw new Error('Sticker sprite not found.');

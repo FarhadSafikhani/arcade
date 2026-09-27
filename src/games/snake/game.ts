@@ -295,7 +295,7 @@ export class SnakeGame {
         startScreen.addEventListener('touchstart', startGame, { passive: true });
     }
 
-    update(delta: number): void {
+    update(_delta: number): void {
         if (this.isGameOver || this.isPaused || this.isWaitingToStart) return;
 
         const currentTime = Date.now();
