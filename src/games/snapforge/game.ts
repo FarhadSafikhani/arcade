@@ -48,8 +48,9 @@ class SnapforgeGame {
     private message = byId<HTMLElement>('buildMessage');
     private counter = byId<HTMLElement>('stepCounter');
     private previewCount = byId<HTMLElement>('galleryCount');
-    private skip = byId<HTMLButtonElement>('skipIntroButton');
+    private introPlaying = false;
     private hint = byId<HTMLButtonElement>('hintButton');
+    private consecutiveWrongAttempts = 0;
     private completion = byId<HTMLElement>('completion');
     private completionBurst = byId<HTMLElement>('completionBurst');
     private back = byId<HTMLAnchorElement>('backButton');
@@ -162,9 +163,9 @@ class SnapforgeGame {
             this.galleryMotion.suspend();
             if (!event.persisted) { this.galleryMotion.destroy(); this.scene?.destroy(); }
         });
-        this.skip.addEventListener('click', () => this.scene?.skipIntro());
         this.hint.addEventListener('click', () => {
             if (this.scene?.hint()) {
+                this.resetHintPrompt();
                 this.message.textContent = 'Look for the glowing ring in the pile';
                 window.setTimeout(() => this.updateStep(), 2300);
             }
@@ -469,11 +470,12 @@ class SnapforgeGame {
     private closeShowcase(): void {
         this.completion.hidden = true;
         this.play.classList.remove('is-complete');
-        this.play.querySelector('.model-panel')!.insertBefore(this.model, this.play.querySelector('.build-status'));
+        this.play.querySelector('.model-panel')!.appendChild(this.model);
         this.model.removeAttribute('tabindex');
         this.model.setAttribute('aria-label', 'Drag to turn the model');
     }
     private showGallery(): void {
+        this.resetHintPrompt();
         this.stopIntroEffects();
         this.closeShowcase();
         this.scene?.leaveLevel();
@@ -492,6 +494,7 @@ class SnapforgeGame {
     }
     private startLevel(level: SnapLevel, resume: boolean): void {
         if (!this.scene) return;
+        this.resetHintPrompt();
         this.stopIntroEffects();
         this.galleryMotion.suspend();
         this.closeShowcase();
@@ -506,15 +509,14 @@ class SnapforgeGame {
         this.back.setAttribute('aria-label', 'Back to model gallery');
         this.completion.hidden = true;
         byId<HTMLElement>('playTitle').textContent = level.title;
-        this.skip.hidden = resume;
+        this.introPlaying = !resume;
         this.hint.disabled = !resume;
         if (this.devSnap) this.devSnap.disabled = !resume;
         if (this.devFinish) this.devFinish.disabled = false;
         this.message.textContent = resume ? '' : 'Watch the model come apart…';
-        byId<HTMLElement>('colorCue').style.backgroundColor = 'transparent';
         this.updateStep();
         this.scene.startLevel(level, this.placedIds, !resume, () => {
-            this.skip.hidden = true;
+            this.introPlaying = false;
             this.hint.disabled = false;
             if (this.devSnap) this.devSnap.disabled = false;
             if (!this.progress.seenIntro.includes(level.id)) this.progress.seenIntro.push(level.id);
@@ -528,14 +530,14 @@ class SnapforgeGame {
         const step = this.placedIds.length;
         this.counter.textContent = `${step} / ${order.length}`;
         const target = order[step];
-        if (target && !this.skip.hidden) return;
+        if (target && this.introPlaying) return;
         this.message.textContent = target ?
             `Find ${/^[aeiou]/i.test(target.color) ? 'an' : 'a'} ${target.color} ${target.kind === 'wheel' ? 'wheel' : 'brick'} that matches the shimmering one` :
             'You built it!';
-        byId<HTMLElement>('colorCue').style.backgroundColor = target ? this.current.palette[target.color] : 'transparent';
     }
     private placed(id: string): void {
         if (!this.current) return;
+        this.resetHintPrompt();
         this.placedIds.push(id);
         this.progress.partials[this.current.id] = { version: this.current.version, placedIds: [...this.placedIds] };
         this.save();
@@ -543,7 +545,13 @@ class SnapforgeGame {
         if (this.placedIds.length >= this.current.bricks.length) this.finish();
         else this.updateStep();
     }
+    private resetHintPrompt(): void {
+        this.consecutiveWrongAttempts = 0;
+        this.hint.classList.remove('is-pulsing');
+    }
     private wrong(): void {
+        this.consecutiveWrongAttempts++;
+        this.hint.classList.toggle('is-pulsing', this.consecutiveWrongAttempts >= 3);
         this.tone(310, 0.11, 260);
         this.message.textContent = 'Not this one—try another shape!';
         window.setTimeout(() => this.updateStep(), 1000);

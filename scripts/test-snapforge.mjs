@@ -514,3 +514,78 @@ test('reduced-motion intro skips both cues', () => {
         assert.equal(scene.interactive, true);
     } finally { reducedMotion.matches = false; }
 });
+
+
+const { trayLayout, trayPoint } = await import(sceneModule('tray-layout'));
+
+test('adaptive trays fit the camera and expand across wide views without shrinking bricks', () => {
+    const narrow = trayLayout(600, 600), wide = trayLayout(1200, 600);
+    assert.ok(wide.width > narrow.width);
+    assert.equal(trayLayout(1200, 600).distance, trayLayout(1600, 600).distance);
+    for (const [width, height] of [[364, 472], [742, 585], [1037, 637], [1414, 503], [403, 322]]) {
+        const layout = trayLayout(width, height);
+        const camera = new THREE.PerspectiveCamera(42, width / height, .1, 200);
+        camera.position.set(0, layout.distance * .85, layout.distance * .72);
+        camera.lookAt(0, 0, 0); camera.updateMatrixWorld();
+        for (const x of [-1, 1]) for (const z of [-1, 1]) {
+            const corner = new THREE.Vector3(x * (layout.width + 1) / 2, 0, z * (layout.depth + 1) / 2).project(camera);
+            assert.ok(Math.abs(corner.x) < 1 && Math.abs(corner.y) < 1, `surface clipped at ${width}×${height}`);
+        }
+        const point = trayPoint(layout, { w: 8, d: 2 }, 100, -100);
+        const radius = Math.hypot(8, 2) / 2;
+        assert.ok(point.x + radius < layout.width / 2);
+        assert.ok(-point.z + radius < layout.depth / 2);
+    }
+});
+
+test('shrinking trays preserves inventory, clamps loose bricks and flight landings, and defers during drag', async () => {
+    const { default: RAPIER } = await import('@dimforge/rapier3d-compat');
+    await RAPIER.init();
+    const world = new RAPIER.World({ x: 0, y: -19, z: 0 });
+    const scene = Object.create(SnapScene3D.prototype);
+    const brick = { ...unit, w: 4, d: 2 };
+    const landing = new THREE.Vector3(70, 5, 70);
+    Object.assign(scene, { world, tray: { width: 160, depth: 160, distance: 29 },
+        table: null, tableColliders: [], pileScene: new THREE.Scene(),
+        pileElement: { clientWidth: 364, clientHeight: 472 },
+        level: heightLevel([brick]), order: [brick], loose: new Map(),
+        flights: [{ brick, landingPosition: landing }], reserve: ['reserved'], placedIds: ['placed'], drag: null });
+    try {
+        scene.makeTable();
+        scene.spawnLoose(brick, false, new THREE.Vector3(70, 2, 70));
+        const body = scene.loose.get(brick.id).body;
+        scene.drag = {};
+        scene.resizeTray();
+        assert.equal(scene.tray.width, 160);
+        scene.drag = null;
+        scene.resizeTray();
+        assert.equal(scene.loose.size, 1);
+        assert.equal(scene.loose.get(brick.id).body, body);
+        assert.deepEqual(scene.reserve, ['reserved']);
+        assert.deepEqual(scene.placedIds, ['placed']);
+        const bounded = trayPoint(scene.tray, brick, 70, 70);
+        assert.ok(Math.abs(body.translation().x - bounded.x) < 1e-5);
+        assert.ok(Math.abs(body.translation().z - bounded.z) < 1e-5);
+        assert.equal(landing.x, bounded.x);
+        assert.equal(landing.z, bounded.z);
+        assert.equal(landing.y, 5);
+        assert.equal(scene.tableColliders.length, 5);
+        assert.equal(world.colliders.len(), 6);
+        for (let i = 0; i < 120; i++) world.step();
+        assert.ok(body.translation().y > 0);
+    } finally {
+        scene.table?.geometry.dispose(); scene.table?.material.dispose(); world.free();
+    }
+});
+
+
+test('long custom parts fit the adaptive surface even in short landscape views', () => {
+    const brick = { w: 6, d: 14 };
+    const minimum = Math.hypot(brick.w, brick.d) + 1;
+    const layout = trayLayout(403, 322, minimum);
+    assert.ok(layout.width >= minimum && layout.depth >= minimum);
+    const point = trayPoint(layout, brick, 100, 100);
+    const radius = Math.hypot(brick.w, brick.d) / 2;
+    assert.ok(point.x + radius < layout.width / 2);
+    assert.ok(point.z + radius < layout.depth / 2);
+});

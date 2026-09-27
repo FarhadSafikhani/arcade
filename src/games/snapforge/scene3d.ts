@@ -1,3 +1,4 @@
+import { trayLayout, trayPoint, TrayLayout } from './tray-layout';
 import { PreviewGallery } from './preview-gallery';
 import * as THREE from 'three';
 import RAPIER from '@dimforge/rapier3d-compat';
@@ -15,8 +16,6 @@ interface Drag { loose: LooseBrick; overlay: THREE.Group; lastX: number; lastY: 
     lastTime: number; velocityX: number; velocityY: number;
     rotationStart: number; fromRotation: THREE.Quaternion; }
 
-const TABLE_WIDTH = 18;
-const TABLE_DEPTH = 13;
 const REDUCED_MOTION = matchMedia('(prefers-reduced-motion: reduce)');
 const HELD_ROTATION_DURATION = 850;
 const SHIMMER_SWEEP_DURATION = 500;
@@ -57,6 +56,9 @@ export class SnapScene3D {
     private modelGroup = new THREE.Group();
     private previewGallery: PreviewGallery | null = null;
     private world: RAPIER.World;
+    private tray: TrayLayout = { width: 18, depth: 13, distance: 29 };
+    private table: THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial> | null = null;
+    private tableColliders: RAPIER.Collider[] = [];
     private level: SnapLevel | null = null;
     private order: SnapBrick[] = [];
     private placedIds: string[] = [];
@@ -157,23 +159,65 @@ export class SnapScene3D {
     }
 
     private makeTable(): void {
-        const table = new THREE.Mesh(new THREE.BoxGeometry(TABLE_WIDTH + 1, 0.45, TABLE_DEPTH + 1),
+        if (this.table) {
+            this.table.removeFromParent();
+            this.table.geometry.dispose();
+            this.table.material.dispose();
+        }
+        for (const collider of this.tableColliders) this.world.removeCollider(collider, true);
+        this.tableColliders = [];
+        const table = new THREE.Mesh(new THREE.BoxGeometry(this.tray.width + 1, 0.45, this.tray.depth + 1),
             new THREE.MeshStandardMaterial({ color: '#eacfa4', roughness: 0.9 }));
+        this.table = table;
         table.position.y = -0.29;
         table.receiveShadow = true;
         this.pileScene.add(table);
-        const floor = RAPIER.ColliderDesc.cuboid((TABLE_WIDTH + 1) / 2, 0.2, (TABLE_DEPTH + 1) / 2)
+        const floor = RAPIER.ColliderDesc.cuboid((this.tray.width + 1) / 2, 0.2, (this.tray.depth + 1) / 2)
             .setTranslation(0, -0.2, 0).setFriction(0.8);
-        this.world.createCollider(floor);
+        this.tableColliders.push(this.world.createCollider(floor));
         const walls: [number, number, number, number, number, number][] = [
-            [TABLE_WIDTH / 2 + 0.25, 3, 0, 0.25, 3, TABLE_DEPTH / 2 + 1],
-            [-TABLE_WIDTH / 2 - 0.25, 3, 0, 0.25, 3, TABLE_DEPTH / 2 + 1],
-            [0, 3, TABLE_DEPTH / 2 + 0.25, TABLE_WIDTH / 2 + 1, 3, 0.25],
-            [0, 3, -TABLE_DEPTH / 2 - 0.25, TABLE_WIDTH / 2 + 1, 3, 0.25]
+            [this.tray.width / 2 + 0.25, 3, 0, 0.25, 3, this.tray.depth / 2 + 1],
+            [-this.tray.width / 2 - 0.25, 3, 0, 0.25, 3, this.tray.depth / 2 + 1],
+            [0, 3, this.tray.depth / 2 + 0.25, this.tray.width / 2 + 1, 3, 0.25],
+            [0, 3, -this.tray.depth / 2 - 0.25, this.tray.width / 2 + 1, 3, 0.25]
         ];
         for (const [x, y, z, hx, hy, hz] of walls) {
-            this.world.createCollider(RAPIER.ColliderDesc.cuboid(hx, hy, hz).setTranslation(x, y, z));
+            this.tableColliders.push(this.world.createCollider(RAPIER.ColliderDesc.cuboid(hx, hy, hz).setTranslation(x, y, z)));
         }
+    }
+
+    private resizeTray(): void {
+        if (this.drag || this.pileElement.clientWidth < 1 || this.pileElement.clientHeight < 1) return;
+        const minimumSpan = Math.max(8, ...this.order.map(brick => Math.hypot(brick.w, brick.d) + 1));
+        const next = trayLayout(this.pileElement.clientWidth, this.pileElement.clientHeight, minimumSpan);
+        if (Math.abs(next.width - this.tray.width) < .01 && Math.abs(next.depth - this.tray.depth) < .01) return;
+        this.tray = next;
+        this.makeTable();
+        for (const item of this.loose.values()) {
+            const old = item.body.translation();
+            const point = trayPoint(next, item.brick, old.x, old.z);
+            if (point.x !== old.x || point.z !== old.z) {
+                item.body.setTranslation({ ...point, y: Math.max(old.y, 1) }, true);
+                item.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
+                item.mesh.position.copy(item.body.translation());
+            }
+        }
+        for (const flight of this.flights) {
+            if (flight.landingPosition) {
+                const point = trayPoint(next, flight.brick, flight.landingPosition.x, flight.landingPosition.z);
+                flight.landingPosition.x = point.x;
+                flight.landingPosition.z = point.z;
+            }
+        }
+    }
+
+    private landingPoint(brick: SnapBrick, y: number): THREE.Vector3 {
+        const tray = this.tray ?? { width: 18, depth: 13 };
+        const margin = Math.hypot(brick.w, brick.d) / 2 + .25;
+        const point = trayPoint(tray, brick,
+            (Math.random() - .5) * Math.max(0, tray.width - margin * 2),
+            (Math.random() - .5) * Math.max(0, tray.depth - margin * 2));
+        return new THREE.Vector3(point.x, y, point.z);
     }
 
     setCallbacks(onPlaced: (id: string) => void, onWrong: () => void, onAction: () => void): void {
@@ -333,9 +377,11 @@ export class SnapScene3D {
     private spawnLoose(brick: SnapBrick, intro = false, landingPosition?: THREE.Vector3): void {
         if (!this.level || this.loose.has(brick.id)) return;
         const index = this.order.findIndex(item => item.id === brick.id);
-        const x = landingPosition?.x ?? ((index * 7) % 13 - 6) * 0.9 + (Math.random() - 0.5) * 0.4;
-        const z = landingPosition?.z ?? ((index * 11) % 9 - 4) * 0.9 + (Math.random() - 0.5) * 0.4;
-        const y = landingPosition?.y ?? (intro ? 4.5 + (index % 4) * 0.4 : 1.2 + Math.floor(index / 9) * 0.9);
+        const position = landingPosition ?? this.landingPoint(brick,
+            intro ? 4.5 + (index % 4) * .4 : 1.2 + Math.floor(index / 9) * .9);
+        const bounded = trayPoint(this.tray ?? { width: 18, depth: 13 }, brick, position.x, position.z);
+        const { x, z } = bounded;
+        const y = position.y;
         const body = this.world.createRigidBody(RAPIER.RigidBodyDesc.dynamic()
             .setTranslation(x, y, z).setRotation({ x: 0, y: Math.sin(index * 0.47), z: 0,
                 w: Math.cos(index * 0.47) })
@@ -544,8 +590,9 @@ export class SnapScene3D {
         ray.setFromCamera(new THREE.Vector2(x, y), this.pileCamera);
         const point = new THREE.Vector3();
         ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -1.7), point);
-        point.x = THREE.MathUtils.clamp(point.x, -TABLE_WIDTH / 2 + 2, TABLE_WIDTH / 2 - 2);
-        point.z = THREE.MathUtils.clamp(point.z, -TABLE_DEPTH / 2 + 2, TABLE_DEPTH / 2 - 2);
+        const bounded = trayPoint(this.tray, this.drag?.loose.brick ?? { w: 3, d: 3 }, point.x, point.z);
+        point.x = bounded.x;
+        point.z = bounded.z;
         return point;
     }
 
@@ -624,11 +671,13 @@ export class SnapScene3D {
             disposeBrick(drag.overlay);
             drag.loose.mesh.visible = true;
             const point = this.pilePoint(event.clientX, event.clientY);
+            Object.assign(point, trayPoint(this.tray, drag.loose.brick, point.x, point.z));
             drag.loose.body.setTranslation(point, true);
             drag.loose.body.setBodyType(RAPIER.RigidBodyType.Dynamic, true);
             drag.loose.body.setLinvel({ x: drag.velocityX * 4, y: 1.4,
                 z: drag.velocityY * 3 }, true);
         }
+        this.resizeTray();
     };
 
     private screenPoint(element: HTMLElement, camera: THREE.Camera, worldPoint: THREE.Vector3): THREE.Vector2 {
@@ -651,7 +700,7 @@ export class SnapScene3D {
     private resize(): void {
         if (!this.playing) return;
         const width = Math.max(1, this.root.clientWidth);
-        const height = Math.max(1, this.root.scrollHeight);
+        const height = Math.max(1, this.root.clientHeight);
         this.renderer.setSize(width, height, false);
         this.canvas.style.width = `${width}px`;
         this.canvas.style.height = `${height}px`;
@@ -665,6 +714,7 @@ export class SnapScene3D {
         this.modelCamera.updateProjectionMatrix();
         this.pileCamera.aspect = Math.max(0.1, this.pileElement.clientWidth / Math.max(1, this.pileElement.clientHeight));
         this.pileCamera.updateProjectionMatrix();
+        this.resizeTray();
     }
 
     private renderRegion(element: HTMLElement, scene: THREE.Scene, camera: THREE.PerspectiveCamera): void {
@@ -702,8 +752,8 @@ export class SnapScene3D {
                 const position = item.body.translation(), rotation = item.body.rotation();
                 item.mesh.position.set(position.x, position.y, position.z);
                 item.mesh.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w);
-                if (position.y < -3 || Math.abs(position.x) > TABLE_WIDTH / 2 + 2 ||
-                    Math.abs(position.z) > TABLE_DEPTH / 2 + 2) {
+                if (position.y < -3 || Math.abs(position.x) > this.tray.width / 2 + 2 ||
+                    Math.abs(position.z) > this.tray.depth / 2 + 2) {
                     item.body.setTranslation({ x: 0, y: 4, z: 0 }, true);
                     item.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
                 }
@@ -752,10 +802,10 @@ export class SnapScene3D {
                 this.drag.overlay.quaternion.copy(this.drag.fromRotation).slerp(
                     this.targetOverlayRotation(this.drag.loose.brick), easedTurn);
             }
-            const pileAspect = Math.max(0.35, this.pileCamera.aspect);
-            const pileDistance = Math.max(22, 29 / pileAspect);
+            const pileDistance = this.tray.distance;
             this.pileCamera.position.set(0, pileDistance * 0.85, pileDistance * 0.72);
             this.pileCamera.lookAt(0, 0, 0);
+            this.pileCamera.updateMatrixWorld();
             if (this.targetShimmer) {
                 const shimmerElapsed = (now - this.ghostPulseStart) %
                     (SHIMMER_SWEEP_DURATION + SHIMMER_PAUSE_DURATION);
@@ -802,8 +852,7 @@ export class SnapScene3D {
         if (!brick) return;
         this.reserve.splice(this.reserve.indexOf(brick), 1);
         const height = Math.max(6, ...[...this.loose.values()].map(item => item.body.translation().y + 2));
-        this.spawnLoose(brick, true, new THREE.Vector3(
-            (Math.random() - 0.5) * 2, height, (Math.random() - 0.5) * 2));
+        this.spawnLoose(brick, true, this.landingPoint(brick, height));
         this.nextRefill = now + 220;
     }
 
@@ -821,8 +870,7 @@ export class SnapScene3D {
             const from = this.screenPoint(this.modelElement, this.modelCamera, modelMesh.position);
             disposeBrick(modelMesh);
             this.staticMeshes.delete(brick.id);
-            const landingPosition = new THREE.Vector3((Math.random() - 0.5) * 10,
-                3.5 + Math.random() * 2, (Math.random() - 0.5) * 6);
+            const landingPosition = this.landingPoint(brick, 3.5 + Math.random() * 2);
             const to = this.screenPoint(this.pileElement, this.pileCamera, landingPosition);
             const mesh = brickMesh(brick, this.level.palette[brick.color]);
             mesh.quaternion.copy(overlayRotation(this.modelCamera, modelMesh.quaternion));
@@ -849,6 +897,12 @@ export class SnapScene3D {
         }
         for (let index = this.flights.length - 1; index >= 0; index--) {
             const flight = this.flights[index];
+            if (flight.landingPosition) {
+                flight.to.copy(this.screenPoint(this.pileElement, this.pileCamera, flight.landingPosition));
+            } else if (this.level && this.order[this.placedIds.length]) {
+                flight.to.copy(this.screenPoint(this.modelElement, this.modelCamera,
+                    brickPosition(this.order[this.placedIds.length], this.level)));
+            }
             const t = Math.min(1, (now - flight.start) / flight.duration);
             const eased = flight.kind === 'intro' ? 1 - Math.pow(1 - t, 2) : flight.kind === 'return' ? t * t * t * (t * (t * 6 - 15) + 10) :
                 t * t * (3 - 2 * t);
@@ -870,8 +924,7 @@ export class SnapScene3D {
             }
             if (t < 1) continue;
             if (flight.kind === 'rejection') {
-                const landingPosition = new THREE.Vector3((Math.random() - 0.5) * 6, 3.6,
-                    (Math.random() - 0.5) * 4);
+                const landingPosition = this.landingPoint(flight.brick, 3.6);
                 flight.kind = 'return';
                 flight.from.copy(flight.to);
                 flight.to.copy(this.screenPoint(this.pileElement, this.pileCamera, landingPosition));
@@ -921,6 +974,8 @@ export class SnapScene3D {
         this.pileElement.removeEventListener('pointercancel', this.pileUp);
         this.clearLevel();
         this.previewGallery?.destroy();
+        this.table?.geometry.dispose();
+        this.table?.material.dispose();
         this.world.free();
         this.renderer.dispose();
         this.canvas.remove();
