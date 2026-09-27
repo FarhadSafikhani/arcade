@@ -3,7 +3,7 @@
   "title": "Little Duck",
   "description": "A bright little pond friend.",
   "collection": "starter",
-  "order": 1,
+  "order": 2,
   "version": 6,
   "palette": {
     "yellow": "#FFD233",
@@ -278,5 +278,7 @@
       "d": 2,
       "color": "yellow"
     }
-  ]
+  ],
+  "targetParts": 29,
+  "vetted": 0
 }

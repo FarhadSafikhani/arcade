@@ -80,10 +80,21 @@ class Model:
         return bricks
 
     def save(self):
+        path = OUT / f'{self.id}.json'
+        # A migrated model belongs to the recipe compiler, never this legacy generator.
+        if (OUT.parent / 'recipes' / f'{self.id}.json').exists():
+            print(f'Skipping recipe-owned model: {self.id}')
+            return
+        previous = json.loads(path.read_text(encoding='utf-8')) if path.exists() else {}
+        bricks = self.bricks()
         data = dict(id=self.id, title=self.title, description=self.description,
-                    collection=self.collection, order=self.order, version=1,
-                    palette=self.palette, bricks=self.bricks())
-        (OUT / f'{self.id}.json').write_text(json.dumps(data, indent=2) + '\n', encoding='utf-8')
+                    collection=self.collection, order=self.order, version=previous.get('version', 1),
+                    palette=self.palette, bricks=bricks,
+                    targetParts=previous.get('targetParts', len(bricks)), vetted=0)
+        if previous and (previous.get('bricks') != bricks or previous.get('palette') != self.palette):
+            raise ValueError(f'{self.id}: legacy geometry changed; migrate to a recipe and increment version')
+        data['vetted'] = previous.get('vetted', 0)
+        path.write_text(json.dumps(data, indent=2) + '\n', encoding='utf-8')
         print(f'{self.collection:12} {self.title:16} {len(data["bricks"]):3} bricks')
 
 def animal(id, title, order, main, accent, feature):

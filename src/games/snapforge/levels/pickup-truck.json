@@ -856,5 +856,7 @@
       "color": "roof",
       "id": "brick-090"
     }
-  ]
+  ],
+  "targetParts": 90,
+  "vetted": 0
 }

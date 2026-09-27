@@ -3,7 +3,7 @@
   "title": "Apple",
   "description": "A bright red apple with a little stem and leaf.",
   "collection": "starter",
-  "order": 2,
+  "order": 3,
   "version": 2,
   "palette": {
     "red": "#e34239",
@@ -324,5 +324,7 @@
       "d": 1,
       "color": "green"
     }
-  ]
+  ],
+  "targetParts": 34,
+  "vetted": 0
 }

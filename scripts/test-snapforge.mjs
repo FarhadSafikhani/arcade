@@ -31,7 +31,7 @@ test('merged models preserve the original occupied cells and colors', () => {
         'sports-car': '2e6374299b3b3e21e4cb1c0acedcc2ec8e52940a39c20d3a0a929d1edd5c4cc9',
         castle: 'e4adc50d66a66ba964bea8483b6b22b96130c0483dfe12ac414f38d0a825b62b'
     };
-    for (const level of catalog.filter(level => level.collection === 'starter')) {
+    for (const level of catalog.filter(level => Object.hasOwn(original, level.id))) {
         const cells = [];
         for (const b of level.bricks)
             for (let x = b.x; x < b.x + b.w; x++)
@@ -49,7 +49,7 @@ test('merged models preserve the original occupied cells and colors', () => {
 
 const unit = { id: 'base', x: 0, y: 0, z: 0, w: 2, d: 1, color: 'yellow' };
 const heightLevel = bricks => ({ id: 'height-test', title: 'Height test', description: '',
-    collection: 'starter', order: 1, version: 1, palette: { yellow: '#FFD233' }, bricks });
+    collection: 'starter', order: 1, version: 1, targetParts: bricks.length, vetted: 0, palette: { yellow: '#FFD233' }, bricks });
 
 test('height defaults to one and accepts only explicit one or two', () => {
     for (const b of [unit, { ...unit, h: 1 }, { ...unit, h: 2 }]) {
@@ -86,7 +86,7 @@ test('height participates in rotated matching, resume validation, and pile group
 
 test('seven collections have ordered models and independent unlock paths', () => {
     const expected = new Map([
-        ['starter', ['duck', 'apple', 'pineapple', 'sports-car', 'castle']],
+        ['starter', ['turtle', 'duck', 'apple', 'pineapple', 'sports-car', 'castle']],
         ['land-animal', ['rabbit', 'fox', 'elephant']],
         ['fruit', ['cherry', 'watermelon', 'pear']],
         ['bird', ['chick', 'owl', 'parrot']],
@@ -94,7 +94,7 @@ test('seven collections have ordered models and independent unlock paths', () =>
         ['ocean', ['fish', 'sea-turtle', 'shark']],
         ['dinosaur', ['stegosaurus', 'triceratops', 't-rex']]
     ]);
-    assert.equal(catalog.length, 23);
+    assert.equal(catalog.length, 24);
     for (const [collection, ids] of expected) {
         const group = catalog.filter(level => level.collection === collection).sort((a, b) => a.order - b.order);
         assert.deepEqual(group.map(level => level.id), ids);
@@ -115,7 +115,7 @@ test('seven collections have ordered models and independent unlock paths', () =>
         assert.equal(modelUnlocked(group, 1, [other.id]), false);
     }
     const starter = catalog.filter(level => level.collection === 'starter').sort((a, b) => a.order - b.order);
-    assert.deepEqual(starter.map(level => level.version), [6, 2, 2, 1, 2]);
+    assert.deepEqual(starter.map(level => level.version), [1, 6, 2, 2, 1, 2]);
 });
 
 test('every catalog model can be built from its replenishing pile and resumed at every step', () => {

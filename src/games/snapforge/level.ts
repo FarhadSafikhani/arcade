@@ -16,6 +16,9 @@ export interface SnapLevel {
     collection: string;
     order: number;
     version: number;
+    targetParts: number;
+    vetted: 0 | 1;
+    buildSequence?: string[];
     palette: Record<string, string>;
     bricks: SnapBrick[];
 }
@@ -37,6 +40,8 @@ export function validateLevel(input: unknown): SnapLevel {
     if (typeof collection !== 'string' || !['starter', 'land-animal', 'fruit', 'bird', 'car', 'ocean', 'dinosaur'].includes(collection))
         throw new Error(`${id}: collection must name a known collection`);
     if (!isNatural(order) || !isNatural(version) || version < 1) throw new Error(`${id}: order and version must be non-negative integers (version ≥ 1)`);
+    if (!isNatural(input.targetParts) || input.targetParts < 1) throw new Error(`${id}: targetParts must be a positive integer`);
+    if (input.vetted !== 0 && input.vetted !== 1) throw new Error(`${id}: vetted must be 0 or 1`);
     if (!isRecord(palette) || Object.keys(palette).length === 0) throw new Error(`${id}: palette is required`);
     for (const [name, color] of Object.entries(palette)) {
         if (!/^[a-z][a-z0-9-]*$/.test(name) || typeof color !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(color)) {
@@ -103,10 +108,33 @@ export function validateLevel(input: unknown): SnapLevel {
         }
     }
     if (visited.size !== occupied.size) throw new Error(`${id}: model has disconnected pieces`);
+    if (input.buildSequence !== undefined) {
+        const sequence = input.buildSequence;
+        if (!Array.isArray(sequence) || sequence.length !== bricks.length || new Set(sequence).size !== bricks.length ||
+            !sequence.every(item => typeof item === 'string' && ids.has(item)))
+            throw new Error(`${id}: buildSequence must contain every brick ID exactly once`);
+        const placed = new Set<string>();
+        const byId = new Map((bricks as SnapBrick[]).map(brick => [brick.id, brick]));
+        for (const brickId of sequence) {
+            const brick = byId.get(brickId)!;
+            let supported = brick.z === 0;
+            for (let x = brick.x; x < brick.x + brick.w; x++)
+                for (let y = brick.y; y < brick.y + brick.d; y++) {
+                    const below = occupied.get(cellKey(x, y, brick.z - 1));
+                    if (below && placed.has(below)) supported = true;
+                }
+            if (!supported) throw new Error(`${id}/${brickId}: buildSequence places brick before its support`);
+            placed.add(brickId);
+        }
+    }
     return input as unknown as SnapLevel;
 }
 
 export function buildOrder(level: SnapLevel): SnapBrick[] {
+    if (level.buildSequence) {
+        const byId = new Map(level.bricks.map(brick => [brick.id, brick]));
+        return level.buildSequence.map(id => byId.get(id)!);
+    }
     return [...level.bricks].sort((a, b) =>
         a.z - b.z || (a.x + a.y) - (b.x + b.y) || a.y - b.y || a.id.localeCompare(b.id));
 }

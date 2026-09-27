@@ -1,0 +1,228 @@
+{
+  "id": "turtle",
+  "title": "Little Turtle",
+  "description": "A little garden friend with a domed shell and four sturdy feet.",
+  "collection": "starter",
+  "order": 1,
+  "version": 1,
+  "targetParts": 20,
+  "vetted": 0,
+  "palette": {
+    "shell": "#A66A36",
+    "skin": "#7DB94D",
+    "eye": "#24283B"
+  },
+  "bricks": [
+    {
+      "id": "brick-001",
+      "x": 3,
+      "y": 1,
+      "z": 0,
+      "w": 2,
+      "d": 3,
+      "h": 1,
+      "color": "skin"
+    },
+    {
+      "id": "brick-002",
+      "x": 7,
+      "y": 1,
+      "z": 0,
+      "w": 2,
+      "d": 3,
+      "h": 1,
+      "color": "skin"
+    },
+    {
+      "id": "brick-003",
+      "x": 10,
+      "y": 3,
+      "z": 0,
+      "w": 3,
+      "d": 4,
+      "h": 2,
+      "color": "skin"
+    },
+    {
+      "id": "brick-004",
+      "x": 0,
+      "y": 4,
+      "z": 0,
+      "w": 10,
+      "d": 2,
+      "h": 1,
+      "color": "skin"
+    },
+    {
+      "id": "brick-005",
+      "x": 3,
+      "y": 6,
+      "z": 0,
+      "w": 2,
+      "d": 3,
+      "h": 1,
+      "color": "skin"
+    },
+    {
+      "id": "brick-006",
+      "x": 7,
+      "y": 6,
+      "z": 0,
+      "w": 2,
+      "d": 3,
+      "h": 1,
+      "color": "skin"
+    },
+    {
+      "id": "brick-007",
+      "x": 3,
+      "y": 2,
+      "z": 1,
+      "w": 5,
+      "d": 6,
+      "h": 2,
+      "color": "shell"
+    },
+    {
+      "id": "brick-008",
+      "x": 8,
+      "y": 2,
+      "z": 1,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "shell"
+    },
+    {
+      "id": "brick-009",
+      "x": 2,
+      "y": 3,
+      "z": 1,
+      "w": 1,
+      "d": 4,
+      "h": 2,
+      "color": "shell"
+    },
+    {
+      "id": "brick-010",
+      "x": 8,
+      "y": 3,
+      "z": 1,
+      "w": 2,
+      "d": 4,
+      "h": 1,
+      "color": "shell"
+    },
+    {
+      "id": "brick-011",
+      "x": 8,
+      "y": 7,
+      "z": 1,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "shell"
+    },
+    {
+      "id": "brick-012",
+      "x": 8,
+      "y": 3,
+      "z": 2,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "skin"
+    },
+    {
+      "id": "brick-013",
+      "x": 12,
+      "y": 3,
+      "z": 2,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "eye"
+    },
+    {
+      "id": "brick-014",
+      "x": 12,
+      "y": 4,
+      "z": 2,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "skin"
+    },
+    {
+      "id": "brick-015",
+      "x": 12,
+      "y": 6,
+      "z": 2,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "eye"
+    },
+    {
+      "id": "brick-016",
+      "x": 4,
+      "y": 3,
+      "z": 3,
+      "w": 4,
+      "d": 4,
+      "h": 2,
+      "color": "shell"
+    },
+    {
+      "id": "brick-017",
+      "x": 3,
+      "y": 4,
+      "z": 3,
+      "w": 1,
+      "d": 2,
+      "h": 2,
+      "color": "shell"
+    },
+    {
+      "id": "brick-018",
+      "x": 8,
+      "y": 4,
+      "z": 3,
+      "w": 1,
+      "d": 2,
+      "h": 2,
+      "color": "shell"
+    },
+    {
+      "id": "brick-019",
+      "x": 4,
+      "y": 4,
+      "z": 5,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "shell"
+    }
+  ],
+  "buildSequence": [
+    "brick-004",
+    "brick-003",
+    "brick-001",
+    "brick-002",
+    "brick-005",
+    "brick-006",
+    "brick-007",
+    "brick-010",
+    "brick-009",
+    "brick-008",
+    "brick-011",
+    "brick-012",
+    "brick-014",
+    "brick-013",
+    "brick-015",
+    "brick-016",
+    "brick-017",
+    "brick-018",
+    "brick-019"
+  ]
+}

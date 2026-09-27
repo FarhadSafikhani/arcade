@@ -12,4 +12,24 @@ Every new model and replay starts with **zero placed bricks**, showing `0 / tota
 
 For a pile larger than 30 pieces, expose at most three duplicates of each part (same color, footprint, and height, allowing quarter turns). Keep the rest in a hidden reserve, without meshes or physics bodies. Replenish a part when its available count falls below three, dropping replacements from above into the center of the pile. When the pile is below 30, drop any remaining reserved parts until it reaches 30 or the reserve is empty. Stagger these drops so they remain readable. Reserve parts still count toward the full model total and are never treated as placed. Holding or returning a part does not consume it.
 
-Height-2 bricks replace directly stacked identical same-color pairs with one smooth-sided piece. They occupy two layers, have studs only on top, and count as one construction step. Heights default to 1 and are limited to 1 or 2. Matching requires equal height as well as color and footprint.
+Height-2 bricks occupy two layers, have smooth sides and studs only on top, and count as one construction step. Heights default to 1 and are limited to 1 or 2. Matching requires equal height as well as color and footprint. Design height and footprint together: two layers do not need identical existing seams to be replaced by a larger height-2 brick.
+
+# Snapforge model design system
+
+**Recognize → Sculpt → Connect → Pack → Review.** The LLM designs the subject; the compiler chooses exact bricks. Work from a shape recipe, not a hand-written brick list. See [AUTHORING.md](../src/games/snapforge/AUTHORING.md) for the recipe format, commands, and versioning.
+
+1. **Recognize.** State the subject, target N, symmetry plane, and 2–3 features that make it unmistakable. For a turtle: domed shell, low body with four legs, projecting head. Choose a small subject-appropriate palette. These features are the design's priorities.
+2. **Sculpt.** Block out named volumes from large masses to small details. Check front, side, and top proportions before adding eyes or decoration. If the plain silhouette fails, fix the proportions. Mirror paired features by construction; do not approximate each side independently. Resolution means useful contour and recognition, not voxel count.
+3. **Connect.** Design a coherent first piece and a readable route from foundation to body to details. Ensure the finished model connects through studs and each raised piece has support already placed beneath it. Where an appendage only touches a side, redesign its attachment. Never patch the shape with scattered single-cell support posts.
+4. **Pack.** Compile the exact colored shape using broad rectangles and heights 1 and 2 together. Inspect custom sizes, small pieces, stacked layers, and merge opportunities. **Every split must earn its place through shape, color, symmetry, connection, or a clearer assembly.** Protect only justified feature boundaries; protection is not a way to inflate the count.
+5. **Review.** Run the authoring checks, then inspect the actual gallery, loose pile, first steps, and completed build from all four resting views at desktop and phone sizes. Ask: *Does it read without its title? Are both sides intentional? Does the build make sense? Can any seam disappear without losing something useful?* Fix the cause in the recipe and repeat. Passing geometry checks does not establish visual quality.
+
+**Budget:** Each model has a positive integer `targetParts` N; allow **N ±2** and increase targets deliberately through a collection. Over budget: remove unnecessary seams first, then simplify low-value detail. Under budget: improve a meaningful contour or defining feature. Never split clean bricks or add decoration solely to reach N. If quality and budget cannot both be met, report the conflict rather than disguising it.
+
+**Symmetry:** Models must be symmetric when the subject warrants it: shape, colors, paired features, and brick seams. Document intentional poses or asymmetric features as narrowly scoped exceptions with a reason.
+
+**Parts:** Prefer familiar rectangles, including quarter turns. Allow custom integer footprints when an odd width or long thin piece improves shape or construction. Heights remain 1 or 2. Changing the packing must preserve occupied shape and colors; changing the shape is a separate design decision.
+
+**Handoff:** Report actual/N pieces, defining features, justified custom parts or exceptions, checks performed, and any remaining visual limitations. Leave new or changed generated models at **`vetted: 0`**. Only an explicit user request may promote them to 1; unchanged regeneration preserves that decision. Vetting never affects unlocking or gallery visibility.
+
+Little Turtle is Starter #1, with N = 20. Little Duck, Apple, Pineapple, Sports Car, and Castle follow it; the ocean Sea Turtle stays separate. Legacy targets record existing counts, not approved designs. Redesign those models individually using this loop.

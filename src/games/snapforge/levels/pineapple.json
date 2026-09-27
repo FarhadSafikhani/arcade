@@ -3,7 +3,7 @@
   "title": "Pineapple",
   "description": "A golden pineapple topped with a spiky green crown.",
   "collection": "starter",
-  "order": 3,
+  "order": 4,
   "version": 2,
   "palette": {
     "yellow": "#f5ba32",
@@ -459,5 +459,7 @@
       "d": 2,
       "color": "green"
     }
-  ]
+  ],
+  "targetParts": 49,
+  "vetted": 0
 }

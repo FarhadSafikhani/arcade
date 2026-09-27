@@ -492,5 +492,7 @@
       "color": "main",
       "id": "brick-050"
     }
-  ]
+  ],
+  "targetParts": 50,
+  "vetted": 0
 }

@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { spawnSync } from 'node:child_process';
 import ts from 'typescript';
 
 const modulePath = resolve('src/games/snapforge/level.ts');
@@ -35,12 +36,17 @@ for (const file of targets) {
     }
 }
 if (!files.length) {
-    const expected = new Map([['starter', 5], ['land-animal', 3], ['fruit', 3], ['bird', 3],
+    const expected = new Map([['starter', 6], ['land-animal', 3], ['fruit', 3], ['bird', 3],
         ['car', 3], ['ocean', 3], ['dinosaur', 3]]);
     for (const [collection, count] of expected)
         if (collectionCounts.get(collection) !== count) {
             failed = true;
             console.error(`✗ ${collection}: expected ${count} models, found ${collectionCounts.get(collection) ?? 0}`);
         }
+}
+if (!files.length && !failed) {
+    const recipes = spawnSync(process.execPath, [resolve('scripts/check-snapforge-recipes.mjs')], { stdio: 'inherit' });
+    if (recipes.error) console.error(recipes.error.message);
+    if (recipes.status !== 0) failed = true;
 }
 if (failed || targets.length === 0) process.exitCode = 1;
