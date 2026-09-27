@@ -6,7 +6,7 @@ import { SnapScene3D } from './scene3d';
 import { createClickBuffer, loadSnapSamples, SnapSamples } from './sound';
 
 interface PartialBuild { version: number; placedIds: string[]; }
-interface Progress { completed: string[]; partials: Record<string, PartialBuild>; seenIntro: string[]; muted: boolean; }
+interface Progress { completed: string[]; partials: Record<string, PartialBuild>; seenIntro: string[]; muted: boolean; unlockAll: boolean; }
 
 const STORAGE_KEY = 'snapforge-3d-progress-v2';
 const levels = new Map<string, SnapLevel>();
@@ -23,7 +23,7 @@ function byId<T extends HTMLElement>(id: string): T {
     return result as T;
 }
 function loadProgress(): Progress {
-    const empty: Progress = { completed: [], partials: {}, seenIntro: [], muted: false };
+    const empty: Progress = { completed: [], partials: {}, seenIntro: [], muted: false, unlockAll: false };
     try {
         const stored: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
         if (!stored || typeof stored !== 'object') return empty;
@@ -31,7 +31,7 @@ function loadProgress(): Progress {
         return { completed: Array.isArray(data.completed) ? data.completed.filter(id => typeof id === 'string') : [],
             partials: data.partials && typeof data.partials === 'object' ? data.partials as Record<string, PartialBuild> : {},
             seenIntro: Array.isArray(data.seenIntro) ? data.seenIntro.filter(id => typeof id === 'string') : [],
-            muted: data.muted === true };
+            muted: data.muted === true, unlockAll: data.unlockAll === true };
     } catch { return empty; }
 }
 
@@ -97,6 +97,16 @@ class SnapforgeGame {
                 this.scene.skipIntro();
                 while (this.current && this.placedIds.length < this.current.bricks.length && this.scene.snapNextPiece()) { /* Place each remaining piece. */ }
             });
+            const unlockAll = document.createElement('button');
+            unlockAll.type = 'button';
+            unlockAll.textContent = 'Unlock all';
+            unlockAll.addEventListener('click', () => {
+                this.progress.unlockAll = true;
+                this.save();
+                this.renderGallery();
+                this.scene?.setPreviews(this.galleryTrack, this.previewEntries());
+                this.galleryMotion?.reset(this.selectedIndex);
+            });
             const reset = document.createElement('button');
             reset.type = 'button';
             reset.textContent = 'Fresh start';
@@ -104,7 +114,7 @@ class SnapforgeGame {
                 localStorage.clear();
                 window.location.reload();
             });
-            actions.append(this.devSnap, this.devFinish, reset);
+            actions.append(this.devSnap, this.devFinish, unlockAll, reset);
             panel.append(toggle, actions);
             this.root.appendChild(panel);
         }
@@ -329,7 +339,7 @@ class SnapforgeGame {
         return catalog.get(this.activeCollection) ?? [];
     }
     private unlocked(index: number): boolean {
-        return modelUnlocked(this.activeLevels(), index, this.progress.completed);
+        return this.progress.unlockAll || modelUnlocked(this.activeLevels(), index, this.progress.completed);
     }
     private renderCollections(): void {
         for (const collection of collections) {
@@ -520,7 +530,7 @@ class SnapforgeGame {
         const target = order[step];
         if (target && !this.skip.hidden) return;
         this.message.textContent = target ?
-            `Find ${/^[aeiou]/i.test(target.color) ? 'an' : 'a'} ${target.color} brick that matches the shimmering one` :
+            `Find ${/^[aeiou]/i.test(target.color) ? 'an' : 'a'} ${target.color} ${target.kind === 'wheel' ? 'wheel' : 'brick'} that matches the shimmering one` :
             'You built it!';
         byId<HTMLElement>('colorCue').style.backgroundColor = target ? this.current.palette[target.color] : 'transparent';
     }

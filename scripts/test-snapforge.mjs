@@ -49,6 +49,23 @@ const unit = { id: 'base', x: 0, y: 0, z: 0, w: 2, d: 1, color: 'yellow' };
 const heightLevel = bricks => ({ id: 'height-test', title: 'Height test', description: '',
     collection: 'starter', order: 1, version: 1, targetParts: bricks.length, vetted: 0, palette: { yellow: '#FFD233' }, bricks });
 
+test('wheel identity survives rotated matching, reserve grouping and saved progress', () => {
+    const wheel = { ...unit, kind: 'wheel', w: 3, d: 1, h: 3 };
+    const rotated = { ...wheel, id: 'rotated', w: 1, d: 3 };
+    assert.doesNotThrow(() => validateLevel(heightLevel([wheel])));
+    assert.doesNotThrow(() => validateLevel(heightLevel([rotated])));
+    assert.ok(pieceMatches(wheel, rotated));
+    assert.ok(!pieceMatches(wheel, { ...wheel, kind: 'brick' }));
+    assert.ok(pieceMatches(unit, { ...unit, kind: 'brick' }));
+    assert.throws(() => validateLevel(heightLevel([{ ...wheel, h: 2 }])), /wheel must/);
+    assert.throws(() => validateLevel(heightLevel([{ ...unit, kind: 'unknown' }])), /unknown part kind/);
+    const wheels = Array.from({ length: 5 }, (_, i) => ({ ...wheel, id: `wheel-${i}` }));
+    const active = Array.from({ length: 31 }, (_, i) => ({ ...unit, id: `plain-${i}` }));
+    assert.equal(pileAdditions(active, wheels).length, 3);
+    const level = heightLevel([wheel, { ...rotated, x: 5 }]);
+    assert.ok(validPlacedIds(level, ['rotated']));
+});
+
 test('height defaults to one and accepts only explicit one or two', () => {
     for (const b of [unit, { ...unit, h: 1 }, { ...unit, h: 2 }]) {
         assert.doesNotThrow(() => validateLevel(heightLevel([b])));
@@ -84,7 +101,7 @@ test('height participates in rotated matching, resume validation, and pile group
 
 test('eight collections have ordered models and independent unlock paths', () => {
     const expected = new Map([
-        ['starter', ['turtle', 'apple', 'duck', 'house']],
+        ['starter', ['turtle', 'apple', 'duck', 'house', 'police-car']],
         ['land-animal', ['rabbit', 'fox', 'elephant']],
         ['fruit', ['cherry', 'watermelon', 'pineapple', 'pear']],
         ['bird', ['chick', 'owl', 'parrot']],
@@ -93,7 +110,7 @@ test('eight collections have ordered models and independent unlock paths', () =>
         ['ocean', ['fish', 'sea-turtle', 'shark']],
         ['dinosaur', ['stegosaurus', 'triceratops', 't-rex']]
     ]);
-    assert.equal(catalog.length, 25);
+    assert.equal(catalog.length, 26);
     for (const [collection, ids] of expected) {
         const group = catalog.filter(level => level.collection === collection).sort((a, b) => a.order - b.order);
         assert.deepEqual(group.map(level => level.id), ids);
@@ -116,7 +133,7 @@ test('eight collections have ordered models and independent unlock paths', () =>
         }
     }
     const starter = catalog.filter(level => level.collection === 'starter').sort((a, b) => a.order - b.order);
-    assert.deepEqual(starter.map(level => level.version), [1, 3, 7, 2]);
+    assert.deepEqual(starter.map(level => level.version), [1, 3, 7, 2, 5]);
 });
 
 test('every catalog model can be built from its replenishing pile and resumed at every step', () => {
@@ -302,6 +319,44 @@ test('height-2 meshes share the original bottom and top bounds with studs only o
     assert.ok(ghost.children[0].material.transparent);
 });
 
+test('wheel meshes have round tires and hubs in both orientations, including ghosts', async () => {
+    const wheel = { ...unit, kind: 'wheel', w: 3, d: 1, h: 3 };
+    for (const part of [wheel, { ...wheel, w: 1, d: 3 }]) {
+        const mesh = brickMesh(part, '#202735');
+        const ghost = brickMesh(part, '#202735', true);
+        assert.equal(mesh.children[0].geometry.type, 'CylinderGeometry');
+        assert.equal(mesh.children[1].geometry.type, 'CylinderGeometry');
+        assert.ok(ghost.children.every(child => child.material.transparent));
+        const bounds = new THREE.Box3().setFromObject(mesh);
+        const size = bounds.getSize(new THREE.Vector3());
+        assert.ok(Math.abs(size.x - (part.w === 3 ? 2.6 : 0.97)) < 0.01);
+        assert.ok(Math.abs(size.z - (part.d === 3 ? 2.6 : 0.97)) < 0.01);
+        assert.ok(Math.abs(bounds.min.y + 1.34) < 0.01);
+        assert.equal(mesh.children.length, 3);
+        assert.ok(mesh.children.every(child => child.geometry.type === 'CylinderGeometry'));
+        assert.ok(Math.abs((bounds.min.y + bounds.max.y) / 2 + 0.04) < 1e-6);
+    }
+    const { default: RAPIER } = await import('@dimforge/rapier3d-compat');
+    await RAPIER.init();
+    const world = new RAPIER.World({ x: 0, y: -19, z: 0 });
+    try {
+        world.createCollider(RAPIER.ColliderDesc.cuboid(10, 0.1, 10).setTranslation(0, -0.1, 0));
+        const scene = Object.create(SnapScene3D.prototype);
+        Object.assign(scene, { world, level: heightLevel([wheel]), order: [wheel],
+            loose: new Map(), pileScene: new THREE.Scene() });
+        scene.spawnLoose(wheel, false, new THREE.Vector3(0, 3, 0));
+        const body = scene.loose.get(wheel.id).body;
+        assert.equal(body.numColliders(), 1);
+        assert.equal(body.collider(0).shapeType(), RAPIER.ShapeType.Cylinder);
+        for (let i = 0; i < 240; i++) world.step();
+        const mesh = scene.loose.get(wheel.id).mesh;
+        mesh.position.copy(body.translation());
+        mesh.quaternion.copy(body.rotation());
+        const bottom = new THREE.Box3().setFromObject(mesh, true).min.y;
+        assert.ok(bottom > -0.06, `wheel penetrated the floor by ${-bottom}`);
+    } finally { world.free(); }
+});
+
 test('height-2 pile colliders match the tall body and rest above the floor', async () => {
     const { default: RAPIER } = await import('@dimforge/rapier3d-compat');
     await RAPIER.init();
@@ -407,7 +462,11 @@ test('mystery intro hides finished bricks and launches every piece in one burst'
         assert.ok(scene.flights.every(flight => flight.mesh.scale.x === 0));
         // The pour leads the first brick's fall from its flight's end onto the table.
         const pourAt = scene.introRainAt;
-        assert.ok(pourAt - launch > 600 && pourAt - launch < 1300);
+        const firstImpact = Math.min(...scene.flights.map(flight => flight.start + flight.duration +
+            Math.sqrt(2 * (flight.landingPosition.y - BRICK_HEIGHT * (flight.brick.h ?? 1) / 2) / 19) * 1000));
+        // The current sound tuning leads impact by 800 ms, including taller wheel assemblies.
+        assert.ok(Math.abs(firstImpact - pourAt - 800) < 1e-6);
+        assert.ok(pourAt > launch);
         scene.advanceFlights(pourAt - 1);
         assert.deepEqual(cues, ['breakup']);
         scene.advanceFlights(pourAt);

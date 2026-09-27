@@ -2,7 +2,7 @@ import { PreviewGallery } from './preview-gallery';
 import * as THREE from 'three';
 import RAPIER from '@dimforge/rapier3d-compat';
 import { mysteryModel, disposeMystery } from './mystery3d';
-import { brickMesh, brickPosition, BRICK_HEIGHT, disposeBrick } from './brick3d';
+import { brickMesh, brickPosition, BRICK_HEIGHT, WHEEL_RADIUS, WHEEL_CENTER_Y, disposeBrick } from './brick3d';
 import { buildOrder, pieceMatches, pileAdditions, SnapBrick, SnapLevel } from './level';
 import { configureOverlayCamera, overlayRotation, overlayToScreen, screenToOverlay } from './overlay3d';
 
@@ -340,8 +340,15 @@ export class SnapScene3D {
             .setTranslation(x, y, z).setRotation({ x: 0, y: Math.sin(index * 0.47), z: 0,
                 w: Math.cos(index * 0.47) })
             .setLinearDamping(0.24).setAngularDamping(0.45).setCcdEnabled(true));
-        this.world.createCollider(RAPIER.ColliderDesc.cuboid(brick.w / 2 - 0.03,
-            BRICK_HEIGHT * (brick.h ?? 1) / 2, brick.d / 2 - 0.03).setFriction(0.69).setRestitution(0.25), body);
+        if (brick.kind === 'wheel') {
+            const rotation = new THREE.Quaternion().setFromAxisAngle(
+                new THREE.Vector3(brick.w > brick.d ? 1 : 0, 0, brick.w > brick.d ? 0 : 1), Math.PI / 2);
+            this.world.createCollider(RAPIER.ColliderDesc.cylinder(0.485, WHEEL_RADIUS)
+                .setRotation(rotation).setTranslation(0, WHEEL_CENTER_Y, 0).setFriction(0.69).setRestitution(0.25), body);
+        } else {
+            this.world.createCollider(RAPIER.ColliderDesc.cuboid(brick.w / 2 - 0.03,
+                BRICK_HEIGHT * (brick.h ?? 1) / 2, brick.d / 2 - 0.03).setFriction(0.69).setRestitution(0.25), body);
+        }
         const mesh = brickMesh(brick, this.level.palette[brick.color]);
         mesh.userData.brickId = brick.id;
         mesh.position.set(x, y, z);

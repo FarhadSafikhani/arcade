@@ -1,0 +1,398 @@
+{
+  "id": "police-car",
+  "title": "Police Car",
+  "description": "A patrol car with four large round wheels, side mirrors, white doors with badges and handles, and a red-and-blue roof light bar.",
+  "collection": "starter",
+  "order": 5,
+  "version": 5,
+  "targetParts": 50,
+  "palette": {
+    "black": "#202735",
+    "white": "#F1F3F5",
+    "glass": "#69BDE0",
+    "red": "#E84545",
+    "blue": "#245CE0",
+    "lamp": "#FFE6A0",
+    "silver": "#A5ADB8"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 4,
+    "exceptions": [
+      {
+        "volumes": [
+          "left-blue-beacon",
+          "right-red-beacon"
+        ],
+        "reason": "Requested blue on the vehicle left and red on the vehicle right; the central gray beacon and all other geometry remain mirrored."
+      }
+    ]
+  },
+  "volumes": [
+    {
+      "name": "tire-2-0",
+      "x": 2,
+      "y": 0,
+      "z": 0,
+      "w": 3,
+      "d": 1,
+      "h": 3,
+      "color": "black",
+      "kind": "wheel"
+    },
+    {
+      "name": "tire-2-7",
+      "x": 2,
+      "y": 7,
+      "z": 0,
+      "w": 3,
+      "d": 1,
+      "h": 3,
+      "color": "black",
+      "kind": "wheel"
+    },
+    {
+      "name": "tire-11-0",
+      "x": 11,
+      "y": 0,
+      "z": 0,
+      "w": 3,
+      "d": 1,
+      "h": 3,
+      "color": "black",
+      "kind": "wheel"
+    },
+    {
+      "name": "tire-11-7",
+      "x": 11,
+      "y": 7,
+      "z": 0,
+      "w": 3,
+      "d": 1,
+      "h": 3,
+      "color": "black",
+      "kind": "wheel"
+    },
+    {
+      "name": "chassis",
+      "x": 1,
+      "y": 1,
+      "z": 0,
+      "w": 14,
+      "d": 6,
+      "h": 2,
+      "color": "black"
+    },
+    {
+      "name": "body",
+      "x": 1,
+      "y": 1,
+      "z": 2,
+      "w": 14,
+      "d": 6,
+      "h": 2,
+      "color": "black"
+    },
+    {
+      "name": "white-doors-1",
+      "x": 5,
+      "y": 1,
+      "z": 2,
+      "w": 7,
+      "d": 1,
+      "h": 2,
+      "color": "white",
+      "overlay": true
+    },
+    {
+      "name": "white-doors-6",
+      "x": 5,
+      "y": 6,
+      "z": 2,
+      "w": 7,
+      "d": 1,
+      "h": 2,
+      "color": "white",
+      "overlay": true
+    },
+    {
+      "name": "hood",
+      "x": 1,
+      "y": 1,
+      "z": 4,
+      "w": 4,
+      "d": 6,
+      "h": 1,
+      "color": "black"
+    },
+    {
+      "name": "trunk",
+      "x": 12,
+      "y": 1,
+      "z": 4,
+      "w": 3,
+      "d": 6,
+      "h": 1,
+      "color": "black"
+    },
+    {
+      "name": "cabin-glass",
+      "x": 5,
+      "y": 1,
+      "z": 4,
+      "w": 7,
+      "d": 6,
+      "h": 2,
+      "color": "glass"
+    },
+    {
+      "name": "pillar-8-1",
+      "x": 8,
+      "y": 1,
+      "z": 4,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "white",
+      "overlay": true
+    },
+    {
+      "name": "pillar-8-6",
+      "x": 8,
+      "y": 6,
+      "z": 4,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "white",
+      "overlay": true
+    },
+    {
+      "name": "pillar-11-1",
+      "x": 11,
+      "y": 1,
+      "z": 4,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "white",
+      "overlay": true
+    },
+    {
+      "name": "pillar-11-6",
+      "x": 11,
+      "y": 6,
+      "z": 4,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "white",
+      "overlay": true
+    },
+    {
+      "name": "roof",
+      "x": 6,
+      "y": 1,
+      "z": 6,
+      "w": 5,
+      "d": 6,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "name": "headlight-1",
+      "x": 1,
+      "y": 1,
+      "z": 3,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "lamp",
+      "overlay": true
+    },
+    {
+      "name": "taillight-1",
+      "x": 14,
+      "y": 1,
+      "z": 3,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "red",
+      "overlay": true
+    },
+    {
+      "name": "headlight-5",
+      "x": 1,
+      "y": 5,
+      "z": 3,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "lamp",
+      "overlay": true
+    },
+    {
+      "name": "taillight-5",
+      "x": 14,
+      "y": 5,
+      "z": 3,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "red",
+      "overlay": true
+    },
+    {
+      "name": "front-grille",
+      "x": 1,
+      "y": 3,
+      "z": 3,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "silver",
+      "overlay": true
+    },
+    {
+      "name": "fender-2",
+      "x": 2,
+      "y": 1,
+      "z": 3,
+      "w": 3,
+      "d": 6,
+      "h": 1,
+      "color": "black",
+      "overlay": true
+    },
+    {
+      "name": "fender-11",
+      "x": 11,
+      "y": 1,
+      "z": 3,
+      "w": 3,
+      "d": 6,
+      "h": 1,
+      "color": "black",
+      "overlay": true
+    },
+    {
+      "name": "front-bumper",
+      "x": 0,
+      "y": 1,
+      "z": 2,
+      "w": 2,
+      "d": 6,
+      "h": 1,
+      "color": "silver",
+      "overlay": true
+    },
+    {
+      "name": "rear-bumper",
+      "x": 14,
+      "y": 1,
+      "z": 2,
+      "w": 2,
+      "d": 6,
+      "h": 1,
+      "color": "silver",
+      "overlay": true
+    },
+    {
+      "name": "side-mirror-0",
+      "x": 5,
+      "y": 0,
+      "z": 4,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "black",
+      "overlay": true
+    },
+    {
+      "name": "side-mirror-6",
+      "x": 5,
+      "y": 6,
+      "z": 4,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "black",
+      "overlay": true
+    },
+    {
+      "name": "door-handle-1",
+      "x": 9,
+      "y": 1,
+      "z": 3,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "silver",
+      "overlay": true
+    },
+    {
+      "name": "police-badge-1",
+      "x": 7,
+      "y": 1,
+      "z": 2,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "lamp",
+      "overlay": true
+    },
+    {
+      "name": "door-handle-6",
+      "x": 9,
+      "y": 6,
+      "z": 3,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "silver",
+      "overlay": true
+    },
+    {
+      "name": "police-badge-6",
+      "x": 7,
+      "y": 6,
+      "z": 2,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "lamp",
+      "overlay": true
+    },
+    {
+      "name": "left-blue-beacon",
+      "x": 7,
+      "y": 1,
+      "z": 7,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "blue"
+    },
+    {
+      "name": "center-gray-beacon",
+      "x": 7,
+      "y": 3,
+      "z": 7,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "silver"
+    },
+    {
+      "name": "right-red-beacon",
+      "x": 7,
+      "y": 5,
+      "z": 7,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "red"
+    }
+  ]
+}

@@ -5,7 +5,8 @@ export interface SnapBrick {
     z: number;
     w: number;
     d: number;
-    h?: 1 | 2;
+    h?: 1 | 2 | 3;
+    kind?: 'brick' | 'wheel';
     color: string;
 }
 
@@ -30,6 +31,26 @@ const isNatural = (value: unknown): value is number =>
     typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
 
 const cellKey = (x: number, y: number, z: number): string => `${x},${y},${z}`;
+
+/** Wheel hubs attach sideways at axle height; ordinary bricks attach to studs below. */
+export function supportIds(brick: SnapBrick, occupied: Map<string, string>, byId: Map<string, SnapBrick>): Set<string> {
+    const ids = new Set<string>();
+    const add = (x: number, y: number, z: number) => {
+        const id = occupied.get(cellKey(x, y, z));
+        if (id && byId.get(id)?.kind !== 'wheel') ids.add(id);
+    };
+    if (brick.kind === 'wheel') {
+        if (brick.w > brick.d) {
+            add(brick.x + 1, brick.y - 1, brick.z + 1);
+            add(brick.x + 1, brick.y + brick.d, brick.z + 1);
+        } else {
+            add(brick.x - 1, brick.y + 1, brick.z + 1);
+            add(brick.x + brick.w, brick.y + 1, brick.z + 1);
+        }
+    } else for (let x = brick.x; x < brick.x + brick.w; x++)
+        for (let y = brick.y; y < brick.y + brick.d; y++) add(x, y, brick.z - 1);
+    return ids;
+}
 
 export function validateLevel(input: unknown): SnapLevel {
     if (!isRecord(input)) throw new Error('Level must be a JSON object');
@@ -64,7 +85,14 @@ export function validateLevel(input: unknown): SnapLevel {
                 throw new Error(`${id}/${brick.id}: ${field} must be a ${field === 'w' || field === 'd' ? 'positive' : 'non-negative'} integer`);
             }
         }
-        if (brick.h !== undefined && brick.h !== 1 && brick.h !== 2) {
+        if (brick.kind !== undefined && brick.kind !== 'brick' && brick.kind !== 'wheel') {
+            throw new Error(`${id}/${brick.id}: unknown part kind`);
+        }
+        if (brick.kind === 'wheel') {
+            if (brick.h !== 3 || Math.min(Number(brick.w), Number(brick.d)) !== 1 ||
+                Math.max(Number(brick.w), Number(brick.d)) !== 3)
+                throw new Error(`${id}/${brick.id}: wheel must be 3×1 h3 (or rotated)`);
+        } else if (brick.h !== undefined && brick.h !== 1 && brick.h !== 2) {
             throw new Error(`${id}/${brick.id}: h must be 1 or 2`);
         }
         if (typeof brick.color !== 'string' || !(brick.color in palette)) {
@@ -81,15 +109,11 @@ export function validateLevel(input: unknown): SnapLevel {
         }
     }
 
+    const byId = new Map((bricks as SnapBrick[]).map(brick => [brick.id, brick]));
     for (const candidate of bricks) {
         const brick = candidate as SnapBrick;
         if (brick.z === 0) continue;
-        let supported = false;
-        for (let x = brick.x; x < brick.x + brick.w; x++) {
-            for (let y = brick.y; y < brick.y + brick.d; y++) {
-                if (occupied.has(cellKey(x, y, brick.z - 1))) supported = true;
-            }
-        }
+        const supported = supportIds(brick, occupied, byId).size > 0;
         if (!supported) throw new Error(`${id}/${brick.id}: floating brick has no studs beneath it`);
     }
 
@@ -117,12 +141,7 @@ export function validateLevel(input: unknown): SnapLevel {
         const byId = new Map((bricks as SnapBrick[]).map(brick => [brick.id, brick]));
         for (const brickId of sequence) {
             const brick = byId.get(brickId)!;
-            let supported = brick.z === 0;
-            for (let x = brick.x; x < brick.x + brick.w; x++)
-                for (let y = brick.y; y < brick.y + brick.d; y++) {
-                    const below = occupied.get(cellKey(x, y, brick.z - 1));
-                    if (below && placed.has(below)) supported = true;
-                }
+            const supported = brick.z === 0 || Array.from(supportIds(brick, occupied, byId)).some(id => placed.has(id));
             if (!supported) throw new Error(`${id}/${brickId}: buildSequence places brick before its support`);
             placed.add(brickId);
         }
@@ -140,7 +159,8 @@ export function buildOrder(level: SnapLevel): SnapBrick[] {
 }
 
 export function pieceMatches(piece: SnapBrick, target: SnapBrick): boolean {
-    return piece.color === target.color && (piece.h ?? 1) === (target.h ?? 1) &&
+    return (piece.kind ?? 'brick') === (target.kind ?? 'brick') &&
+        piece.color === target.color && (piece.h ?? 1) === (target.h ?? 1) &&
         Math.min(piece.w, piece.d) === Math.min(target.w, target.d) &&
         Math.max(piece.w, piece.d) === Math.max(target.w, target.d);
 }

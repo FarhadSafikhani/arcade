@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { brickPosition, BRICK_HEIGHT } from './brick3d';
+import { brickPosition, BRICK_HEIGHT, WHEEL_RADIUS, WHEEL_CENTER_Y } from './brick3d';
 import { SnapLevel } from './level';
 
 const COLORS: Record<string, string> = {
@@ -21,8 +21,14 @@ export function mysteryModel(level: SnapLevel): THREE.Group {
     glow.transparent = true;
     glow.opacity = 0.16;
     for (const brick of level.bricks) {
-        const geometry = new THREE.BoxGeometry(brick.w, BRICK_HEIGHT * (brick.h ?? 1), brick.d);
+        const geometry = brick.kind === 'wheel' ? new THREE.CylinderGeometry(WHEEL_RADIUS, WHEEL_RADIUS, 0.97, 24)
+            : new THREE.BoxGeometry(brick.w, BRICK_HEIGHT * (brick.h ?? 1), brick.d);
+        if (brick.kind === 'wheel') {
+            if (brick.w > brick.d) geometry.rotateX(Math.PI / 2);
+            else geometry.rotateZ(Math.PI / 2);
+        }
         const position = brickPosition(brick, level);
+        if (brick.kind === 'wheel') position.y += WHEEL_CENTER_Y;
         for (const [material, scale, order] of [[fill, 1, 1], [rim, 1.04, 2], [glow, 1.08, 3]] as const) {
             const mesh = new THREE.Mesh(geometry, material);
             mesh.position.copy(position);

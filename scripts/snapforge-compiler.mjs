@@ -5,9 +5,9 @@ import ts from 'typescript';
 
 const source = readFileSync(new URL('../src/games/snapforge/level.ts', import.meta.url), 'utf8');
 const js = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext } }).outputText;
-const { validateLevel } = await import(`data:text/javascript;base64,${Buffer.from(js).toString('base64')}`);
+const { validateLevel, supportIds } = await import(`data:text/javascript;base64,${Buffer.from(js).toString('base64')}`);
 const key = (x, y, z) => `${x},${y},${z}`;
-const shapeKey = b => [b.x, b.y, b.z, b.w, b.d, b.h ?? 1, b.color].join(':');
+const shapeKey = b => [b.x, b.y, b.z, b.w, b.d, b.h ?? 1, b.color, b.kind ?? 'brick'].join(':');
 const size = b => b.w * b.d * (b.h ?? 1);
 const common = new Set(['1:1', '1:2', '1:3', '1:4', '1:6', '1:8', '2:2', '2:3', '2:4', '2:6', '2:8', '4:4', '4:6', '4:8']);
 export const standardSize = b => common.has(`${Math.min(b.w, b.d)}:${Math.max(b.w, b.d)}`);
@@ -42,9 +42,16 @@ export function expandRecipe(recipe) {
             if (!Number.isSafeInteger(volume[field]) || volume[field] < (['w', 'd', 'h'].includes(field) ? 1 : 0))
                 throw new Error(`${volume.name}: invalid ${field}`);
         if (!recipe.palette || !Object.hasOwn(recipe.palette, volume.color)) throw new Error(`${volume.name}: unknown color`);
+        if (volume.kind !== undefined && volume.kind !== 'brick' && volume.kind !== 'wheel')
+            throw new Error(`${volume.name}: unknown part kind`);
+        if (volume.kind === 'wheel' && (volume.h !== 3 || Math.min(volume.w, volume.d) !== 1 || Math.max(volume.w, volume.d) !== 3))
+            throw new Error(`${volume.name}: wheel must be 3×1 h3 (or rotated)`);
         for (const cell of brickCells(volume)) {
+            if (cells.get(cell)?.part || (volume.kind === 'wheel' && cells.has(cell)))
+                throw new Error(`${volume.name}: wheel assemblies cannot overlap or be overlaid`);
             if (cells.has(cell) && volume.overlay !== true) throw new Error(`${volume.name}: overlap requires overlay: true`);
-            cells.set(cell, { color: volume.color, region: volume.protected ? volume.name : '', exception: exceptions.has(volume.name) });
+            cells.set(cell, { color: volume.color, region: volume.protected ? volume.name : '', exception: exceptions.has(volume.name),
+                ...(volume.kind === 'wheel' ? { part: volume } : {}) });
         }
     }
     for (const name of exceptions) if (!names.has(name)) throw new Error(`Unknown symmetry exception volume: ${name}`);
@@ -53,7 +60,7 @@ export function expandRecipe(recipe) {
         const [x, y, z] = cell.split(',').map(Number);
         const reflected = mirror({ x, y, z, w: 1, d: 1 }, symmetry);
         const other = cells.get(key(reflected.x, reflected.y, z));
-        if (!other || other.exception || other.color !== value.color)
+        if (!other || other.exception || other.color !== value.color || other.part?.kind !== value.part?.kind)
             throw new Error(`Symmetry failure at ${cell}; fix the recipe or document an explicit exception`);
     }
     return cells;
@@ -65,12 +72,18 @@ function candidatesFor(cells, symmetry) {
     const singles = new Map();
     for (const [x, y, z] of points) {
         const origin = cells.get(key(x, y, z));
+        if (origin.part) {
+            const { x, y, z, w, d, h, color, kind } = origin.part;
+            const brick = { x, y, z, w, d, h, color, kind };
+            singles.set(shapeKey(brick), { brick, keys: brickCells(brick), exception: origin.exception });
+            continue;
+        }
         for (const h of [1, 2]) for (let w = 1; w <= xmax - x; w++) {
             // If this first row does not fit, wider candidates cannot fit either.
             const row = brickCells({ x, y, z, w, d: 1, h });
             const fits = keys => keys.every(k => {
                 const c = cells.get(k);
-                return c && c.color === origin.color && c.region === origin.region && c.exception === origin.exception;
+                return c && !c.part && c.color === origin.color && c.region === origin.region && c.exception === origin.exception;
             });
             if (!fits(row)) break;
             for (let d = 1; d <= ymax - y; d++) {
@@ -164,15 +177,9 @@ function repack(groups, alternatives) {
 
 function assembly(bricks) {
     const occupied = new Map(bricks.flatMap(b => brickCells(b).map(k => [k, b.id])));
-    const below = b => {
-        const ids = new Set();
-        for (let x = b.x; x < b.x + b.w; x++) for (let y = b.y; y < b.y + b.d; y++) {
-            const id = occupied.get(key(x, y, b.z - 1));
-            if (id) ids.add(id);
-        }
-        return ids;
-    };
-    // Side-by-side touching alone is not a stud connection.
+    const byId = new Map(bricks.map(b => [b.id, b]));
+    const below = b => supportIds(b, occupied, byId);
+    // Only studs or an explicit wheel axle count as connections.
     const links = new Map(bricks.map(b => [b.id, new Set()]));
     for (const b of bricks) for (const id of below(b)) { links.get(b.id).add(id); links.get(id).add(b.id); }
     const seen = new Set(), queue = [bricks[0].id];
@@ -234,7 +241,7 @@ function mergeOpportunities(bricks) {
     const result = [];
     for (let i = 0; i < bricks.length; i++) for (let j = i + 1; j < bricks.length; j++) {
         const a = bricks[i], b = bricks[j];
-        if (a.color !== b.color) continue;
+        if (a.kind === 'wheel' || b.kind === 'wheel' || a.color !== b.color) continue;
         const w = Math.max(a.x + a.w, b.x + b.w) - Math.min(a.x, b.x);
         const d = Math.max(a.y + a.d, b.y + b.d) - Math.min(a.y, b.y);
         const h = Math.max(a.z + a.h, b.z + b.h) - Math.min(a.z, b.z);

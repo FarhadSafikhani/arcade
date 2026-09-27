@@ -28,8 +28,10 @@ Height-2 bricks occupy two layers, have smooth sides and studs only on top, and 
 
 **Symmetry:** Models must be symmetric when the subject warrants it: shape, colors, paired features, and brick seams. Document intentional poses or asymmetric features as narrowly scoped exceptions with a reason.
 
-**Parts:** Prefer familiar rectangles, including quarter turns. Allow custom integer footprints when an odd width or long thin piece improves shape or construction. Heights remain 1 or 2. Changing the packing must preserve occupied shape and colors; changing the shape is a separate design decision.
+**Parts:** Prefer familiar rectangles, including quarter turns. Allow custom integer footprints when an odd width or long thin piece improves shape or construction. Ordinary brick heights remain 1 or 2. A wheel is one atomic 3×1 h3 part (or rotated), with a tire and hub, connected sideways at axle height. Its tire radius is 1.3 world units, 25% larger than the original 1.04, with its center unchanged. Changing the packing must preserve occupied shape and colors; changing the shape is a separate design decision.
 
 **Handoff:** Report actual/N pieces, defining features, justified custom parts or exceptions, checks performed, and any remaining visual limitations. Leave new or changed generated models at **`vetted: 0`**. Only an explicit user request may promote them to 1; unchanged regeneration preserves that decision. Vetting never affects unlocking or gallery visibility.
 
 Little Turtle is Starter #1, with N = 20. Apple is Starter #2, with N = 30 (28 pieces), followed by Little Duck at Starter #3, with N = 35 (34 pieces), and Little House at Starter #4, with N = 40. Pineapple is Fruit #3, Sports Car is Car #2, and Castle is Landmarks #1; the ocean Sea Turtle stays separate. Legacy targets record existing counts, not approved designs. Redesign those models individually using this loop.
+
+Police Car is Starter #5, with N = 50 (51 pieces), following Little House.

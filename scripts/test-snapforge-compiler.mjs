@@ -16,6 +16,29 @@ const box = (name, x, y, z, w, d, h, extras = {}) => ({ name, x, y, z, w, d, h, 
 const turtleRecipe = JSON.parse(readFileSync(new URL('../src/games/snapforge/recipes/turtle.json', import.meta.url)));
 const turtle = JSON.parse(readFileSync(new URL('../src/games/snapforge/levels/turtle.json', import.meta.url)));
 
+test('wheels stay atomic and mirrored with side axle connections', () => {
+    const input = recipe([box('left-wheel', 0, 0, 0, 3, 1, 3, { kind: 'wheel' }),
+        box('right-wheel', 0, 3, 0, 3, 1, 3, { kind: 'wheel' }), box('chassis', 0, 1, 0, 3, 2, 2)],
+    { targetParts: 3, symmetry: { axis: 'y', plane: 2 } });
+    const { level, report } = compileRecipe(input);
+    assert.equal(level.bricks.length, 3);
+    assert.equal(level.bricks.filter(b => b.kind === 'wheel').length, 2);
+    assert.equal(buildOrder(level)[0].kind, undefined);
+    assert.deepEqual(report.mergeOpportunities, []);
+    assert.deepEqual(compileRecipe(input, level).level, level);
+    assert.throws(() => compileRecipe(recipe([box('wheel', 0, 0, 0, 2, 1, 3, { kind: 'wheel' })])), /wheel must/);
+    assert.throws(() => compileRecipe(recipe([box('wheel', 0, 0, 0, 3, 1, 3, { kind: 'wheel' }),
+        box('paint', 0, 0, 1, 1, 1, 1, { overlay: true })])), /cannot overlap/);
+    assert.throws(() => compileRecipe(recipe([box('wheel', 0, 0, 1, 3, 1, 3, { kind: 'wheel' })])), /Support failure/);
+    assert.throws(() => compileRecipe(recipe([box('wheel', 0, 0, 0, 3, 1, 3, { kind: 'wheel' }),
+        box('unsupported-top', 0, 0, 3, 3, 1, 1)])), /Support failure/);
+    const lifted = compileRecipe(recipe([box('wheel', 0, 0, 1, 3, 1, 3, { kind: 'wheel' }),
+        box('axle-body', 0, 1, 0, 3, 2, 3)]));
+    assert.ok(buildOrder(lifted.level).findIndex(b => b.kind === 'wheel') > 0);
+    assert.throws(() => compileRecipe(recipe([box('wheel', 0, 0, 0, 3, 1, 3, { kind: 'wheel' }),
+        box('ordinary', 0, 3, 0, 3, 1, 3)], { symmetry: { axis: 'y', plane: 2 } })), /Symmetry failure/);
+});
+
 test('packing merges adjacent volumes and different layer partitions into one 2×8 height-2 brick', () => {
     const input = recipe([box('lower-a', 0, 0, 0, 2, 4, 1), box('lower-b', 0, 4, 0, 2, 4, 1),
         box('upper-a', 0, 0, 1, 2, 3, 1), box('upper-b', 0, 3, 1, 2, 5, 1)]);
