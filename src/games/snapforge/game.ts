@@ -1,7 +1,8 @@
 /// <reference types="vite/client" />
+import { GalleryMotion } from './gallery-motion';
 import { buildOrder, SnapLevel, validPlacedIds, validateLevel } from './level';
 import { SnapScene3D } from './scene3d';
-import { createClickBuffer, createConnectionBuffer } from './sound';
+import { createBreakupBuffer, createBrickRainBuffer, createClickBuffer, createConnectionBuffer } from './sound';
 
 interface PartialBuild { version: number; placedIds: string[]; }
 interface Progress { completed: string[]; partials: Record<string, PartialBuild>; seenIntro: string[]; muted: boolean; }
@@ -56,11 +57,13 @@ class SnapforgeGame {
     private current: SnapLevel | null = null;
     private placedIds: string[] = [];
     private selectedIndex = 0;
-    private galleryPointer: { id: number; startX: number; scrollLeft: number; dragging: boolean } | null = null;
-    private suppressGalleryClickUntil = 0;
+    private galleryMotion!: GalleryMotion;
     private audio: AudioContext | null = null;
     private clickBuffer: AudioBuffer | null = null;
     private connectionBuffer: AudioBuffer | null = null;
+    private breakupBuffer: AudioBuffer | null = null;
+    private brickRainBuffer: AudioBuffer | null = null;
+    private introSources = new Map<AudioBufferSourceNode, GainNode>();
     private devSnap: HTMLButtonElement | null = null;
     private devFinish: HTMLButtonElement | null = null;
 
@@ -102,17 +105,18 @@ class SnapforgeGame {
         // Placement completes in an animation frame, so unlock audio during a user gesture.
         this.root.addEventListener('pointerdown', () => this.prepareAudio(), { passive: true });
         this.root.addEventListener('keydown', () => this.prepareAudio());
+        this.play.addEventListener('contextmenu', event => event.preventDefault());
         // Capture before actions hide/rebuild their controls or disable the final gallery arrow.
         this.root.addEventListener('click', event => {
             const control = event.target instanceof Element
                 ? event.target.closest('button, a[href], [role="button"]') : null;
             if (!control || control === this.sound || control.matches(':disabled, [aria-disabled="true"]')) return;
-            if (control.closest('#galleryTrack') && event.detail &&
-                performance.now() < this.suppressGalleryClickUntil) return;
+            if (control.closest('#galleryTrack') && this.galleryMotion?.suppressesClick(event)) return;
             this.playEffect('click');
         }, true);
         this.sound.addEventListener('click', () => {
             this.progress.muted = !this.progress.muted;
+            if (this.progress.muted) this.stopIntroEffects();
             this.save(); this.updateSound();
             if (!this.progress.muted) this.playEffect('click');
         });
@@ -129,19 +133,17 @@ class SnapforgeGame {
             event.preventDefault();
             this.showGallery();
         });
-        byId<HTMLButtonElement>('galleryPrevious').addEventListener('click', () => this.selectCard(this.selectedIndex - 1));
-        byId<HTMLButtonElement>('galleryNext').addEventListener('click', () => this.selectCard(this.selectedIndex + 1));
-        this.galleryTrack.addEventListener('scroll', () => this.updateCardFromScroll(), { passive: true });
-        this.galleryTrack.addEventListener('pointerdown', event => this.galleryDown(event));
-        this.galleryTrack.addEventListener('pointermove', event => this.galleryMove(event));
-        this.galleryTrack.addEventListener('pointerup', event => this.galleryUp(event));
-        this.galleryTrack.addEventListener('pointercancel', event => this.galleryUp(event));
-        this.galleryTrack.addEventListener('click', event => {
-            if (event.detail && performance.now() < this.suppressGalleryClickUntil) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-        }, true);
+        this.galleryMotion = new GalleryMotion(this.galleryTrack, index => {
+            this.selectedIndex = index; this.updateGalleryControls();
+        });
+        byId<HTMLButtonElement>('galleryPrevious').addEventListener('click', () => this.galleryMotion.step(-1));
+        byId<HTMLButtonElement>('galleryNext').addEventListener('click', () => this.galleryMotion.step(1));
+        this.galleryMotion.reset(this.selectedIndex);
+        window.addEventListener('pagehide', event => {
+            this.stopIntroEffects();
+            this.galleryMotion.suspend();
+            if (!event.persisted) { this.galleryMotion.destroy(); this.scene?.destroy(); }
+        });
         this.skip.addEventListener('click', () => this.scene?.skipIntro());
         this.hint.addEventListener('click', () => {
             if (this.scene?.hint()) {
@@ -163,7 +165,9 @@ class SnapforgeGame {
         try {
             this.scene = await SnapScene3D.create(this.root, this.model, this.pile);
             this.scene.setCallbacks(id => this.placed(id), () => this.wrong(), () => this.playEffect('click'));
-            this.scene.setPreviews(this.previewEntries());
+            this.scene.setIntroCallbacks(() => this.playIntroEffect('breakup'),
+                () => this.playIntroEffect('rain'), () => this.stopIntroEffects());
+            this.scene.setPreviews(this.galleryTrack, this.previewEntries());
             byId<HTMLElement>('loadingNote').hidden = true;
         } catch (error) {
             console.error('Snapforge 3D could not start', error);
@@ -207,6 +211,33 @@ class SnapforgeGame {
             source.start();
         } catch { /* Sound is optional. */ }
     }
+    private playIntroEffect(kind: 'breakup' | 'rain'): void {
+        const audio = this.prepareAudio();
+        if (!audio || audio.state !== 'running') return;
+        try {
+            const buffer = kind === 'breakup'
+                ? (this.breakupBuffer ??= createBreakupBuffer(audio))
+                : (this.brickRainBuffer ??= createBrickRainBuffer(audio));
+            const source = audio.createBufferSource();
+            const gain = audio.createGain();
+            source.buffer = buffer;
+            gain.gain.value = kind === 'breakup' ? 0.55 : 0.48;
+            source.connect(gain).connect(audio.destination);
+            source.onended = () => {
+                this.introSources.delete(source);
+                source.disconnect(); gain.disconnect();
+            };
+            source.start();
+            this.introSources.set(source, gain);
+        } catch { /* Sound is optional. */ }
+    }
+    private stopIntroEffects(): void {
+        for (const [source, gain] of this.introSources) {
+            try { source.stop(); } catch { /* An ended source needs no further action. */ }
+            source.disconnect(); gain.disconnect();
+        }
+        this.introSources.clear();
+    }
     private tone(frequency: number, duration: number, second?: number): void {
         if (!this.prepareAudio()) return;
         try {
@@ -217,7 +248,7 @@ class SnapforgeGame {
                 oscillator.frequency.setValueAtTime(pitch, this.audio!.currentTime + delay);
                 oscillator.frequency.exponentialRampToValueAtTime(pitch * 0.79, this.audio!.currentTime + delay + duration);
                 gain.gain.setValueAtTime(0.0001, this.audio!.currentTime + delay);
-                gain.gain.exponentialRampToValueAtTime(0.09775, this.audio!.currentTime + delay + 0.012);
+                gain.gain.exponentialRampToValueAtTime(0.26, this.audio!.currentTime + delay + 0.012);
                 gain.gain.exponentialRampToValueAtTime(0.0001, this.audio!.currentTime + delay + duration);
                 oscillator.connect(gain).connect(this.audio!.destination);
                 oscillator.start(this.audio!.currentTime + delay);
@@ -285,6 +316,7 @@ class SnapforgeGame {
             completed: this.progress.completed.includes(item.id) }));
     }
     private renderGallery(): void {
+        this.galleryMotion?.suspend();
         this.galleryTrack.replaceChildren();
         for (const [index, item] of catalog.entries()) {
             const isUnlocked = this.unlocked(index);
@@ -294,7 +326,7 @@ class SnapforgeGame {
             card.className = 'gallery-card';
             card.setAttribute('aria-label', `${item.title}, ${!isUnlocked ? 'locked' : isInProgress ? 'in progress' : isCompleted ? 'completed' : 'ready to build'}`);
             const visual = document.createElement('div');
-            visual.className = 'card-visual';
+            visual.className = 'card-visual is-preview-loading';
             visual.id = `preview-${item.id}`;
             if (!isUnlocked || isCompleted && !isInProgress) {
                 const icon = document.createElement('span');
@@ -346,51 +378,6 @@ class SnapforgeGame {
         }
         this.updateGalleryControls();
     }
-    private galleryDown(event: PointerEvent): void {
-        if (event.pointerType === 'touch' || event.button !== 0) return;
-        this.galleryPointer = { id: event.pointerId, startX: event.clientX,
-            scrollLeft: this.galleryTrack.scrollLeft, dragging: false };
-    }
-    private galleryMove(event: PointerEvent): void {
-        const pointer = this.galleryPointer;
-        if (!pointer || pointer.id !== event.pointerId) return;
-        const distance = event.clientX - pointer.startX;
-        if (!pointer.dragging && Math.abs(distance) > 6) {
-            pointer.dragging = true;
-            this.galleryTrack.classList.add('is-dragging');
-            this.galleryTrack.setPointerCapture(event.pointerId);
-        }
-        if (pointer.dragging) {
-            event.preventDefault();
-            this.galleryTrack.scrollLeft = pointer.scrollLeft - distance;
-        }
-    }
-    private galleryUp(event: PointerEvent): void {
-        const pointer = this.galleryPointer;
-        if (!pointer || pointer.id !== event.pointerId) return;
-        if (pointer.dragging) this.suppressGalleryClickUntil = performance.now() + 350;
-        this.galleryTrack.classList.remove('is-dragging');
-        if (this.galleryTrack.hasPointerCapture(event.pointerId))
-            this.galleryTrack.releasePointerCapture(event.pointerId);
-        this.galleryPointer = null;
-    }
-    private selectCard(index: number): void {
-        this.selectedIndex = Math.max(0, Math.min(catalog.length - 1, index));
-        (this.galleryTrack.children[this.selectedIndex] as HTMLElement)?.scrollIntoView({ behavior: 'smooth',
-            block: 'nearest', inline: 'center' });
-        this.updateGalleryControls();
-    }
-    private updateCardFromScroll(): void {
-        const trackRect = this.galleryTrack.getBoundingClientRect();
-        const center = trackRect.left + trackRect.width / 2;
-        let closest = Infinity;
-        Array.from(this.galleryTrack.children).forEach((card, index) => {
-            const rect = card.getBoundingClientRect();
-            const distance = Math.abs(rect.left + rect.width / 2 - center);
-            if (distance < closest) { closest = distance; this.selectedIndex = index; }
-        });
-        this.updateGalleryControls();
-    }
     private updateGalleryControls(): void {
         this.previewCount.textContent = `${String(this.selectedIndex + 1).padStart(2, '0')} / ${String(catalog.length).padStart(2, '0')}`;
         byId<HTMLButtonElement>('galleryPrevious').disabled = this.selectedIndex === 0;
@@ -404,6 +391,7 @@ class SnapforgeGame {
         this.model.setAttribute('aria-label', 'Drag to turn the model');
     }
     private showGallery(): void {
+        this.stopIntroEffects();
         this.closeShowcase();
         this.scene?.leaveLevel();
         this.current = null;
@@ -416,11 +404,13 @@ class SnapforgeGame {
         this.back.setAttribute('aria-label', 'Back to arcade');
         this.completion.hidden = true;
         this.renderGallery();
-        this.scene?.setPreviews(this.previewEntries());
-        this.selectCard(this.selectedIndex);
+        this.scene?.setPreviews(this.galleryTrack, this.previewEntries());
+        this.galleryMotion.reset(this.selectedIndex);
     }
     private startLevel(level: SnapLevel, resume: boolean): void {
         if (!this.scene) return;
+        this.stopIntroEffects();
+        this.galleryMotion.suspend();
         this.closeShowcase();
         this.current = level;
         this.placedIds = resume ? [...(this.partial(level)?.placedIds ?? [])] : [];

@@ -99,31 +99,19 @@ button:disabled { cursor: default; }
     display: flex;
     gap: 20px;
     overflow-x: auto;
-    padding: 4px 4px 25px;
-    scroll-snap-type: x proximity;
+    padding: 4px max(4px, calc((100% - min(330px, 83vw)) / 2)) 25px;
     scrollbar-color: #c9c6bd transparent;
     scrollbar-width: thin;
     cursor: grab;
 }
-.gallery-track.is-dragging { cursor: grabbing; scroll-snap-type: none; }
+.gallery-track.is-dragging { cursor: grabbing; }
 .gallery-card {
     position: relative;
     flex: 0 0 min(330px, 83vw);
     border: 1px solid transparent;
     border-radius: 24px;
-    scroll-snap-align: center;
+    overflow: hidden;
     box-shadow: 0 10px 26px #5b5c4d14;
-}
-.gallery-card::before {
-    content: '';
-    position: absolute;
-    inset: 0 0 auto;
-    z-index: 4;
-    height: 24px;
-    pointer-events: none;
-    background:
-        radial-gradient(circle 24px at 24px 24px, transparent 23px, #fbf7eb 24px) top left / 24px 24px no-repeat,
-        radial-gradient(circle 24px at 0 24px, transparent 23px, #fbf7eb 24px) top right / 24px 24px no-repeat;
 }
 .gallery-card::after {
     content: '';
@@ -140,7 +128,38 @@ button:disabled { cursor: default; }
 }
 .gallery-card.is-available:focus-visible { outline: 3px solid var(--coral); outline-offset: 3px; }
 .gallery-track.is-dragging .gallery-card { cursor: grabbing; }
-.card-visual { height: 244px; position: relative; }
+.card-visual { height: 244px; position: relative; background: #f3ebd4; }
+.preview-canvas { display: block; width: 100%; height: 100%; pointer-events: none; }
+.card-visual.is-preview-loading::before {
+    content: '';
+    position: absolute;
+    top: calc(50% - 20px);
+    left: calc(50% - 20px);
+    width: 40px;
+    height: 40px;
+    border: 3px solid #ffffffa8;
+    border-top-color: var(--coral);
+    border-radius: 50%;
+    animation: preview-spin 0.9s linear infinite;
+    pointer-events: none;
+}
+.card-visual.is-preview-loading::after {
+    content: 'LOADING MODEL';
+    position: absolute;
+    top: calc(50% + 31px);
+    left: 0;
+    width: 100%;
+    color: #384653;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 1.3px;
+    text-align: center;
+    pointer-events: none;
+}
+@keyframes preview-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+    .card-visual.is-preview-loading::before { animation: none; }
+}
 .card-badge {
     position: absolute;
     top: 15px;

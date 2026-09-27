@@ -15,7 +15,7 @@
     "clean": "rimraf dist",
     "build:clean": "npm run clean && npm run build:prod",
     "validate:snapforge": "node scripts/validate-snapforge.mjs",
-    "test:snapforge": "node --test scripts/test-snapforge.mjs scripts/test-snapforge-overlay.mjs"
+    "test:snapforge": "node --test scripts/test-snapforge.mjs scripts/test-snapforge-overlay.mjs scripts/test-snapforge-gallery.mjs"
   },
   "keywords": [
     "arcade",

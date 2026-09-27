@@ -1,3 +1,4 @@
+import { PreviewGallery } from './preview-gallery';
 import * as THREE from 'three';
 import RAPIER from '@dimforge/rapier3d-compat';
 import { mysteryModel, disposeMystery } from './mystery3d';
@@ -10,8 +11,6 @@ interface Flight { brick: SnapBrick; mesh: THREE.Group; from: THREE.Vector2; to:
     start: number; duration: number; kind: 'intro' | 'placement' | 'rejection' | 'return';
     fromRotation?: THREE.Quaternion; landingPosition?: THREE.Vector3;
     arcHeight?: number; arcSide?: number; spin?: THREE.Vector3; }
-interface Preview { element: HTMLElement; scene: THREE.Scene; camera: THREE.PerspectiveCamera; model: THREE.Group;
-    dispose: () => void; }
 interface Drag { loose: LooseBrick; overlay: THREE.Group; lastX: number; lastY: number;
     lastTime: number; velocityX: number; velocityY: number;
     rotationStart: number; fromRotation: THREE.Quaternion; }
@@ -53,7 +52,7 @@ export class SnapScene3D {
     private pileCamera = new THREE.PerspectiveCamera(42, 1, 0.1, 200);
     private overlayCamera = new THREE.OrthographicCamera(0, 1, 1, 0, -100, 100);
     private modelGroup = new THREE.Group();
-    private previewTargets: Preview[] = [];
+    private previewGallery: PreviewGallery | null = null;
     private world: RAPIER.World;
     private level: SnapLevel | null = null;
     private order: SnapBrick[] = [];
@@ -72,6 +71,7 @@ export class SnapScene3D {
     private flights: Flight[] = [];
     private introQueue: SnapBrick[] = [];
     private introNext = 0;
+    private introRainPlayed = false;
     private mystery: THREE.Group | null = null;
     private reserve: SnapBrick[] = [];
     private nextRefill = 0;
@@ -100,6 +100,9 @@ export class SnapScene3D {
     private onPlaced: (id: string) => void = () => {};
     private onWrong: () => void = () => {};
     private onAction: () => void = () => {};
+    private onIntroBreakup: () => void = () => {};
+    private onIntroRain: () => void = () => {};
+    private onIntroCancel: () => void = () => {};
     private interactive = false;
     private playing = false;
     private placementPending = false;
@@ -174,13 +177,22 @@ export class SnapScene3D {
         this.onPlaced = onPlaced; this.onWrong = onWrong; this.onAction = onAction;
     }
 
-    setPreviews(entries: { id: string; element: HTMLElement; level: SnapLevel; completed: boolean }[]): void {
-        for (const preview of this.previewTargets) preview.dispose();
-        this.previewTargets = entries.map(entry => {
-            const backgrounds: Record<string, number> = {
-                duck: 0xffdb61, apple: 0xffd9d3, pineapple: 0xe0ecc4,
-                'sports-car': 0xffd7c5, castle: 0xe1d4fb
-            };
+    setIntroCallbacks(onBreakup: () => void, onRain: () => void, onCancel: () => void): void {
+        this.onIntroBreakup = onBreakup; this.onIntroRain = onRain; this.onIntroCancel = onCancel;
+    }
+
+    setPreviews(track: HTMLElement, entries: { id: string; element: HTMLElement; level: SnapLevel; completed: boolean }[]): void {
+        this.previewGallery?.destroy();
+        this.canvas.hidden = true;
+        this.renderer.setPixelRatio(1);
+        this.renderer.setSize(1, 1, false);
+        const backgrounds: Record<string, number> = {
+            duck: 0xffdb61, apple: 0xffd9d3, pineapple: 0xe0ecc4,
+            'sports-car': 0xffd7c5, castle: 0xe1d4fb
+        };
+        for (const entry of entries)
+            entry.element.style.backgroundColor = `#${(backgrounds[entry.id] ?? 0xcfe7f7).toString(16)}`;
+        this.previewGallery = new PreviewGallery(this.renderer, track, entries.map(entry => ({ element: entry.element, create: () => {
             const scene = litScene(backgrounds[entry.id] ?? 0xcfe7f7);
             const data = entry.level;
             const model = entry.completed ? new THREE.Group() : mysteryModel(data);
@@ -199,11 +211,12 @@ export class SnapScene3D {
             camera.lookAt(0, maxHeight / 2, 0);
             return { element: entry.element, scene, camera, model, dispose: () => {
                 if (!entry.completed) disposeMystery(model);
+                else for (const child of [...model.children]) disposeBrick(child as THREE.Group);
                 scene.traverse(child => {
                     if (child instanceof THREE.DirectionalLight) child.shadow.dispose();
                 });
             } };
-        });
+        } })));
     }
 
     startLevel(level: SnapLevel, placedIds: string[], intro: boolean, onIntroDone: () => void): void {
@@ -212,6 +225,9 @@ export class SnapScene3D {
         this.order = buildOrder(level);
         this.placedIds = [...placedIds];
         this.playing = true;
+        this.canvas.hidden = false;
+        this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75));
+        this.resize();
         this.interactive = !intro;
         this.introDone = onIntroDone;
         const maxWidth = Math.max(...level.bricks.map(brick => brick.x + brick.w));
@@ -250,6 +266,7 @@ export class SnapScene3D {
     }
 
     private clearLevel(): void {
+        this.onIntroCancel();
         this.showcasing = false;
         this.revealRemaining = 0;
         if (this.orbitPointer !== null && this.modelElement.hasPointerCapture(this.orbitPointer))
@@ -271,6 +288,7 @@ export class SnapScene3D {
         this.flights = [];
         this.clearTarget();
         this.introQueue = [];
+        this.introRainPlayed = false;
         this.reserve = [];
         this.nextRefill = 0;
         this.introDone = null;
@@ -324,6 +342,7 @@ export class SnapScene3D {
 
     skipIntro(): void {
         if (!this.playing || !this.level || this.interactive) return;
+        this.onIntroCancel();
         this.clearMystery();
         for (const flight of this.flights) disposeBrick(flight.mesh);
         this.flights = [];
@@ -514,7 +533,7 @@ export class SnapScene3D {
     }
 
     private pileDown = (event: PointerEvent): void => {
-        if (!this.playing || !this.interactive || this.drag || this.placementPending) return;
+        if (!this.playing || !this.interactive || event.button !== 0 || this.drag || this.placementPending) return;
         const rect = this.pileElement.getBoundingClientRect();
         const ray = new THREE.Raycaster();
         ray.setFromCamera(new THREE.Vector2((event.clientX - rect.left) / rect.width * 2 - 1,
@@ -613,6 +632,7 @@ export class SnapScene3D {
     }
 
     private resize(): void {
+        if (!this.playing) return;
         const width = Math.max(1, this.root.clientWidth);
         const height = Math.max(1, this.root.scrollHeight);
         this.renderer.setSize(width, height, false);
@@ -647,6 +667,11 @@ export class SnapScene3D {
 
     private animate = (now: number): void => {
         this.frame = requestAnimationFrame(this.animate);
+        if (!this.playing) {
+            this.lastFrame = now;
+            this.previewGallery?.render(now);
+            return;
+        }
         const delta = Math.min(0.05, (now - this.lastFrame) / 1000);
         this.lastFrame = now;
         if (this.playing) {
@@ -736,9 +761,6 @@ export class SnapScene3D {
             this.advanceFlights(now);
             this.refillPile(now);
         }
-        for (const preview of this.previewTargets) {
-            preview.model.rotation.y = REDUCED_MOTION.matches ? 0 : now * 0.00006;
-        }
         this.renderer.setScissorTest(false);
         this.renderer.setClearColor(0xffffff, 0);
         this.renderer.clear(true, true, true);
@@ -746,8 +768,6 @@ export class SnapScene3D {
         if (this.playing && !this.modelElement.hidden) {
             this.renderRegion(this.modelElement, this.modelScene, this.modelCamera);
             this.renderRegion(this.pileElement, this.pileScene, this.pileCamera);
-        } else for (const preview of this.previewTargets) {
-            if (preview.element.offsetParent) this.renderRegion(preview.element, preview.scene, preview.camera);
         }
         if (this.flights.length || this.drag) {
             const width = this.canvas.clientWidth, height = this.canvas.clientHeight;
@@ -775,6 +795,7 @@ export class SnapScene3D {
         if (now < this.introNext) return;
         this.clearMystery();
         if (REDUCED_MOTION.matches) { this.skipIntro(); return; }
+        this.onIntroBreakup();
         const count = this.introQueue.length;
         for (let index = 0; index < count; index++) {
             const brick = this.introQueue.shift()!;
@@ -855,6 +876,10 @@ export class SnapScene3D {
                 this.placementPending = false;
             } else if (!this.reserve.includes(flight.brick)) {
                 this.spawnLoose(flight.brick, true, flight.landingPosition);
+                if (flight.kind === 'intro' && !this.introRainPlayed) {
+                    this.introRainPlayed = true;
+                    this.onIntroRain();
+                }
             }
         }
         if (this.playing && !this.interactive && this.introQueue.length === 0 &&
@@ -873,7 +898,7 @@ export class SnapScene3D {
         this.pileElement.removeEventListener('pointerup', this.pileUp);
         this.pileElement.removeEventListener('pointercancel', this.pileUp);
         this.clearLevel();
-        for (const preview of this.previewTargets) preview.dispose();
+        this.previewGallery?.destroy();
         this.world.free();
         this.renderer.dispose();
         this.canvas.remove();

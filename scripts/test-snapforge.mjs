@@ -219,10 +219,31 @@ function sceneModule(name) {
     moduleUrls.set(name, url);
     return url;
 }
-globalThis.matchMedia = () => ({ matches: false });
+const reducedMotion = { matches: false };
+globalThis.matchMedia = () => reducedMotion;
+globalThis.devicePixelRatio = 1;
 const { SnapScene3D } = await import(sceneModule('scene3d'));
 const THREE = await import('three');
 const { brickPosition, brickMesh, BRICK_HEIGHT } = await import(sceneModule('brick3d'));
+const { createBreakupBuffer, createBrickRainBuffer } = await import(sceneModule('sound'));
+
+test('intro cues have nonzero attacks, a trailing rain, and bounded peaks', () => {
+    const context = { sampleRate: 44100, createBuffer(_channels, length) {
+        const samples = new Float32Array(length);
+        return { duration: length / this.sampleRate, getChannelData: () => samples };
+    } };
+    const breakup = createBreakupBuffer(context);
+    const rain = createBrickRainBuffer(context);
+    for (const buffer of [breakup, rain]) {
+        const samples = buffer.getChannelData(0);
+        assert.ok(samples.some(sample => Math.abs(sample) > 0.05));
+        assert.ok(samples.every(Number.isFinite));
+        assert.ok(Math.max(...samples.slice(0, 10000).map(Math.abs)) <= 0.76);
+    }
+    assert.ok(breakup.duration < 0.5);
+    assert.ok(rain.duration > 1 && rain.duration < 1.3);
+    assert.ok(rain.getChannelData(0).slice(30000).some(sample => Math.abs(sample) > 0.02));
+});
 
 test('height-2 meshes share the original bottom and top bounds with studs only on top', () => {
     const short = brickMesh(unit, '#FFD233');
@@ -285,8 +306,9 @@ test('height-2 mystery volumes and camera framing include the top layer', async 
 function sceneHarness() {
     const scene = Object.create(SnapScene3D.prototype);
     Object.assign(scene, {
-        clearLevel() {}, modelGroup: new THREE.Group(), staticMeshes: new Map(),
+        clearLevel() {}, resize() {}, canvas: {}, renderer: { setPixelRatio() {} }, modelGroup: new THREE.Group(), staticMeshes: new Map(),
         loose: new Map(), flights: [], updateTarget() {},
+        onIntroBreakup() {}, onIntroRain() {}, onIntroCancel() {}, introRainPlayed: false,
         spawnLoose(brick) { this.loose.set(brick.id, { brick }); }
     });
     return scene;
@@ -311,7 +333,10 @@ test('resume restores built target positions rather than original interchangeabl
     const consumed = order.find(p => p.z > 0 && pieceMatches(p, order[0]));
     assert.ok(consumed);
     const scene = sceneHarness();
+    const cues = [];
+    scene.setIntroCallbacks(() => cues.push('breakup'), () => cues.push('rain'), () => {});
     scene.startLevel(duck, [consumed.id], false, () => {});
+    assert.deepEqual(cues, []);
     assert.deepEqual([...scene.staticMeshes.keys()], [order[0].id]);
     assert.deepEqual(scene.modelGroup.children[0].position.toArray(), brickPosition(order[0], duck).toArray());
     assert.ok(!scene.loose.has(consumed.id));
@@ -322,6 +347,8 @@ test('resume restores built target positions rather than original interchangeabl
 test('mystery intro hides finished bricks and launches every piece in one burst', () => {
     for (const level of catalog) {
         const scene = sceneHarness();
+        const cues = [];
+        scene.setIntroCallbacks(() => cues.push('breakup'), () => cues.push('rain'), () => cues.push('cancel'));
         Object.assign(scene, {
             modelCamera: new THREE.PerspectiveCamera(), pileCamera: new THREE.PerspectiveCamera(),
             overlayScene: new THREE.Scene(), canvas: { clientHeight: 800 },
@@ -334,7 +361,9 @@ test('mystery intro hides finished bricks and launches every piece in one burst'
         const launch = scene.introNext;
         scene.advanceIntro(launch - 1);
         assert.equal(scene.flights.length, 0);
+        assert.deepEqual(cues, []);
         scene.advanceIntro(launch);
+        assert.deepEqual(cues, ['breakup']);
         assert.equal(scene.introQueue.length, 0);
         assert.equal(scene.staticMeshes.size, 0);
         assert.equal(scene.mystery, null);
@@ -343,6 +372,7 @@ test('mystery intro hides finished bricks and launches every piece in one burst'
         scene.advanceFlights(launch);
         assert.ok(scene.flights.every(flight => flight.mesh.scale.x === 0));
         scene.advanceFlights(launch + 1200);
+        assert.deepEqual(cues, ['breakup', 'rain']);
         assert.equal(scene.flights.length, 0);
         assert.equal(finished, 1);
         const ids = [...scene.loose.keys(), ...scene.reserve.map(brick => brick.id)];
@@ -353,6 +383,8 @@ test('mystery intro hides finished bricks and launches every piece in one burst'
 
 test('skipping a burst in flight removes overlays and preserves the pile inventory', () => {
     const scene = sceneHarness();
+    const cues = [];
+    scene.setIntroCallbacks(() => cues.push('breakup'), () => cues.push('rain'), () => cues.push('cancel'));
     Object.assign(scene, {
         modelCamera: new THREE.PerspectiveCamera(), pileCamera: new THREE.PerspectiveCamera(),
         overlayScene: new THREE.Scene(), screenPoint() { return new THREE.Vector2(); }
@@ -360,8 +392,22 @@ test('skipping a burst in flight removes overlays and preserves the pile invento
     scene.startLevel(duck, [], true, () => {});
     scene.advanceIntro(scene.introNext);
     scene.skipIntro();
+    assert.deepEqual(cues, ['breakup', 'cancel']);
     assert.equal(scene.overlayScene.children.length, 0);
     assert.equal(scene.flights.length, 0);
     assert.equal(scene.mystery, null);
     assert.equal(scene.loose.size + scene.reserve.length, duck.bricks.length);
+});
+
+test('reduced-motion intro skips both cues', () => {
+    const scene = sceneHarness();
+    const cues = [];
+    scene.setIntroCallbacks(() => cues.push('breakup'), () => cues.push('rain'), () => {});
+    reducedMotion.matches = true;
+    try {
+        scene.startLevel(duck, [], true, () => {});
+        scene.advanceIntro(scene.introNext);
+        assert.deepEqual(cues, []);
+        assert.equal(scene.interactive, true);
+    } finally { reducedMotion.matches = false; }
 });
