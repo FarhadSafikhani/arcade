@@ -8,49 +8,62 @@
 </head>
 <body>
     <main id="snapforge" class="snapforge">
-        <header class="snapforge-header">
-            <a class="arcade-link" href="/arcade/" aria-label="Back to arcade">← Arcade</a>
-            <div class="brand"><span class="brand-mark">✦</span> SNAPFORGE <span class="brand-dot">•</span> BUILD CLUB</div>
-            <button id="soundButton" class="sound-button" type="button" aria-label="Mute sound">Sound on</button>
+        <header class="site-header">
+            <a id="backButton" class="arcade-link" href="/arcade/" aria-label="Back to arcade">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+                <span id="backLabel">Arcade</span>
+            </a>
+            <div class="brand"><span>✳</span> SNAPFORGE</div>
+            <button id="soundButton" class="light-button sound-button" type="button" aria-label="Mute sound" aria-pressed="false" title="Mute sound">
+                <svg class="sound-on-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6.5 9H3v6h3.5L11 19V5Z"/><path d="M15 9a4 4 0 0 1 0 6"/><path d="M18 6a8 8 0 0 1 0 12"/></svg>
+                <svg class="sound-off-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6.5 9H3v6h3.5L11 19V5Z"/><path d="m16 9 5 6m0-6-5 6"/></svg>
+            </button>
         </header>
-
         <section id="galleryScreen" class="gallery-screen" aria-label="Model gallery">
-            <div class="gallery-heading">
-                <p class="eyebrow">A LITTLE WORLD, BRICK BY BRICK</p>
-                <h1>Pick your next build<span class="period">.</span></h1>
-                <p>Find the right pieces. Watch your creation come together.</p>
-            </div>
-            <div class="gallery-controls">
-                <span id="galleryCount">01 / 04</span>
-                <div>
+            <h1 class="gallery-title"><span class="gallery-title-mark" aria-hidden="true">✳</span><span>SNAP<span class="gallery-title-accent">FORGE</span></span></h1>
+            <div class="gallery-toolbar">
+                <div><span class="eyebrow">CHOOSE A MODEL</span><strong id="galleryCount">01 / 04</strong></div>
+                <div class="gallery-arrows">
                     <button id="galleryPrevious" type="button" aria-label="Previous model">←</button>
                     <button id="galleryNext" type="button" aria-label="Next model">→</button>
                 </div>
             </div>
+            <span id="loadingNote" role="status">Warming up the 3D studio…</span>
             <div id="galleryTrack" class="gallery-track" tabindex="0" aria-label="Snapforge models"></div>
-            <p class="gallery-footnote">New shapes will join the club soon ✳</p>
         </section>
-
         <section id="playScreen" class="play-screen" aria-label="Build model" hidden>
-            <div class="play-heading">
-                <button id="modelsButton" class="text-button" type="button">← Models</button>
-                <div class="play-title-group"><span class="eyebrow">NOW BUILDING</span><h1 id="playTitle">Duck</h1></div>
-                <span id="stepCounter" class="step-counter">1 / 30</span>
+            <div class="play-header">
+                <div class="play-heading"><span class="eyebrow">NOW BUILDING</span><h1 id="playTitle">Little Duck</h1></div>
+                <strong id="stepCounter" class="step-counter">1 / 35</strong>
             </div>
-            <div id="playArea" class="play-area">
-                <div class="model-stage">
-                    <div class="stage-caption"><span class="live-dot"></span> BUILD SPACE</div>
-                    <p id="buildMessage" class="build-message">Watch the shape come apart...</p>
-                </div>
-                <div class="tray-section">
-                    <div class="tray-heading"><strong>YOUR BRICKS</strong><span>Tap the piece that matches the ghost</span></div>
-                    <div id="pieceTray" class="piece-tray" aria-label="Available bricks"></div>
-                </div>
-                <div id="pixiHost" class="pixi-host" aria-hidden="true"></div>
+            <div class="studio-layout">
+                <section class="studio-panel model-panel" aria-label="3D model">
+                    <div class="panel-heading"><span class="eyebrow">YOUR BUILD</span><span class="panel-instruction">Drag to turn • let go to reset</span></div>
+                    <div id="modelViewport" class="scene-viewport model-viewport" aria-label="Drag to turn the model"></div>
+                    <div class="build-status"><span id="colorCue" class="color-cue"></span><p id="buildMessage" role="status">Watch the model come apart…</p></div>
+                </section>
+                <section class="studio-panel pile-panel" aria-label="3D brick pile">
+                    <div class="panel-heading"><span class="eyebrow">BRICK PILE</span><span class="panel-instruction">Drag a brick onto your build</span></div>
+                    <div id="pileViewport" class="scene-viewport pile-viewport" aria-label="Drag bricks around or onto the model"></div>
+                    <div class="pile-actions">
+                        <span>Look for the shimmering brick</span>
+                        <div><button id="skipIntroButton" class="text-button" type="button">Skip intro</button>
+                            <button id="hintButton" class="hint-button" type="button" disabled>✦ Hint</button></div>
+                    </div>
+                </section>
             </div>
-            <button id="skipIntroButton" class="skip-button" type="button" hidden>Skip intro →</button>
             <div id="completion" class="completion" role="status" hidden>
-                <span>✦ BUILD COMPLETE ✦</span><strong>You're a maker!</strong>
+                <div id="completionBurst" class="completion-burst" aria-hidden="true"></div>
+                <div class="completion-card">
+                    <span class="eyebrow">✳ BUILD COMPLETE ✳</span>
+                    <h2>You made it!</h2>
+                    <p>Take a look at your finished creation.</p>
+                    <div class="completion-actions">
+                        <button id="replayButton" type="button">Replay</button>
+                        <button id="nextButton" type="button" hidden>Next model →</button>
+                        <button id="completionGalleryButton" type="button">Gallery</button>
+                    </div>
+                </div>
             </div>
         </section>
     </main>

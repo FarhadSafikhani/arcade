@@ -101,3 +101,22 @@ export function buildOrder(level: SnapLevel): SnapBrick[] {
     return [...level.bricks].sort((a, b) =>
         a.z - b.z || (a.x + a.y) - (b.x + b.y) || a.y - b.y || a.id.localeCompare(b.id));
 }
+
+export function pieceMatches(piece: SnapBrick, target: SnapBrick): boolean {
+    return piece.color === target.color &&
+        Math.min(piece.w, piece.d) === Math.min(target.w, target.d) &&
+        Math.max(piece.w, piece.d) === Math.max(target.w, target.d);
+}
+
+export function validPlacedIds(level: SnapLevel, placedIds: unknown): placedIds is string[] {
+    if (!Array.isArray(placedIds) || placedIds.length >= level.bricks.length) return false;
+    const byId = new Map(level.bricks.map(brick => [brick.id, brick]));
+    const order = buildOrder(level);
+    const seen = new Set<string>();
+    return placedIds.every((id, index) => {
+        if (typeof id !== 'string' || seen.has(id)) return false;
+        seen.add(id);
+        const piece = byId.get(id);
+        return Boolean(piece && pieceMatches(piece, order[index]));
+    });
+}

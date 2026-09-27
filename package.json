@@ -15,7 +15,7 @@
     "clean": "rimraf dist",
     "build:clean": "npm run clean && npm run build:prod",
     "validate:snapforge": "node scripts/validate-snapforge.mjs",
-    "test:snapforge": "node --test scripts/test-snapforge.mjs"
+    "test:snapforge": "node --test scripts/test-snapforge.mjs scripts/test-snapforge-overlay.mjs"
   },
   "keywords": [
     "arcade",
@@ -30,6 +30,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "@types/three": "^0.186.0",
     "gh-pages": "^6.3.0",
     "rimraf": "^5.0.10",
     "rollup-plugin-obfuscator": "^1.1.0",
@@ -38,6 +39,8 @@
     "vite": "^6.0.0"
   },
   "dependencies": {
-    "pixi.js": "^7.3.0"
+    "@dimforge/rapier3d-compat": "^0.21.0",
+    "pixi.js": "^7.3.0",
+    "three": "^0.186.1"
   }
 }

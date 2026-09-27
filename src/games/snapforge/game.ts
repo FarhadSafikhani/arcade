@@ -1,382 +1,442 @@
 /// <reference types="vite/client" />
-import { buildOrder, SnapBrick, SnapLevel, validateLevel } from './level';
-import { BrickRenderer, modelSVG, pieceSVG } from './renderer';
+import { buildOrder, SnapLevel, validPlacedIds, validateLevel } from './level';
+import { SnapScene3D } from './scene3d';
+import { createClickBuffer, createConnectionBuffer } from './sound';
 
-interface PartialBuild { version: number; usedPieceIds: string[]; }
-interface Progress {
-    completed: string[];
-    partials: Record<string, PartialBuild>;
-    seenIntro: string[];
-    muted: boolean;
-}
-interface CatalogEntry {
-    id: string;
-    title: string;
-    description: string;
-    order: number;
-    accent: string;
-    level?: SnapLevel;
-}
+interface PartialBuild { version: number; placedIds: string[]; }
+interface Progress { completed: string[]; partials: Record<string, PartialBuild>; seenIntro: string[]; muted: boolean; }
+interface CatalogItem { id: string; title: string; description: string; order: number; level?: SnapLevel; }
 
-const STORAGE_KEY = 'snapforge-progress-v1';
-const levelInputs = Object.values(import.meta.glob('./levels/*.json', { eager: true, import: 'default' }));
+const STORAGE_KEY = 'snapforge-3d-progress-v1';
 const levels = new Map<string, SnapLevel>();
-for (const input of levelInputs) {
-    try {
-        const level = validateLevel(input);
-        levels.set(level.id, level);
-    } catch (error) {
-        console.error('Snapforge level failed validation:', error);
-    }
+for (const input of Object.values(import.meta.glob('./levels/*.json', { eager: true, import: 'default' }))) {
+    try { const level = validateLevel(input); levels.set(level.id, level); }
+    catch (error) { console.error('Invalid Snapforge level', error); }
 }
-
-const teasers: CatalogEntry[] = [
-    { id: 'duck', title: 'Little Duck', description: 'A bright little pond friend.', order: 1, accent: '#ffda51' },
-    { id: 'race-car', title: 'Race Car', description: 'A speedy little machine is next in line.', order: 2, accent: '#ffad8f' },
-    { id: 'rocket', title: 'Rocket', description: 'A colorful launch into the stars.', order: 3, accent: '#b8ddf1' },
-    { id: 'castle', title: 'Castle', description: 'Make a tiny kingdom brick by brick.', order: 4, accent: '#d5c0fa' }
+const teasers: CatalogItem[] = [
+    { id: 'duck', title: 'Little Duck', description: 'Build a bright little pond friend.', order: 1 },
+    { id: 'race-car', title: 'Race Car', description: 'A speedy build is coming soon.', order: 2 },
+    { id: 'rocket', title: 'Rocket', description: 'A tiny trip to the stars is coming soon.', order: 3 },
+    { id: 'castle', title: 'Castle', description: 'A little kingdom is coming soon.', order: 4 }
 ];
-const knownIds = new Set(teasers.map(item => item.id));
-const catalog: CatalogEntry[] = [
-    ...teasers.map(item => ({ ...item, level: levels.get(item.id),
-        title: levels.get(item.id)?.title ?? item.title,
-        description: levels.get(item.id)?.description ?? item.description })),
-    ...[...levels.values()].filter(level => !knownIds.has(level.id)).map(level => ({
-        id: level.id, title: level.title, description: level.description, order: level.order,
-        accent: '#ffda51', level
-    }))
-].sort((a, b) => a.order - b.order);
+const catalog = [...teasers.map(item => ({ ...item, level: levels.get(item.id) })),
+    ...[...levels.values()].filter(level => !teasers.some(item => item.id === level.id))
+        .map(level => ({ id: level.id, title: level.title, description: level.description,
+            order: level.order, level }))].sort((a, b) => a.order - b.order);
 
-function element<T extends HTMLElement>(id: string): T {
-    const found = document.getElementById(id);
-    if (!found) throw new Error(`Snapforge: missing #${id}`);
-    return found as T;
+function byId<T extends HTMLElement>(id: string): T {
+    const result = document.getElementById(id);
+    if (!result) throw new Error(`Snapforge missing #${id}`);
+    return result as T;
 }
-
 function loadProgress(): Progress {
-    const initial: Progress = { completed: [], partials: {}, seenIntro: [], muted: false };
+    const empty: Progress = { completed: [], partials: {}, seenIntro: [], muted: false };
     try {
-        const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-        if (!value || typeof value !== 'object') return initial;
-        return {
-            completed: Array.isArray(value.completed) ? value.completed.filter((id: unknown) => typeof id === 'string') : [],
-            partials: value.partials && typeof value.partials === 'object' ? value.partials : {},
-            seenIntro: Array.isArray(value.seenIntro) ? value.seenIntro.filter((id: unknown) => typeof id === 'string') : [],
-            muted: value.muted === true
-        };
-    } catch { return initial; }
-}
-
-function teaserSVG(id: string): string {
-    const common = 'xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 205" role="img"';
-    if (id === 'race-car') return `<svg ${common} aria-label="Brick-built red race car"><ellipse cx="140" cy="172" rx="105" ry="16" fill="#b6646044"/><path d="M42 98h196v60H42z" fill="#e8483d"/><path d="M77 98l26-40h74l26 40z" fill="#ff7957"/><path d="M112 65h57l17 30H93z" fill="#bfe7ed"/><circle cx="85" cy="161" r="22" fill="#29354d"/><circle cx="197" cy="161" r="22" fill="#29354d"/><circle cx="85" cy="161" r="9" fill="#f5efdb"/><circle cx="197" cy="161" r="9" fill="#f5efdb"/><path d="M42 98h196v16H42z" fill="#ffab68"/><circle cx="62" cy="90" r="8" fill="#ffb690"/><circle cx="216" cy="90" r="8" fill="#ffb690"/></svg>`;
-    if (id === 'rocket') return `<svg ${common} aria-label="Brick-built rocket"><ellipse cx="140" cy="186" rx="67" ry="11" fill="#638dad44"/><path d="M114 75l26-48 26 48v95h-52z" fill="#f7f3e9"/><path d="M114 75l26-48 26 48z" fill="#f06151"/><path d="M114 137l-27 24v21h27zM166 137l27 24v21h-27z" fill="#4463a8"/><rect x="113" y="153" width="54" height="17" fill="#f06151"/><circle cx="140" cy="104" r="18" fill="#65b9d7" stroke="#375a8c" stroke-width="8"/><path d="M127 173h26l-13 27z" fill="#ffb342"/><circle cx="101" cy="72" r="4" fill="#fff"/><circle cx="205" cy="43" r="6" fill="#fff"/></svg>`;
-    return `<svg ${common} aria-label="Brick-built castle"><ellipse cx="140" cy="182" rx="107" ry="13" fill="#7e66a044"/><rect x="53" y="87" width="174" height="87" fill="#9b7cdf"/><rect x="40" y="65" width="57" height="109" fill="#b296ee"/><rect x="183" y="65" width="57" height="109" fill="#b296ee"/><path d="M40 65V48h17v17h22V48h18v17M183 65V48h18v17h22V48h17v17" fill="#9b7cdf"/><rect x="128" y="41" width="24" height="47" fill="#eb795f"/><path d="M128 41l30 10-30 9z" fill="#f9b34e"/><path d="M119 174v-34a21 21 0 0 1 42 0v34" fill="#594d8d"/><rect x="64" y="96" width="15" height="24" rx="8" fill="#594d8d"/><rect x="202" y="96" width="15" height="24" rx="8" fill="#594d8d"/></svg>`;
-}
-
-function hash(text: string): number {
-    let value = 2166136261;
-    for (const char of text) value = Math.imul(value ^ char.charCodeAt(0), 16777619);
-    return value >>> 0;
+        const stored: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+        if (!stored || typeof stored !== 'object') return empty;
+        const data = stored as Record<string, unknown>;
+        return { completed: Array.isArray(data.completed) ? data.completed.filter(id => typeof id === 'string') : [],
+            partials: data.partials && typeof data.partials === 'object' ? data.partials as Record<string, PartialBuild> : {},
+            seenIntro: Array.isArray(data.seenIntro) ? data.seenIntro.filter(id => typeof id === 'string') : [],
+            muted: data.muted === true };
+    } catch { return empty; }
 }
 
 class SnapforgeGame {
+    private root = byId<HTMLElement>('snapforge');
+    private gallery = byId<HTMLElement>('galleryScreen');
+    private galleryTrack = byId<HTMLElement>('galleryTrack');
+    private play = byId<HTMLElement>('playScreen');
+    private model = byId<HTMLElement>('modelViewport');
+    private pile = byId<HTMLElement>('pileViewport');
+    private message = byId<HTMLElement>('buildMessage');
+    private counter = byId<HTMLElement>('stepCounter');
+    private previewCount = byId<HTMLElement>('galleryCount');
+    private skip = byId<HTMLButtonElement>('skipIntroButton');
+    private hint = byId<HTMLButtonElement>('hintButton');
+    private completion = byId<HTMLElement>('completion');
+    private completionBurst = byId<HTMLElement>('completionBurst');
+    private next = byId<HTMLButtonElement>('nextButton');
+    private back = byId<HTMLAnchorElement>('backButton');
+    private backLabel = byId<HTMLElement>('backLabel');
+    private sound = byId<HTMLButtonElement>('soundButton');
     private progress = loadProgress();
-    private gallery = element<HTMLElement>('galleryScreen');
-    private track = element<HTMLElement>('galleryTrack');
-    private play = element<HTMLElement>('playScreen');
-    private area = element<HTMLElement>('playArea');
-    private host = element<HTMLElement>('pixiHost');
-    private stage = this.area.querySelector<HTMLElement>('.model-stage')!;
-    private tray = element<HTMLElement>('pieceTray');
-    private message = element<HTMLElement>('buildMessage');
-    private counter = element<HTMLElement>('stepCounter');
-    private completion = element<HTMLElement>('completion');
-    private skipButton = element<HTMLButtonElement>('skipIntroButton');
-    private soundButton = element<HTMLButtonElement>('soundButton');
-    private renderer: BrickRenderer | null = null;
-    private currentLevel: SnapLevel | null = null;
-    private ordered: SnapBrick[] = [];
-    private usedPieceIds: string[] = [];
+    private scene: SnapScene3D | null = null;
+    private current: SnapLevel | null = null;
+    private placedIds: string[] = [];
     private selectedIndex = 0;
-    private runId = 0;
-    private introEpoch = 0;
-    private busy = false;
+    private galleryPointer: { id: number; startX: number; scrollLeft: number; dragging: boolean } | null = null;
+    private suppressGalleryClickUntil = 0;
     private audio: AudioContext | null = null;
+    private clickBuffer: AudioBuffer | null = null;
+    private connectionBuffer: AudioBuffer | null = null;
 
     constructor() {
-        this.updateSoundButton();
-        this.soundButton.addEventListener('click', () => {
-            this.progress.muted = !this.progress.muted;
-            this.save();
-            this.updateSoundButton();
-            if (!this.progress.muted) this.tone(660, .06);
-        });
-        element<HTMLButtonElement>('modelsButton').addEventListener('click', () => this.showGallery());
-        element<HTMLButtonElement>('galleryPrevious').addEventListener('click', () => this.selectCard(this.selectedIndex - 1));
-        element<HTMLButtonElement>('galleryNext').addEventListener('click', () => this.selectCard(this.selectedIndex + 1));
-        this.track.addEventListener('scroll', () => this.updateSelectionFromScroll(), { passive: true });
         this.renderGallery();
+        this.updateSound();
+        // Placement completes in an animation frame, so unlock audio during a user gesture.
+        this.root.addEventListener('pointerdown', () => this.prepareAudio(), { passive: true });
+        this.root.addEventListener('keydown', () => this.prepareAudio());
+        // Capture before actions hide/rebuild their controls or disable the final gallery arrow.
+        this.root.addEventListener('click', event => {
+            const control = event.target instanceof Element
+                ? event.target.closest('button, a[href], [role="button"]') : null;
+            if (!control || control === this.sound || control.matches(':disabled, [aria-disabled="true"]')) return;
+            if (control.closest('#galleryTrack') && event.detail &&
+                performance.now() < this.suppressGalleryClickUntil) return;
+            this.playEffect('click');
+        }, true);
+        this.sound.addEventListener('click', () => {
+            this.progress.muted = !this.progress.muted;
+            this.save(); this.updateSound();
+            if (!this.progress.muted) this.playEffect('click');
+        });
+        this.back.addEventListener('click', event => {
+            if (this.play.hidden) {
+                // Give the click time to sound before same-tab navigation tears down audio.
+                if (!this.progress.muted && this.audio?.state === 'running' && event.button === 0 &&
+                    !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
+                    event.preventDefault();
+                    window.setTimeout(() => window.location.assign(this.back.href), 120);
+                }
+                return;
+            }
+            event.preventDefault();
+            this.showGallery();
+        });
+        byId<HTMLButtonElement>('galleryPrevious').addEventListener('click', () => this.selectCard(this.selectedIndex - 1));
+        byId<HTMLButtonElement>('galleryNext').addEventListener('click', () => this.selectCard(this.selectedIndex + 1));
+        this.galleryTrack.addEventListener('scroll', () => this.updateCardFromScroll(), { passive: true });
+        this.galleryTrack.addEventListener('pointerdown', event => this.galleryDown(event));
+        this.galleryTrack.addEventListener('pointermove', event => this.galleryMove(event));
+        this.galleryTrack.addEventListener('pointerup', event => this.galleryUp(event));
+        this.galleryTrack.addEventListener('pointercancel', event => this.galleryUp(event));
+        this.galleryTrack.addEventListener('click', event => {
+            if (event.detail && performance.now() < this.suppressGalleryClickUntil) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        }, true);
+        this.skip.addEventListener('click', () => this.scene?.skipIntro());
+        this.hint.addEventListener('click', () => {
+            if (this.scene?.hint()) {
+                this.message.textContent = 'Look for the glowing ring in the pile';
+                window.setTimeout(() => this.updateStep(), 2300);
+            }
+        });
+        byId<HTMLButtonElement>('replayButton').addEventListener('click', () => {
+            if (this.current) this.startLevel(this.current, false);
+        });
+        byId<HTMLButtonElement>('completionGalleryButton').addEventListener('click', () => this.showGallery());
+        this.next.addEventListener('click', () => {
+            if (!this.current) return;
+            const index = catalog.findIndex(item => item.id === this.current!.id);
+            const next = catalog[index + 1];
+            if (next?.level) this.startLevel(next.level, false);
+        });
+        void this.initializeScene();
     }
 
-    private save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this.progress)); } catch { /* private mode */ } }
-    private updateSoundButton() {
-        this.soundButton.textContent = this.progress.muted ? 'Sound off' : 'Sound on';
-        this.soundButton.setAttribute('aria-label', this.progress.muted ? 'Unmute sound' : 'Mute sound');
+    private async initializeScene(): Promise<void> {
+        try {
+            this.scene = await SnapScene3D.create(this.root, this.model, this.pile);
+            this.scene.setCallbacks(id => this.placed(id), () => this.wrong(), () => this.playEffect('click'));
+            this.scene.setPreviews(catalog.map(item => ({ id: item.id,
+                element: byId<HTMLElement>(`preview-${item.id}`), level: item.level })));
+            byId<HTMLElement>('loadingNote').hidden = true;
+        } catch (error) {
+            console.error('Snapforge 3D could not start', error);
+            byId<HTMLElement>('loadingNote').textContent = '3D could not start on this device. Please try a browser with WebGL support.';
+        }
     }
-    private tone(frequency: number, duration: number) {
-        if (this.progress.muted) return;
+
+    private save(): void {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this.progress)); }
+        catch { /* Game still works if storage is unavailable. */ }
+    }
+    private updateSound(): void {
+        const label = this.progress.muted ? 'Unmute sound' : 'Mute sound';
+        this.sound.classList.toggle('is-muted', this.progress.muted);
+        this.sound.setAttribute('aria-label', label);
+        this.sound.setAttribute('aria-pressed', String(this.progress.muted));
+        this.sound.title = label;
+    }
+    private prepareAudio(): AudioContext | null {
+        if (this.progress.muted) return null;
         try {
             this.audio ??= new AudioContext();
-            const oscillator = this.audio.createOscillator();
-            const gain = this.audio.createGain();
-            oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(frequency, this.audio.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(frequency * .65, this.audio.currentTime + duration);
-            gain.gain.setValueAtTime(.0001, this.audio.currentTime);
-            gain.gain.exponentialRampToValueAtTime(.095, this.audio.currentTime + .012);
-            gain.gain.exponentialRampToValueAtTime(.0001, this.audio.currentTime + duration);
-            oscillator.connect(gain).connect(this.audio.destination);
-            oscillator.start(); oscillator.stop(this.audio.currentTime + duration + .01);
-        } catch { /* audio is optional */ }
+            if (this.audio.state === 'suspended') void this.audio.resume().catch(() => {});
+            return this.audio;
+        } catch { return null; /* Sound is optional. */ }
+    }
+    private playEffect(kind: 'click' | 'connection'): void {
+        const audio = this.prepareAudio();
+        if (!audio) return;
+        try {
+            const buffer = kind === 'click'
+                ? (this.clickBuffer ??= createClickBuffer(audio))
+                : (this.connectionBuffer ??= createConnectionBuffer(audio));
+            const source = audio.createBufferSource();
+            const gain = audio.createGain();
+            source.buffer = buffer;
+            source.playbackRate.value = 0.97 + Math.random() * 0.06;
+            gain.gain.value = 0.85 + Math.random() * 0.08;
+            source.connect(gain).connect(audio.destination);
+            source.onended = () => { source.disconnect(); gain.disconnect(); };
+            source.start();
+        } catch { /* Sound is optional. */ }
+    }
+    private tone(frequency: number, duration: number, second?: number): void {
+        if (!this.prepareAudio()) return;
+        try {
+            const note = (pitch: number, delay: number) => {
+                const oscillator = this.audio!.createOscillator();
+                const gain = this.audio!.createGain();
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(pitch, this.audio!.currentTime + delay);
+                oscillator.frequency.exponentialRampToValueAtTime(pitch * 0.79, this.audio!.currentTime + delay + duration);
+                gain.gain.setValueAtTime(0.0001, this.audio!.currentTime + delay);
+                gain.gain.exponentialRampToValueAtTime(0.085, this.audio!.currentTime + delay + 0.012);
+                gain.gain.exponentialRampToValueAtTime(0.0001, this.audio!.currentTime + delay + duration);
+                oscillator.connect(gain).connect(this.audio!.destination);
+                oscillator.start(this.audio!.currentTime + delay);
+                oscillator.stop(this.audio!.currentTime + delay + duration + 0.02);
+            };
+            note(frequency, 0);
+            if (second) note(second, duration + 0.035);
+        } catch { /* Sound is optional. */ }
+    }
+    private fanfare(): void {
+        const audio = this.prepareAudio();
+        if (!audio) return;
+        try {
+            // Let the final connection speak before the celebration begins.
+            const start = audio.currentTime + 0.10;
+            for (const [pitch, delay, duration] of [
+                [523.25, 0, 0.16], [659.25, 0.12, 0.16], [783.99, 0.24, 0.18],
+                [1046.5, 0.39, 0.48], [783.99, 0.39, 0.48]
+            ]) {
+                const oscillator = audio.createOscillator();
+                const gain = audio.createGain();
+                oscillator.type = 'triangle';
+                oscillator.frequency.value = pitch;
+                gain.gain.setValueAtTime(0.0001, start + delay);
+                gain.gain.exponentialRampToValueAtTime(0.055, start + delay + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.0001, start + delay + duration);
+                oscillator.connect(gain).connect(audio.destination);
+                oscillator.start(start + delay);
+                oscillator.stop(start + delay + duration + 0.02);
+            }
+        } catch { /* Sound is optional. */ }
+    }
+    private celebrate(): void {
+        const colors = ['#ef694c', '#ffd247', '#80c9b5', '#7d9be2', '#fffdf7'];
+        const radius = Math.min(340, window.innerWidth * 0.43);
+        const pieces = document.createDocumentFragment();
+        for (let index = 0; index < 36; index++) {
+            const confetti = document.createElement('span');
+            const angle = index * Math.PI * 2 / 36;
+            const distance = radius * (0.65 + (index % 5) * 0.09);
+            confetti.className = 'confetti';
+            confetti.style.setProperty('--x', `${Math.cos(angle) * distance}px`);
+            confetti.style.setProperty('--y', `${Math.sin(angle) * distance}px`);
+            confetti.style.setProperty('--spin', `${(index % 2 ? 1 : -1) * (360 + index * 13)}deg`);
+            confetti.style.setProperty('--delay', `${(index % 4) * 35}ms`);
+            confetti.style.setProperty('--size', `${7 + index % 4 * 2}px`);
+            confetti.style.setProperty('--color', colors[index % colors.length]);
+            pieces.appendChild(confetti);
+        }
+        this.completionBurst.replaceChildren(pieces);
     }
 
-    private isUnlocked(index: number): boolean {
+    private unlocked(index: number): boolean {
         return index === 0 || this.progress.completed.includes(catalog[index - 1].id);
     }
-
-    private renderGallery() {
-        this.track.replaceChildren();
-        catalog.forEach((entry, index) => {
-            const unlocked = this.isUnlocked(index);
-            const completed = this.progress.completed.includes(entry.id);
-            const partial = this.getPartial(entry.level);
-            const card = document.createElement('article');
-            card.className = `model-card${unlocked ? '' : ' locked'}`;
-            card.dataset.id = entry.id;
-            const art = document.createElement('div');
-            art.className = 'card-art';
-            art.style.backgroundColor = entry.accent;
-            const illustration = document.createElement('img');
-            illustration.alt = entry.level ? `${entry.title} brick model` : `${entry.title} preview artwork`;
-            illustration.loading = 'lazy';
-            illustration.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
-                entry.level ? modelSVG(entry.level) : teaserSVG(entry.id))}`;
-            art.appendChild(illustration);
-            const badge = document.createElement('span');
-            badge.className = 'card-badge';
-            badge.textContent = !unlocked ? '🔒 LOCKED' : !entry.level ? '✦ COMING SOON' :
-                partial ? '◒ IN PROGRESS' : completed ? '✓ COMPLETED' : '✦ READY TO BUILD';
-            art.appendChild(badge);
-            const body = document.createElement('div');
-            body.className = 'card-body';
-            const number = document.createElement('span');
-            number.className = 'card-index';
-            number.textContent = `MODEL ${String(entry.order).padStart(2, '0')}`;
-            const title = document.createElement('h2'); title.textContent = entry.title;
-            const description = document.createElement('p'); description.textContent = entry.description;
-            const actions = document.createElement('div'); actions.className = 'card-actions';
-            if (unlocked && entry.level) {
-                const primary = document.createElement('button');
-                primary.type = 'button';
-                primary.textContent = partial ? 'Continue →' : completed ? 'Replay →' : 'Start building →';
-                primary.addEventListener('click', () => this.startLevel(entry.level!, Boolean(partial)));
-                actions.appendChild(primary);
-                if (partial) {
-                    const restart = document.createElement('button');
-                    restart.type = 'button'; restart.className = 'secondary'; restart.textContent = 'Restart';
-                    restart.addEventListener('click', () => this.startLevel(entry.level!, false));
-                    actions.appendChild(restart);
-                }
-            } else {
-                const disabled = document.createElement('button');
-                disabled.type = 'button'; disabled.disabled = true;
-                disabled.textContent = unlocked ? 'Coming soon' : 'Complete the previous model';
-                actions.appendChild(disabled);
-            }
-            body.append(number, title, description, actions);
-            card.append(art, body);
-            card.addEventListener('click', () => { this.selectedIndex = index; this.updateGalleryControls(); });
-            this.track.appendChild(card);
-        });
-        this.updateGalleryControls();
-    }
-
-    private selectCard(index: number) {
-        this.selectedIndex = Math.max(0, Math.min(catalog.length - 1, index));
-        const card = this.track.children[this.selectedIndex] as HTMLElement;
-        card?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-        this.updateGalleryControls();
-    }
-    private updateSelectionFromScroll() {
-        const cards = [...this.track.children] as HTMLElement[];
-        const center = this.track.scrollLeft + this.track.clientWidth / 2;
-        let best = this.selectedIndex, distance = Infinity;
-        cards.forEach((card, index) => {
-            const delta = Math.abs(card.offsetLeft + card.offsetWidth / 2 - center);
-            if (delta < distance) { best = index; distance = delta; }
-        });
-        this.selectedIndex = best;
-        this.updateGalleryControls();
-    }
-    private updateGalleryControls() {
-        element<HTMLElement>('galleryCount').textContent = `${String(this.selectedIndex + 1).padStart(2, '0')} / ${String(catalog.length).padStart(2, '0')}`;
-        element<HTMLButtonElement>('galleryPrevious').disabled = this.selectedIndex === 0;
-        element<HTMLButtonElement>('galleryNext').disabled = this.selectedIndex === catalog.length - 1;
-    }
-
-    private getPartial(level?: SnapLevel): PartialBuild | null {
+    private partial(level?: SnapLevel): PartialBuild | null {
         if (!level) return null;
         const partial = this.progress.partials[level.id];
-        if (!partial || partial.version !== level.version || !Array.isArray(partial.usedPieceIds) ||
-            partial.usedPieceIds.length === 0) return null;
-        const ids = new Set(level.bricks.map(brick => brick.id));
-        if (partial.usedPieceIds.length >= level.bricks.length ||
-            partial.usedPieceIds.some(id => !ids.has(id)) || new Set(partial.usedPieceIds).size !== partial.usedPieceIds.length) return null;
-        const actual = partial.usedPieceIds.map(id => level.bricks.find(brick => brick.id === id)!)
-            .map(brick => `${brick.color}:${brick.w}:${brick.d}`).sort();
-        const expected = buildOrder(level).slice(0, partial.usedPieceIds.length)
-            .map(brick => `${brick.color}:${brick.w}:${brick.d}`).sort();
-        if (actual.some((type, index) => type !== expected[index])) return null;
-        return partial;
+        return partial?.version === level.version && validPlacedIds(level, partial.placedIds) &&
+            partial.placedIds.length > 0 ? partial : null;
     }
-
-    private showGallery() {
-        this.runId++;
-        this.introEpoch++;
-        this.busy = false;
-        this.currentLevel = null;
-        this.renderer?.clear();
-        this.completion.hidden = true;
+    private previewEntries() {
+        return catalog.map(item => ({ id: item.id,
+            element: byId<HTMLElement>(`preview-${item.id}`), level: item.level }));
+    }
+    private renderGallery(): void {
+        this.galleryTrack.replaceChildren();
+        for (const [index, item] of catalog.entries()) {
+            const card = document.createElement('article');
+            card.className = 'gallery-card';
+            card.setAttribute('aria-label', `${item.title}, ${item.level ? this.unlocked(index) ? 'ready to build' : 'locked' : 'coming soon'}`);
+            const visual = document.createElement('div');
+            visual.className = 'card-visual';
+            visual.id = `preview-${item.id}`;
+            const badge = document.createElement('span');
+            badge.className = 'card-badge';
+            badge.textContent = !item.level ? 'COMING SOON' : !this.unlocked(index) ? 'LOCKED' :
+                this.partial(item.level) ? 'IN PROGRESS' : this.progress.completed.includes(item.id) ? 'COMPLETED' : 'READY';
+            visual.appendChild(badge);
+            const copy = document.createElement('div');
+            copy.className = 'card-copy';
+            const eyebrow = document.createElement('small');
+            eyebrow.textContent = `MODEL ${String(item.order).padStart(2, '0')}`;
+            const title = document.createElement('h2'); title.textContent = item.title;
+            const description = document.createElement('p'); description.textContent = item.description;
+            const action = document.createElement('span');
+            action.className = 'card-action';
+            if (item.level && this.unlocked(index)) {
+                const level = item.level;
+                card.classList.add('is-available');
+                card.setAttribute('role', 'button');
+                card.tabIndex = 0;
+                card.addEventListener('click', () => this.startLevel(level, Boolean(this.partial(level))));
+                card.addEventListener('keydown', event => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        card.click();
+                    }
+                });
+                action.textContent = this.partial(level) ? 'Continue build →' :
+                    this.progress.completed.includes(item.id) ? 'Build again →' : 'Start building →';
+            } else {
+                action.textContent = item.level ? 'Finish previous model' : 'Coming soon';
+                action.classList.add('is-disabled');
+            }
+            copy.append(eyebrow, title, description, action);
+            card.append(visual, copy);
+            this.galleryTrack.appendChild(card);
+        }
+        this.updateGalleryControls();
+    }
+    private galleryDown(event: PointerEvent): void {
+        if (event.pointerType === 'touch' || event.button !== 0) return;
+        this.galleryPointer = { id: event.pointerId, startX: event.clientX,
+            scrollLeft: this.galleryTrack.scrollLeft, dragging: false };
+    }
+    private galleryMove(event: PointerEvent): void {
+        const pointer = this.galleryPointer;
+        if (!pointer || pointer.id !== event.pointerId) return;
+        const distance = event.clientX - pointer.startX;
+        if (!pointer.dragging && Math.abs(distance) > 6) {
+            pointer.dragging = true;
+            this.galleryTrack.classList.add('is-dragging');
+            this.galleryTrack.setPointerCapture(event.pointerId);
+        }
+        if (pointer.dragging) {
+            event.preventDefault();
+            this.galleryTrack.scrollLeft = pointer.scrollLeft - distance;
+        }
+    }
+    private galleryUp(event: PointerEvent): void {
+        const pointer = this.galleryPointer;
+        if (!pointer || pointer.id !== event.pointerId) return;
+        if (pointer.dragging) this.suppressGalleryClickUntil = performance.now() + 350;
+        this.galleryTrack.classList.remove('is-dragging');
+        if (this.galleryTrack.hasPointerCapture(event.pointerId))
+            this.galleryTrack.releasePointerCapture(event.pointerId);
+        this.galleryPointer = null;
+    }
+    private selectCard(index: number): void {
+        this.selectedIndex = Math.max(0, Math.min(catalog.length - 1, index));
+        (this.galleryTrack.children[this.selectedIndex] as HTMLElement)?.scrollIntoView({ behavior: 'smooth',
+            block: 'nearest', inline: 'center' });
+        this.updateGalleryControls();
+    }
+    private updateCardFromScroll(): void {
+        const trackRect = this.galleryTrack.getBoundingClientRect();
+        const center = trackRect.left + trackRect.width / 2;
+        let closest = Infinity;
+        Array.from(this.galleryTrack.children).forEach((card, index) => {
+            const rect = card.getBoundingClientRect();
+            const distance = Math.abs(rect.left + rect.width / 2 - center);
+            if (distance < closest) { closest = distance; this.selectedIndex = index; }
+        });
+        this.updateGalleryControls();
+    }
+    private updateGalleryControls(): void {
+        this.previewCount.textContent = `${String(this.selectedIndex + 1).padStart(2, '0')} / ${String(catalog.length).padStart(2, '0')}`;
+        byId<HTMLButtonElement>('galleryPrevious').disabled = this.selectedIndex === 0;
+        byId<HTMLButtonElement>('galleryNext').disabled = this.selectedIndex === catalog.length - 1;
+    }
+    private showGallery(): void {
+        this.scene?.leaveLevel();
+        this.current = null;
         this.play.hidden = true;
         this.gallery.hidden = false;
+        this.root.classList.remove('is-playing');
+        this.backLabel.textContent = 'Arcade';
+        this.back.setAttribute('aria-label', 'Back to arcade');
+        this.completion.hidden = true;
         this.renderGallery();
+        this.scene?.setPreviews(this.previewEntries());
         this.selectCard(this.selectedIndex);
     }
-
-    private startLevel(level: SnapLevel, resume: boolean) {
-        this.runId++;
-        const run = this.runId;
-        this.currentLevel = level;
-        this.ordered = buildOrder(level);
-        this.usedPieceIds = resume ? [...(this.getPartial(level)?.usedPieceIds ?? [])] : [];
-        this.progress.partials[level.id] = { version: level.version, usedPieceIds: [...this.usedPieceIds] };
+    private startLevel(level: SnapLevel, resume: boolean): void {
+        if (!this.scene) return;
+        this.current = level;
+        this.placedIds = resume ? [...(this.partial(level)?.placedIds ?? [])] : [];
+        this.progress.partials[level.id] = { version: level.version, placedIds: [...this.placedIds] };
         this.save();
-        this.busy = false;
         this.gallery.hidden = true;
         this.play.hidden = false;
+        this.root.classList.add('is-playing');
+        this.backLabel.textContent = 'Menu';
+        this.back.setAttribute('aria-label', 'Back to model gallery');
         this.completion.hidden = true;
-        element<HTMLElement>('playTitle').textContent = level.title;
-        if (this.renderer) this.renderer.setLevel(level);
-        else this.renderer = new BrickRenderer(this.host, this.stage, level);
-        this.renderTray();
-        if (resume && this.usedPieceIds.length) {
-            this.tray.classList.remove('waiting');
-            this.showBuildStep();
-        } else {
-            this.tray.classList.add('waiting');
-            this.renderer.showSilhouette();
-            this.message.textContent = 'Watch the shape come apart...';
-            this.counter.textContent = `0 / ${this.ordered.length}`;
-            void this.playIntro(run);
-        }
-    }
-
-    private async playIntro(run: number) {
-        const epoch = ++this.introEpoch;
-        const cancelled = () => run !== this.runId || epoch !== this.introEpoch;
-        this.skipButton.hidden = !this.progress.seenIntro.includes(this.currentLevel!.id);
-        this.skipButton.onclick = () => { this.introEpoch++; this.finishIntro(run); };
-        await this.renderer!.emerge(cancelled);
-        if (cancelled()) return;
-        await new Promise(resolve => setTimeout(resolve, matchMedia('(prefers-reduced-motion: reduce)').matches ? 80 : 480));
-        if (cancelled()) return;
-        const targets = new Map([...this.tray.querySelectorAll<HTMLButtonElement>('.piece-button')]
-            .map(button => [button.dataset.brickId!, button]));
-        await this.renderer!.scatter(targets, cancelled);
-        if (!cancelled()) this.finishIntro(run);
-    }
-
-    private finishIntro(run: number) {
-        if (run !== this.runId || !this.currentLevel) return;
-        this.skipButton.hidden = true;
-        if (!this.progress.seenIntro.includes(this.currentLevel.id)) {
-            this.progress.seenIntro.push(this.currentLevel.id);
+        byId<HTMLElement>('playTitle').textContent = level.title;
+        this.skip.hidden = resume;
+        this.hint.disabled = !resume;
+        this.message.textContent = resume ? '' : 'Watch the model come apart…';
+        byId<HTMLElement>('colorCue').style.backgroundColor = 'transparent';
+        this.updateStep();
+        this.scene.startLevel(level, this.placedIds, !resume, () => {
+            this.skip.hidden = true;
+            this.hint.disabled = false;
+            if (!this.progress.seenIntro.includes(level.id)) this.progress.seenIntro.push(level.id);
             this.save();
-        }
-        this.tray.classList.remove('waiting');
-        this.showBuildStep();
+            this.updateStep();
+        });
     }
-
-    private renderTray() {
-        if (!this.currentLevel) return;
-        const used = new Set(this.usedPieceIds);
-        const currentScroll = this.tray.scrollLeft;
-        this.tray.replaceChildren();
-        const pieces = [...this.currentLevel.bricks].sort((a, b) => hash(a.id) - hash(b.id));
-        for (const brick of pieces) {
-            if (used.has(brick.id)) continue;
-            const button = document.createElement('button');
-            button.type = 'button'; button.className = 'piece-button'; button.dataset.brickId = brick.id;
-            button.setAttribute('aria-label', `${brick.color} ${brick.w} by ${brick.d} brick`);
-            button.innerHTML = pieceSVG(brick, this.currentLevel.palette[brick.color]);
-            const label = document.createElement('span'); label.textContent = `${brick.color} · ${brick.w}×${brick.d}`;
-            button.appendChild(label);
-            button.addEventListener('click', () => void this.choosePiece(brick, button));
-            this.tray.appendChild(button);
-        }
-        this.tray.scrollLeft = currentScroll;
+    private updateStep(): void {
+        if (!this.current) return;
+        const order = buildOrder(this.current);
+        const step = this.placedIds.length;
+        this.counter.textContent = `${Math.min(step + 1, order.length)} / ${order.length}`;
+        const target = order[step];
+        if (target && !this.skip.hidden) return;
+        this.message.textContent = target ?
+            `Find ${/^[aeiou]/i.test(target.color) ? 'an' : 'a'} ${target.color} brick that matches the shimmering one` :
+            'You built it!';
+        byId<HTMLElement>('colorCue').style.backgroundColor = target ? this.current.palette[target.color] : 'transparent';
     }
-
-    private showBuildStep() {
-        if (!this.currentLevel || !this.renderer) return;
-        const step = this.usedPieceIds.length;
-        this.renderer.showBuild(this.ordered.slice(0, step), this.ordered[step]);
-        this.counter.textContent = `${Math.min(step + 1, this.ordered.length)} / ${this.ordered.length}`;
-        const next = this.ordered[step];
-        this.message.textContent = next ? `Find the ${next.color} ${next.w}×${next.d} brick` : 'All done!';
-        this.renderTray();
-    }
-
-    private async choosePiece(piece: SnapBrick, button: HTMLButtonElement) {
-        if (this.busy || !this.currentLevel || !this.renderer) return;
-        const expected = this.ordered[this.usedPieceIds.length];
-        if (!expected) return;
-        if (piece.w !== expected.w || piece.d !== expected.d || piece.color !== expected.color) {
-            button.classList.remove('wrong');
-            void button.offsetWidth;
-            button.classList.add('wrong');
-            this.tone(210, .11);
-            return;
-        }
-        const run = this.runId;
-        this.busy = true;
-        button.style.visibility = 'hidden';
-        await this.renderer.flyFrom(button, expected, () => run !== this.runId);
-        if (run !== this.runId || !this.currentLevel) return;
-        this.usedPieceIds.push(piece.id);
-        this.progress.partials[this.currentLevel.id] = {
-            version: this.currentLevel.version, usedPieceIds: [...this.usedPieceIds]
-        };
+    private placed(id: string): void {
+        if (!this.current) return;
+        this.placedIds.push(id);
+        this.progress.partials[this.current.id] = { version: this.current.version, placedIds: [...this.placedIds] };
         this.save();
-        this.tone(770, .15);
-        this.busy = false;
-        if (this.usedPieceIds.length === this.ordered.length) this.finishLevel(run);
-        else this.showBuildStep();
+        this.playEffect('connection');
+        if (this.placedIds.length >= this.current.bricks.length) this.finish();
+        else this.updateStep();
     }
-
-    private finishLevel(run: number) {
-        if (!this.currentLevel || !this.renderer) return;
-        const id = this.currentLevel.id;
-        if (!this.progress.completed.includes(id)) this.progress.completed.push(id);
-        delete this.progress.partials[id];
+    private wrong(): void {
+        this.tone(310, 0.11, 260);
+        this.message.textContent = 'Not this one—try another shape!';
+        window.setTimeout(() => this.updateStep(), 1000);
+    }
+    private finish(): void {
+        if (!this.current) return;
+        if (!this.progress.completed.includes(this.current.id)) this.progress.completed.push(this.current.id);
+        delete this.progress.partials[this.current.id];
         this.save();
-        this.renderer.showBuild(this.ordered);
-        this.counter.textContent = `${this.ordered.length} / ${this.ordered.length}`;
         this.message.textContent = 'You built it!';
+        this.counter.textContent = `${this.placedIds.length} / ${this.placedIds.length}`;
+        this.hint.disabled = true;
+        const index = catalog.findIndex(item => item.id === this.current!.id);
+        this.next.hidden = !catalog[index + 1]?.level;
+        this.celebrate();
         this.completion.hidden = false;
-        this.tone(990, .28);
-        setTimeout(() => { if (run === this.runId) this.showGallery(); }, 1650);
+        this.fanfare();
+        byId<HTMLButtonElement>('replayButton').focus();
     }
 }
 

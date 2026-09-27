@@ -8,7 +8,8 @@ const source = readFileSync(resolve('src/games/snapforge/level.ts'), 'utf8');
 const compiled = ts.transpileModule(source, {
     compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 }
 }).outputText;
-const { validateLevel, buildOrder } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`);
+const { validateLevel, buildOrder, pieceMatches, validPlacedIds } =
+    await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`);
 const duck = JSON.parse(readFileSync(resolve('src/games/snapforge/levels/duck.json'), 'utf8'));
 
 test('duck is a supported, connected 25–35 brick model with a complete build order', () => {
@@ -45,4 +46,23 @@ test('rejects malformed dimensions and palette references', () => {
     const badColor = structuredClone(duck);
     badColor.bricks[0].color = 'purple';
     assert.throws(() => validateLevel(badColor), /palette entry/);
+});
+
+test('accepts a brick rotated by a quarter turn and rejects wrong shapes or colors', () => {
+    const target = { id: 'target', w: 4, d: 2, color: 'yellow' };
+    assert.equal(pieceMatches({ id: 'rotated', w: 2, d: 4, color: 'yellow' }, target), true);
+    assert.equal(pieceMatches({ id: 'wrong-shape', w: 2, d: 3, color: 'yellow' }, target), false);
+    assert.equal(pieceMatches({ id: 'wrong-color', w: 2, d: 4, color: 'orange' }, target), false);
+});
+
+test('resumes interchangeable placed bricks only in the correct step order', () => {
+    const level = validateLevel(duck);
+    const order = buildOrder(level);
+    const first = order[0];
+    const interchangeable = level.bricks.find(brick => brick.id !== first.id && pieceMatches(brick, first));
+    assert.ok(interchangeable);
+    assert.equal(validPlacedIds(level, [interchangeable.id]), true);
+    assert.equal(validPlacedIds(level, [interchangeable.id, interchangeable.id]), false);
+    assert.equal(validPlacedIds(level, ['not-in-level']), false);
+    assert.equal(validPlacedIds(level, [interchangeable.id, order.at(-1).id]), false);
 });
