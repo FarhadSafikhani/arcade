@@ -1,0 +1,331 @@
+{
+  "id": "cherry",
+  "title": "Cherry",
+  "description": "Two round red cherries joined by arching green stems and a leaf.",
+  "collection": "fruit",
+  "order": 3,
+  "version": 3,
+  "targetParts": 30,
+  "palette": {
+    "red": "#CD263F",
+    "green": "#418346"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 3
+  },
+  "volumes": [
+    {
+      "name": "cherry-3-0-center",
+      "x": 1,
+      "y": 1,
+      "z": 0,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "cherry-3-1-course-0-center",
+      "x": 0,
+      "y": 2,
+      "z": 1,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "cherry-3-1-course-0-front",
+      "x": 1,
+      "y": 0,
+      "z": 1,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "cherry-3-1-course-0-back",
+      "x": 1,
+      "y": 4,
+      "z": 1,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "cherry-3-1-course-2-center",
+      "x": 0,
+      "y": 2,
+      "z": 3,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "cherry-3-1-course-2-front",
+      "x": 1,
+      "y": 0,
+      "z": 3,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "cherry-3-1-course-2-back",
+      "x": 1,
+      "y": 4,
+      "z": 3,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "cherry-3-1-course-4-center",
+      "x": 0,
+      "y": 2,
+      "z": 5,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "cherry-3-1-course-4-front",
+      "x": 1,
+      "y": 0,
+      "z": 5,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "cherry-3-1-course-4-back",
+      "x": 1,
+      "y": 4,
+      "z": 5,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "cherry-3-7-center",
+      "x": 1,
+      "y": 1,
+      "z": 7,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "cherry-11-0-center",
+      "x": 9,
+      "y": 1,
+      "z": 0,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "cherry-11-1-course-0-center",
+      "x": 8,
+      "y": 2,
+      "z": 1,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "cherry-11-1-course-0-front",
+      "x": 9,
+      "y": 0,
+      "z": 1,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "cherry-11-1-course-0-back",
+      "x": 9,
+      "y": 4,
+      "z": 1,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "cherry-11-1-course-2-center",
+      "x": 8,
+      "y": 2,
+      "z": 3,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "cherry-11-1-course-2-front",
+      "x": 9,
+      "y": 0,
+      "z": 3,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "cherry-11-1-course-2-back",
+      "x": 9,
+      "y": 4,
+      "z": 3,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "cherry-11-1-course-4-center",
+      "x": 8,
+      "y": 2,
+      "z": 5,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "cherry-11-1-course-4-front",
+      "x": 9,
+      "y": 0,
+      "z": 5,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "cherry-11-1-course-4-back",
+      "x": 9,
+      "y": 4,
+      "z": 5,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "cherry-11-7-center",
+      "x": 9,
+      "y": 1,
+      "z": 7,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "left-stalk",
+      "x": 2,
+      "y": 2,
+      "z": 8,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "green"
+    },
+    {
+      "name": "right-stalk",
+      "x": 10,
+      "y": 2,
+      "z": 8,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "green"
+    },
+    {
+      "name": "left-bend",
+      "x": 3,
+      "y": 2,
+      "z": 10,
+      "w": 3,
+      "d": 2,
+      "h": 2,
+      "color": "green"
+    },
+    {
+      "name": "right-bend",
+      "x": 8,
+      "y": 2,
+      "z": 10,
+      "w": 3,
+      "d": 2,
+      "h": 2,
+      "color": "green"
+    },
+    {
+      "name": "joined-stalks",
+      "x": 5,
+      "y": 2,
+      "z": 12,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "green"
+    },
+    {
+      "name": "leaf",
+      "x": 6,
+      "y": 1,
+      "z": 13,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "green"
+    },
+    {
+      "name": "leaf-tip",
+      "x": 9,
+      "y": 2,
+      "z": 14,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "green"
+    }
+  ]
+}

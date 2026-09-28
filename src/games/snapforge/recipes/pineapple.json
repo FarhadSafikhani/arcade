@@ -1,0 +1,579 @@
+{
+  "id": "pineapple",
+  "title": "Pineapple",
+  "description": "A golden oval pineapple with a textured rind and tall spreading pointed green crown.",
+  "collection": "fruit",
+  "order": 6,
+  "version": 3,
+  "targetParts": 80,
+  "palette": {
+    "gold": "#EFAF2C",
+    "rind": "#B97427",
+    "green": "#34834A"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 5
+  },
+  "volumes": [
+    {
+      "name": "body-0-center",
+      "x": 2,
+      "y": 4,
+      "z": 0,
+      "w": 6,
+      "d": 2,
+      "h": 1,
+      "color": "gold",
+      "protected": true
+    },
+    {
+      "name": "body-0-front",
+      "x": 4,
+      "y": 2,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "gold"
+    },
+    {
+      "name": "body-0-back",
+      "x": 4,
+      "y": 6,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "gold"
+    },
+    {
+      "name": "body-1-center",
+      "x": 1,
+      "y": 3,
+      "z": 1,
+      "w": 8,
+      "d": 4,
+      "h": 2,
+      "color": "gold",
+      "protected": true
+    },
+    {
+      "name": "body-1-front",
+      "x": 3,
+      "y": 1,
+      "z": 1,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "gold"
+    },
+    {
+      "name": "body-1-back",
+      "x": 3,
+      "y": 7,
+      "z": 1,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "gold"
+    },
+    {
+      "name": "body-3-course-0-center",
+      "x": 0,
+      "y": 2,
+      "z": 3,
+      "w": 10,
+      "d": 6,
+      "h": 2,
+      "color": "gold",
+      "protected": true
+    },
+    {
+      "name": "body-3-course-0-front",
+      "x": 2,
+      "y": 0,
+      "z": 3,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "gold"
+    },
+    {
+      "name": "body-3-course-0-back",
+      "x": 2,
+      "y": 8,
+      "z": 3,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "gold"
+    },
+    {
+      "name": "body-3-course-2-center",
+      "x": 0,
+      "y": 2,
+      "z": 5,
+      "w": 10,
+      "d": 6,
+      "h": 2,
+      "color": "gold",
+      "protected": true
+    },
+    {
+      "name": "body-3-course-2-front",
+      "x": 2,
+      "y": 0,
+      "z": 5,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "gold"
+    },
+    {
+      "name": "body-3-course-2-back",
+      "x": 2,
+      "y": 8,
+      "z": 5,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "gold"
+    },
+    {
+      "name": "body-3-course-4-center",
+      "x": 0,
+      "y": 2,
+      "z": 7,
+      "w": 10,
+      "d": 6,
+      "h": 2,
+      "color": "gold",
+      "protected": true
+    },
+    {
+      "name": "body-3-course-4-front",
+      "x": 2,
+      "y": 0,
+      "z": 7,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "gold"
+    },
+    {
+      "name": "body-3-course-4-back",
+      "x": 2,
+      "y": 8,
+      "z": 7,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "gold"
+    },
+    {
+      "name": "body-3-course-6-center",
+      "x": 0,
+      "y": 2,
+      "z": 9,
+      "w": 10,
+      "d": 6,
+      "h": 2,
+      "color": "gold",
+      "protected": true
+    },
+    {
+      "name": "body-3-course-6-front",
+      "x": 2,
+      "y": 0,
+      "z": 9,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "gold"
+    },
+    {
+      "name": "body-3-course-6-back",
+      "x": 2,
+      "y": 8,
+      "z": 9,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "gold"
+    },
+    {
+      "name": "body-3-course-8-center",
+      "x": 0,
+      "y": 2,
+      "z": 11,
+      "w": 10,
+      "d": 6,
+      "h": 2,
+      "color": "gold",
+      "protected": true
+    },
+    {
+      "name": "body-3-course-8-front",
+      "x": 2,
+      "y": 0,
+      "z": 11,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "gold"
+    },
+    {
+      "name": "body-3-course-8-back",
+      "x": 2,
+      "y": 8,
+      "z": 11,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "gold"
+    },
+    {
+      "name": "body-13-center",
+      "x": 1,
+      "y": 3,
+      "z": 13,
+      "w": 8,
+      "d": 4,
+      "h": 2,
+      "color": "gold",
+      "protected": true
+    },
+    {
+      "name": "body-13-front",
+      "x": 3,
+      "y": 1,
+      "z": 13,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "gold"
+    },
+    {
+      "name": "body-13-back",
+      "x": 3,
+      "y": 7,
+      "z": 13,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "gold"
+    },
+    {
+      "name": "body-15-center",
+      "x": 2,
+      "y": 4,
+      "z": 15,
+      "w": 6,
+      "d": 2,
+      "h": 1,
+      "color": "gold",
+      "protected": true
+    },
+    {
+      "name": "body-15-front",
+      "x": 4,
+      "y": 2,
+      "z": 15,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "gold"
+    },
+    {
+      "name": "body-15-back",
+      "x": 4,
+      "y": 6,
+      "z": 15,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "gold"
+    },
+    {
+      "name": "rind-eye-2-0-4",
+      "x": 2,
+      "y": 0,
+      "z": 4,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "rind",
+      "overlay": true
+    },
+    {
+      "name": "rind-eye-2-9-4",
+      "x": 2,
+      "y": 9,
+      "z": 4,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "rind",
+      "overlay": true
+    },
+    {
+      "name": "rind-eye-5-0-4",
+      "x": 5,
+      "y": 0,
+      "z": 4,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "rind",
+      "overlay": true
+    },
+    {
+      "name": "rind-eye-5-9-4",
+      "x": 5,
+      "y": 9,
+      "z": 4,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "rind",
+      "overlay": true
+    },
+    {
+      "name": "rind-eye-7-0-4",
+      "x": 7,
+      "y": 0,
+      "z": 4,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "rind",
+      "overlay": true
+    },
+    {
+      "name": "rind-eye-7-9-4",
+      "x": 7,
+      "y": 9,
+      "z": 4,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "rind",
+      "overlay": true
+    },
+    {
+      "name": "rind-eye-3-0-7",
+      "x": 3,
+      "y": 0,
+      "z": 7,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "rind",
+      "overlay": true
+    },
+    {
+      "name": "rind-eye-3-9-7",
+      "x": 3,
+      "y": 9,
+      "z": 7,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "rind",
+      "overlay": true
+    },
+    {
+      "name": "rind-eye-6-0-7",
+      "x": 6,
+      "y": 0,
+      "z": 7,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "rind",
+      "overlay": true
+    },
+    {
+      "name": "rind-eye-6-9-7",
+      "x": 6,
+      "y": 9,
+      "z": 7,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "rind",
+      "overlay": true
+    },
+    {
+      "name": "rind-eye-2-0-10",
+      "x": 2,
+      "y": 0,
+      "z": 10,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "rind",
+      "overlay": true
+    },
+    {
+      "name": "rind-eye-2-9-10",
+      "x": 2,
+      "y": 9,
+      "z": 10,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "rind",
+      "overlay": true
+    },
+    {
+      "name": "rind-eye-5-0-10",
+      "x": 5,
+      "y": 0,
+      "z": 10,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "rind",
+      "overlay": true
+    },
+    {
+      "name": "rind-eye-5-9-10",
+      "x": 5,
+      "y": 9,
+      "z": 10,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "rind",
+      "overlay": true
+    },
+    {
+      "name": "rind-eye-7-0-10",
+      "x": 7,
+      "y": 0,
+      "z": 10,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "rind",
+      "overlay": true
+    },
+    {
+      "name": "rind-eye-7-9-10",
+      "x": 7,
+      "y": 9,
+      "z": 10,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "rind",
+      "overlay": true
+    },
+    {
+      "name": "crown-root",
+      "x": 3,
+      "y": 3,
+      "z": 16,
+      "w": 4,
+      "d": 4,
+      "h": 2,
+      "color": "green"
+    },
+    {
+      "name": "crown-center",
+      "x": 4,
+      "y": 4,
+      "z": 18,
+      "w": 2,
+      "d": 2,
+      "h": 7,
+      "color": "green"
+    },
+    {
+      "name": "leaf-left",
+      "x": 1,
+      "y": 4,
+      "z": 17,
+      "w": 3,
+      "d": 2,
+      "h": 3,
+      "color": "green",
+      "overlay": true
+    },
+    {
+      "name": "leaf-right",
+      "x": 6,
+      "y": 4,
+      "z": 17,
+      "w": 3,
+      "d": 2,
+      "h": 3,
+      "color": "green",
+      "overlay": true
+    },
+    {
+      "name": "leaf-front",
+      "x": 4,
+      "y": 1,
+      "z": 17,
+      "w": 2,
+      "d": 3,
+      "h": 3,
+      "color": "green",
+      "overlay": true
+    },
+    {
+      "name": "leaf-back",
+      "x": 4,
+      "y": 6,
+      "z": 17,
+      "w": 2,
+      "d": 3,
+      "h": 3,
+      "color": "green",
+      "overlay": true
+    },
+    {
+      "name": "leaf-tip-left",
+      "x": 0,
+      "y": 4,
+      "z": 20,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "green"
+    },
+    {
+      "name": "leaf-tip-right",
+      "x": 8,
+      "y": 4,
+      "z": 20,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "green"
+    },
+    {
+      "name": "leaf-tip-front",
+      "x": 4,
+      "y": 0,
+      "z": 20,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "green"
+    },
+    {
+      "name": "leaf-tip-back",
+      "x": 4,
+      "y": 8,
+      "z": 20,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "green"
+    }
+  ]
+}

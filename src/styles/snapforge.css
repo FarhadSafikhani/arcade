@@ -87,6 +87,10 @@ button:disabled { cursor: default; }
 .collection-name:hover, .collection-name:focus-visible { color: var(--coral); }
 .collection-name[aria-expanded="true"] { color: var(--coral); }
 .collection-name:focus-visible { outline: 3px solid var(--coral); outline-offset: -4px; }
+.collection-row.is-coming-soon { background: #f3f1ec; border-color: #e8e5dd; }
+.collection-row.is-coming-soon .collection-name { color: #969ba2; }
+.collection-row.is-coming-soon .collection-name:hover { color: #969ba2; }
+.collection-coming-soon { flex: none; color: #969ba2; font-size: 13px; font-weight: 800; white-space: nowrap; }
 .collection-heading > strong { flex: none; font-size: 13px; letter-spacing: 1px; white-space: nowrap; }
 .collection-panel { min-width: 0; padding: 0 12px 14px; }
 .gallery-arrows { display: flex; flex: none; gap: 8px; margin-left: auto; }

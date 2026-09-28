@@ -293,7 +293,7 @@ export class SnapScene3D {
         this.modelRadius = Math.max(maxWidth, maxDepth, maxHeight * 1.7) * 1.9;
         const placed = new Set(placedIds);
         const remaining = this.order.filter(brick => !placed.has(brick.id));
-        const initialPile = pileAdditions([], remaining);
+        const initialPile = pileAdditions([], remaining, this.order.slice(placedIds.length));
         const initialIds = new Set(initialPile.map(brick => brick.id));
         this.reserve = remaining.filter(brick => !initialIds.has(brick.id));
         // Saved IDs identify consumed pieces; built positions follow the build order.
@@ -858,7 +858,7 @@ export class SnapScene3D {
     private refillPile(now: number): void {
         if (!this.interactive || this.drag || this.placementPending || now < this.nextRefill) return;
         const active = [...this.loose.values()].map(item => item.brick);
-        const brick = pileAdditions(active, this.reserve)[0];
+        const brick = pileAdditions(active, this.reserve, this.order.slice(this.placedIds.length))[0];
         if (!brick) return;
         this.reserve.splice(this.reserve.indexOf(brick), 1);
         const height = Math.max(6, ...[...this.loose.values()].map(item => item.body.translation().y + 2));

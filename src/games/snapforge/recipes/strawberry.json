@@ -1,0 +1,421 @@
+{
+  "id": "strawberry",
+  "title": "Strawberry",
+  "description": "A tapered red strawberry with golden seeds and a spreading green leafy cap.",
+  "collection": "fruit",
+  "order": 5,
+  "version": 2,
+  "targetParts": 60,
+  "palette": {
+    "red": "#DF3347",
+    "seed": "#FFE19A",
+    "green": "#3E8C45"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 5
+  },
+  "volumes": [
+    {
+      "name": "body-0-center",
+      "x": 4,
+      "y": 4,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "body-2-center",
+      "x": 3,
+      "y": 3,
+      "z": 2,
+      "w": 4,
+      "d": 4,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "body-4-center",
+      "x": 2,
+      "y": 4,
+      "z": 4,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "body-4-front",
+      "x": 4,
+      "y": 2,
+      "z": 4,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "body-4-back",
+      "x": 4,
+      "y": 6,
+      "z": 4,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "body-6-center",
+      "x": 1,
+      "y": 3,
+      "z": 6,
+      "w": 8,
+      "d": 4,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "body-6-front",
+      "x": 3,
+      "y": 1,
+      "z": 6,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "body-6-back",
+      "x": 3,
+      "y": 7,
+      "z": 6,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "body-8-course-0-center",
+      "x": 0,
+      "y": 2,
+      "z": 8,
+      "w": 10,
+      "d": 6,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "body-8-course-0-front",
+      "x": 2,
+      "y": 0,
+      "z": 8,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "body-8-course-0-back",
+      "x": 2,
+      "y": 8,
+      "z": 8,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "body-8-course-2-center",
+      "x": 0,
+      "y": 2,
+      "z": 10,
+      "w": 10,
+      "d": 6,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "body-8-course-2-front",
+      "x": 2,
+      "y": 0,
+      "z": 10,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "body-8-course-2-back",
+      "x": 2,
+      "y": 8,
+      "z": 10,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "body-12-center",
+      "x": 1,
+      "y": 3,
+      "z": 12,
+      "w": 8,
+      "d": 4,
+      "h": 1,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "body-12-front",
+      "x": 3,
+      "y": 1,
+      "z": 12,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "body-12-back",
+      "x": 3,
+      "y": 7,
+      "z": 12,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "red",
+      "protected": true
+    },
+    {
+      "name": "seed-4-3-3",
+      "x": 4,
+      "y": 3,
+      "z": 3,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "seed",
+      "overlay": true
+    },
+    {
+      "name": "seed-4-6-3",
+      "x": 4,
+      "y": 6,
+      "z": 3,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "seed",
+      "overlay": true
+    },
+    {
+      "name": "seed-4-2-5",
+      "x": 4,
+      "y": 2,
+      "z": 5,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "seed",
+      "overlay": true
+    },
+    {
+      "name": "seed-4-7-5",
+      "x": 4,
+      "y": 7,
+      "z": 5,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "seed",
+      "overlay": true
+    },
+    {
+      "name": "seed-3-1-7",
+      "x": 3,
+      "y": 1,
+      "z": 7,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "seed",
+      "overlay": true
+    },
+    {
+      "name": "seed-3-8-7",
+      "x": 3,
+      "y": 8,
+      "z": 7,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "seed",
+      "overlay": true
+    },
+    {
+      "name": "seed-6-1-7",
+      "x": 6,
+      "y": 1,
+      "z": 7,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "seed",
+      "overlay": true
+    },
+    {
+      "name": "seed-6-8-7",
+      "x": 6,
+      "y": 8,
+      "z": 7,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "seed",
+      "overlay": true
+    },
+    {
+      "name": "seed-2-0-9",
+      "x": 2,
+      "y": 0,
+      "z": 9,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "seed",
+      "overlay": true
+    },
+    {
+      "name": "seed-2-9-9",
+      "x": 2,
+      "y": 9,
+      "z": 9,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "seed",
+      "overlay": true
+    },
+    {
+      "name": "seed-5-0-9",
+      "x": 5,
+      "y": 0,
+      "z": 9,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "seed",
+      "overlay": true
+    },
+    {
+      "name": "seed-5-9-9",
+      "x": 5,
+      "y": 9,
+      "z": 9,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "seed",
+      "overlay": true
+    },
+    {
+      "name": "seed-7-0-9",
+      "x": 7,
+      "y": 0,
+      "z": 9,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "seed",
+      "overlay": true
+    },
+    {
+      "name": "seed-7-9-9",
+      "x": 7,
+      "y": 9,
+      "z": 9,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "seed",
+      "overlay": true
+    },
+    {
+      "name": "cap",
+      "x": 3,
+      "y": 3,
+      "z": 13,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "green"
+    },
+    {
+      "name": "leaf-left",
+      "x": 1,
+      "y": 4,
+      "z": 13,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "green"
+    },
+    {
+      "name": "leaf-right",
+      "x": 7,
+      "y": 4,
+      "z": 13,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "green"
+    },
+    {
+      "name": "leaf-front",
+      "x": 4,
+      "y": 1,
+      "z": 13,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "green"
+    },
+    {
+      "name": "leaf-back",
+      "x": 4,
+      "y": 7,
+      "z": 13,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "green"
+    },
+    {
+      "name": "stalk",
+      "x": 4,
+      "y": 4,
+      "z": 14,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "green"
+    }
+  ]
+}

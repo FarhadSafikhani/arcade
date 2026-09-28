@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 import { GalleryMotion } from './gallery-motion';
-import { collectionLevels, collections, CollectionId, modelUnlocked } from './collections';
+import { availableCollections, collectionLevels, collections, CollectionId, modelUnlocked } from './collections';
 import { buildOrder, SnapLevel, validPlacedIds, validateLevel } from './level';
 import { SnapScene3D } from './scene3d';
 import { openModelViewer } from './model-viewer';
@@ -345,10 +345,12 @@ class SnapforgeGame {
     }
     private renderCollections(): void {
         for (const collection of collections) {
+            const comingSoon = !availableCollections.has(collection.id);
             const row = document.createElement('section');
             row.className = 'collection-row';
             row.dataset.collection = collection.id;
             row.classList.toggle('is-active', collection.id === this.activeCollection);
+            row.classList.toggle('is-coming-soon', comingSoon);
             const header = document.createElement('div');
             header.className = 'collection-heading';
             const heading = document.createElement('h2');
@@ -356,11 +358,18 @@ class SnapforgeGame {
             button.type = 'button';
             button.className = 'collection-name';
             button.textContent = collection.name;
+            button.disabled = comingSoon;
             button.setAttribute('aria-expanded', String(collection.id === this.activeCollection));
             button.setAttribute('aria-controls', 'collectionPanel');
             button.addEventListener('click', () => this.selectCollection(collection.id));
             heading.appendChild(button);
             header.appendChild(heading);
+            if (comingSoon) {
+                const label = document.createElement('span');
+                label.className = 'collection-coming-soon';
+                label.textContent = 'Coming soon';
+                header.appendChild(label);
+            }
             row.appendChild(header);
             this.collectionList.appendChild(row);
         }
@@ -370,7 +379,7 @@ class SnapforgeGame {
         this.collectionPanel.hidden = false;
     }
     private selectCollection(id: CollectionId): void {
-        if (id === this.activeCollection) return;
+        if (id === this.activeCollection || !availableCollections.has(id)) return;
         this.galleryMotion.suspend();
         this.activeCollection = id;
         this.selectedIndex = this.selectedByCollection.get(id) ?? 0;

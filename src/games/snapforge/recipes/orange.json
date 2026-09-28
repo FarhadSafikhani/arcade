@@ -1,0 +1,258 @@
+{
+  "id": "orange",
+  "title": "Orange",
+  "description": "A round orange with a small green calyx and a broad side leaf.",
+  "collection": "fruit",
+  "order": 2,
+  "version": 1,
+  "targetParts": 24,
+  "palette": {
+    "orange": "#F58A1F",
+    "green": "#378345"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 5
+  },
+  "volumes": [
+    {
+      "name": "body-0-center",
+      "x": 2,
+      "y": 4,
+      "z": 0,
+      "w": 6,
+      "d": 2,
+      "h": 1,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "body-0-front",
+      "x": 4,
+      "y": 2,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "body-0-back",
+      "x": 4,
+      "y": 6,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "body-1-center",
+      "x": 1,
+      "y": 3,
+      "z": 1,
+      "w": 8,
+      "d": 4,
+      "h": 2,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "body-1-front",
+      "x": 3,
+      "y": 1,
+      "z": 1,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "body-1-back",
+      "x": 3,
+      "y": 7,
+      "z": 1,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "body-3-course-0-center",
+      "x": 0,
+      "y": 2,
+      "z": 3,
+      "w": 10,
+      "d": 6,
+      "h": 2,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "body-3-course-0-front",
+      "x": 2,
+      "y": 0,
+      "z": 3,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "body-3-course-0-back",
+      "x": 2,
+      "y": 8,
+      "z": 3,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "body-3-course-2-center",
+      "x": 0,
+      "y": 2,
+      "z": 5,
+      "w": 10,
+      "d": 6,
+      "h": 2,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "body-3-course-2-front",
+      "x": 2,
+      "y": 0,
+      "z": 5,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "body-3-course-2-back",
+      "x": 2,
+      "y": 8,
+      "z": 5,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "body-3-course-4-center",
+      "x": 0,
+      "y": 2,
+      "z": 7,
+      "w": 10,
+      "d": 6,
+      "h": 2,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "body-3-course-4-front",
+      "x": 2,
+      "y": 0,
+      "z": 7,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "body-3-course-4-back",
+      "x": 2,
+      "y": 8,
+      "z": 7,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "body-9-center",
+      "x": 1,
+      "y": 3,
+      "z": 9,
+      "w": 8,
+      "d": 4,
+      "h": 2,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "body-9-front",
+      "x": 3,
+      "y": 1,
+      "z": 9,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "body-9-back",
+      "x": 3,
+      "y": 7,
+      "z": 9,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "body-11-center",
+      "x": 3,
+      "y": 3,
+      "z": 11,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "calyx",
+      "x": 4,
+      "y": 4,
+      "z": 12,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "green"
+    },
+    {
+      "name": "leaf",
+      "x": 5,
+      "y": 4,
+      "z": 13,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "green"
+    },
+    {
+      "name": "leaf-tip",
+      "x": 8,
+      "y": 4,
+      "z": 14,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "green"
+    }
+  ]
+}

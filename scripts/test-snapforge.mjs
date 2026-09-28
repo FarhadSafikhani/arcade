@@ -25,7 +25,6 @@ const catalog = readdirSync(resolve('src/games/snapforge/levels')).filter(name =
 test('merged models preserve the original occupied cells and colors', () => {
     // Fingerprints captured from the height-1 catalog before merging pairs.
     const original = {
-        pineapple: 'da38f5a8cbc917d5b8e9fdb6c198280762fa5ba51943cae0c8a181e3b8c9d1df',
         'sports-car': '2e6374299b3b3e21e4cb1c0acedcc2ec8e52940a39c20d3a0a929d1edd5c4cc9',
         castle: 'e4adc50d66a66ba964bea8483b6b22b96130c0483dfe12ac414f38d0a825b62b'
     };
@@ -60,8 +59,8 @@ test('wheel identity survives rotated matching, reserve grouping and saved progr
     assert.throws(() => validateLevel(heightLevel([{ ...wheel, h: 2 }])), /wheel must/);
     assert.throws(() => validateLevel(heightLevel([{ ...unit, kind: 'unknown' }])), /unknown part kind/);
     const wheels = Array.from({ length: 5 }, (_, i) => ({ ...wheel, id: `wheel-${i}` }));
-    const active = Array.from({ length: 31 }, (_, i) => ({ ...unit, id: `plain-${i}` }));
-    assert.equal(pileAdditions(active, wheels).length, 3);
+    const active = Array.from({ length: 29 }, (_, i) => ({ ...unit, id: `plain-${i}` }));
+    assert.deepEqual(pileAdditions(active, wheels, [wheel]), [wheels[0]]);
     const level = heightLevel([wheel, { ...rotated, x: 5 }]);
     assert.ok(validPlacedIds(level, ['rotated']));
 });
@@ -96,22 +95,23 @@ test('height participates in rotated matching, resume validation, and pile group
     assert.ok(!validPlacedIds(level, ['top']));
     const active = Array.from({ length: 30 }, (_, i) => ({ ...unit, id: `short-${i}` }));
     const reserve = Array.from({ length: 5 }, (_, i) => ({ ...tall, id: `tall-${i}` }));
-    assert.equal(pileAdditions([], [...active, ...reserve]).filter(b => b.h === 2).length, 3);
+    assert.equal(pileAdditions([], [...active, ...reserve], [reserve[0], ...active])
+        .filter(b => b.h === 2).length, 1);
 });
 
 test('nine collections have ordered models and independent unlock paths', () => {
     const expected = new Map([
         ['starter', ['turtle', 'apple', 'duck', 'house', 'police-car']],
         ['farm', ['sheep', 'chicken', 'cow', 'horse', 'barn']],
+        ['fruit', ['pear', 'orange', 'cherry', 'watermelon', 'strawberry', 'pineapple']],
         ['land-animal', ['rabbit', 'fox', 'elephant']],
-        ['fruit', ['cherry', 'watermelon', 'pineapple', 'pear']],
         ['bird', ['chick', 'owl', 'parrot']],
         ['car', ['compact-car', 'sports-car', 'pickup-truck', 'race-car']],
         ['landmarks', ['castle']],
         ['ocean', ['fish', 'sea-turtle', 'shark']],
         ['dinosaur', ['stegosaurus', 'triceratops', 't-rex']]
     ]);
-    assert.equal(catalog.length, 31);
+    assert.equal(catalog.length, 33);
     for (const [collection, ids] of expected) {
         const group = catalog.filter(level => level.collection === collection).sort((a, b) => a.order - b.order);
         assert.deepEqual(group.map(level => level.id), ids);
@@ -143,10 +143,26 @@ test('every catalog model can be built from its replenishing pile and resumed at
         const placed = [];
         for (const target of buildOrder(level)) {
             // A replenishment can be staggered across frames before this target becomes available.
-            const added = pileAdditions(active, reserve);
-            reserve = reserve.filter(p => !added.includes(p));
-            active.push(...added);
-            const index = active.findIndex(p => pieceMatches(p, target));
+            const upcoming = buildOrder(level).slice(placed.length);
+            // The scene admits one falling piece per refill tick.
+            let next;
+            while ((next = pileAdditions(active, reserve, upcoming)[0])) {
+                reserve.splice(reserve.indexOf(next), 1);
+                active.push(next);
+            }
+            assert.ok(active.length <= 30, `${level.id}: pile exceeds 30`);
+            // Resuming uses the remaining physical IDs, even when later duplicates were used.
+            const consumed = new Set(placed);
+            const resumed = pileAdditions([], level.bricks.filter(p => !consumed.has(p.id)), upcoming);
+            for (const pile of [active, resumed]) {
+                const stocked = [...pile];
+                for (const step of upcoming.slice(0, 24)) {
+                    const match = stocked.findIndex(p => pieceMatches(p, step));
+                    assert.ok(match >= 0, `${level.id}: pile missing ${step.id}`);
+                    stocked.splice(match, 1);
+                }
+            }
+            const index = active.findLastIndex(p => pieceMatches(p, target));
             assert.ok(index >= 0, `${level.id}: missing ${target.id}`);
             placed.push(active.splice(index, 1)[0].id);
             if (placed.length < level.bricks.length) assert.ok(validPlacedIds(level, placed));
@@ -215,34 +231,37 @@ test('resumes interchangeable placed bricks only in the correct step order', () 
 const parts = (count, color = 'yellow', w = 2, d = 4) => Array.from({ length: count }, (_, i) =>
     ({ id: `${color}-${w}-${d}-${i}`, x: 0, y: 0, z: 0, w, d, color }));
 
-test('large piles keep three per interchangeable type and retain every unique type', () => {
-    const reserve = Array.from({ length: 12 }, (_, i) => parts(9, `color${i}`)).flat();
-    const active = pileAdditions([], reserve);
-    assert.equal(active.length, 36);
-    for (const brick of reserve) assert.equal(active.filter(p => pieceMatches(p, brick)).length, 3);
-    const used = active.shift();
-    const hidden = reserve.filter(p => !active.includes(p) && p !== used);
-    const refill = pileAdditions(active, hidden);
-    assert.equal(refill.length, 1);
-    assert.ok(pieceMatches(refill[0], used));
+test('starting pile stocks repeated upcoming parts and limits oversized future clutter', () => {
+    const small = parts(24, 'white', 1, 1);
+    const roof = parts(20, 'blue', 4, 12);
+    const later = parts(20, 'red', 1, 2);
+    const upcoming = [...small, ...roof, ...later];
+    const active = pileAdditions([], [...upcoming].reverse(), upcoming);
+    assert.equal(active.length, 30);
+    assert.equal(active.filter(p => p.color === 'white').length, 24);
+    assert.equal(active.filter(p => p.color === 'blue').length, 2);
+    assert.equal(active.filter(p => p.color === 'red').length, 4);
+    // Large pieces are unrestricted when they are actually needed.
+    assert.equal(pileAdditions([], roof, roof).length, 20);
+    assert.equal(pileAdditions([], [...small, ...roof], [...small, ...roof]).length, 26);
 });
 
 test('small piles fill to 30 regardless of duplicate count, and exhaust the reserve', () => {
     const reserve = parts(100);
-    const active = pileAdditions([], reserve);
+    const active = pileAdditions([], reserve, reserve);
     assert.equal(active.length, 30);
-    assert.equal(pileAdditions(active, reserve.slice(30)).length, 0);
+    assert.equal(pileAdditions(active, reserve.slice(30), reserve).length, 0);
     active.pop();
-    assert.equal(pileAdditions(active, reserve.slice(30)).length, 1);
-    assert.equal(pileAdditions([], parts(29)).length, 29);
-    assert.equal(pileAdditions([], parts(30)).length, 30);
+    assert.equal(pileAdditions(active, reserve.slice(30), reserve.slice(1)).length, 1);
+    assert.equal(pileAdditions([], parts(29), parts(29)).length, 29);
+    assert.equal(pileAdditions([], parts(30), parts(30)).length, 30);
 });
 
 test('reserve inventory can be completely built without losing or duplicating pieces', () => {
     const all = Array.from({ length: 15 }, (_, i) => parts(7, `color${i}`)).flat();
     let reserve = [...all], active = [], built = [];
     while (built.length < all.length) {
-        const added = pileAdditions(active, reserve);
+        const added = pileAdditions(active, reserve, all.slice(built.length));
         reserve = reserve.filter(p => !added.includes(p));
         active.push(...added);
         assert.ok(active.length);

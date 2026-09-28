@@ -1,0 +1,236 @@
+{
+  "id": "pear",
+  "title": "Pear",
+  "description": "A green pear with a rounded lower belly, filled shoulders, narrow neck and a side leaf on a short stalk.",
+  "collection": "fruit",
+  "order": 1,
+  "version": 3,
+  "targetParts": 20,
+  "palette": {
+    "green": "#A8C947",
+    "stem": "#765039",
+    "leaf": "#378345"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 4
+  },
+  "volumes": [
+    {
+      "name": "rounded-bottom",
+      "x": 2,
+      "y": 2,
+      "z": 0,
+      "w": 4,
+      "d": 4,
+      "h": 2,
+      "color": "green",
+      "protected": true
+    },
+    {
+      "name": "lower-belly",
+      "x": 1,
+      "y": 1,
+      "z": 2,
+      "w": 6,
+      "d": 6,
+      "h": 2,
+      "color": "green",
+      "protected": true
+    },
+    {
+      "name": "shoulder-corner-2-2",
+      "x": 2,
+      "y": 2,
+      "z": 8,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "green",
+      "protected": true
+    },
+    {
+      "name": "shoulder-corner-2-5",
+      "x": 2,
+      "y": 5,
+      "z": 8,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "green",
+      "protected": true
+    },
+    {
+      "name": "shoulder-corner-5-2",
+      "x": 5,
+      "y": 2,
+      "z": 8,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "green",
+      "protected": true
+    },
+    {
+      "name": "shoulder-corner-5-5",
+      "x": 5,
+      "y": 5,
+      "z": 8,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "green",
+      "protected": true
+    },
+    {
+      "name": "belly-course-0-center",
+      "x": 0,
+      "y": 2,
+      "z": 4,
+      "w": 8,
+      "d": 4,
+      "h": 2,
+      "color": "green",
+      "protected": true
+    },
+    {
+      "name": "belly-course-0-front",
+      "x": 2,
+      "y": 0,
+      "z": 4,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "green",
+      "protected": true
+    },
+    {
+      "name": "belly-course-0-back",
+      "x": 2,
+      "y": 6,
+      "z": 4,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "green",
+      "protected": true
+    },
+    {
+      "name": "belly-course-2-center",
+      "x": 0,
+      "y": 2,
+      "z": 6,
+      "w": 8,
+      "d": 4,
+      "h": 2,
+      "color": "green",
+      "protected": true
+    },
+    {
+      "name": "belly-course-2-front",
+      "x": 2,
+      "y": 0,
+      "z": 6,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "green",
+      "protected": true
+    },
+    {
+      "name": "belly-course-2-back",
+      "x": 2,
+      "y": 6,
+      "z": 6,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "green",
+      "protected": true
+    },
+    {
+      "name": "shoulder-center",
+      "x": 1,
+      "y": 3,
+      "z": 8,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "green",
+      "protected": true
+    },
+    {
+      "name": "shoulder-front",
+      "x": 3,
+      "y": 1,
+      "z": 8,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "green",
+      "protected": true
+    },
+    {
+      "name": "shoulder-back",
+      "x": 3,
+      "y": 5,
+      "z": 8,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "green",
+      "protected": true
+    },
+    {
+      "name": "neck-base",
+      "x": 2,
+      "y": 2,
+      "z": 10,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "green"
+    },
+    {
+      "name": "neck",
+      "x": 3,
+      "y": 3,
+      "z": 11,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "green"
+    },
+    {
+      "name": "stalk",
+      "x": 4,
+      "y": 3,
+      "z": 13,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "stem"
+    },
+    {
+      "name": "leaf",
+      "x": 4,
+      "y": 3,
+      "z": 14,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "leaf",
+      "overlay": true
+    },
+    {
+      "name": "leaf-tip",
+      "x": 6,
+      "y": 3,
+      "z": 15,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "leaf"
+    }
+  ]
+}

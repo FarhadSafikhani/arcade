@@ -1,0 +1,233 @@
+{
+  "id": "watermelon",
+  "title": "Watermelon Slice",
+  "description": "An upright triangular watermelon wedge with a curved green rind, pale inner edge and black seeds on both red faces.",
+  "collection": "fruit",
+  "order": 4,
+  "version": 3,
+  "targetParts": 36,
+  "palette": {
+    "rind": "#328444",
+    "pith": "#D8EBA0",
+    "flesh": "#EE4A53",
+    "seed": "#38292B"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 1.5
+  },
+  "volumes": [
+    {
+      "name": "rind-bottom",
+      "x": 3,
+      "y": 0,
+      "z": 0,
+      "w": 10,
+      "d": 3,
+      "h": 1,
+      "color": "rind"
+    },
+    {
+      "name": "rind-curve",
+      "x": 1,
+      "y": 0,
+      "z": 1,
+      "w": 14,
+      "d": 3,
+      "h": 1,
+      "color": "rind",
+      "protected": true
+    },
+    {
+      "name": "rind-wide-edge",
+      "x": 0,
+      "y": 0,
+      "z": 2,
+      "w": 16,
+      "d": 3,
+      "h": 1,
+      "color": "rind",
+      "protected": true
+    },
+    {
+      "name": "pale-inner-rind",
+      "x": 1,
+      "y": 0,
+      "z": 3,
+      "w": 14,
+      "d": 3,
+      "h": 1,
+      "color": "pith"
+    },
+    {
+      "name": "flesh-step-0",
+      "x": 2,
+      "y": 0,
+      "z": 4,
+      "w": 12,
+      "d": 3,
+      "h": 2,
+      "color": "flesh"
+    },
+    {
+      "name": "flesh-step-1",
+      "x": 3,
+      "y": 0,
+      "z": 6,
+      "w": 10,
+      "d": 3,
+      "h": 2,
+      "color": "flesh"
+    },
+    {
+      "name": "flesh-step-2",
+      "x": 4,
+      "y": 0,
+      "z": 8,
+      "w": 8,
+      "d": 3,
+      "h": 2,
+      "color": "flesh"
+    },
+    {
+      "name": "flesh-step-3",
+      "x": 5,
+      "y": 0,
+      "z": 10,
+      "w": 6,
+      "d": 3,
+      "h": 2,
+      "color": "flesh"
+    },
+    {
+      "name": "flesh-step-4",
+      "x": 6,
+      "y": 0,
+      "z": 12,
+      "w": 4,
+      "d": 3,
+      "h": 2,
+      "color": "flesh"
+    },
+    {
+      "name": "flesh-step-5",
+      "x": 7,
+      "y": 0,
+      "z": 14,
+      "w": 2,
+      "d": 3,
+      "h": 2,
+      "color": "flesh"
+    },
+    {
+      "name": "seed-4-0-5",
+      "x": 4,
+      "y": 0,
+      "z": 5,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "seed",
+      "overlay": true
+    },
+    {
+      "name": "seed-4-2-5",
+      "x": 4,
+      "y": 2,
+      "z": 5,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "seed",
+      "overlay": true
+    },
+    {
+      "name": "seed-11-0-5",
+      "x": 11,
+      "y": 0,
+      "z": 5,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "seed",
+      "overlay": true
+    },
+    {
+      "name": "seed-11-2-5",
+      "x": 11,
+      "y": 2,
+      "z": 5,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "seed",
+      "overlay": true
+    },
+    {
+      "name": "seed-6-0-8",
+      "x": 6,
+      "y": 0,
+      "z": 8,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "seed",
+      "overlay": true
+    },
+    {
+      "name": "seed-6-2-8",
+      "x": 6,
+      "y": 2,
+      "z": 8,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "seed",
+      "overlay": true
+    },
+    {
+      "name": "seed-9-0-8",
+      "x": 9,
+      "y": 0,
+      "z": 8,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "seed",
+      "overlay": true
+    },
+    {
+      "name": "seed-9-2-8",
+      "x": 9,
+      "y": 2,
+      "z": 8,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "seed",
+      "overlay": true
+    },
+    {
+      "name": "seed-7-0-11",
+      "x": 7,
+      "y": 0,
+      "z": 11,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "seed",
+      "overlay": true
+    },
+    {
+      "name": "seed-7-2-11",
+      "x": 7,
+      "y": 2,
+      "z": 11,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "seed",
+      "overlay": true
+    }
+  ]
+}

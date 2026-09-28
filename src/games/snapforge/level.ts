@@ -171,25 +171,40 @@ export function pieceMatches(piece: SnapBrick, target: SnapBrick): boolean {
         Math.max(piece.w, piece.d) === Math.max(target.w, target.d);
 }
 
-/** Populate every shape/color first, then fill a small pile up to 30 pieces. */
-export function pileAdditions(active: SnapBrick[], reserve: SnapBrick[]): SnapBrick[] {
-    const visible = [...active];
+/** Stock the next 24 placements, with up to six nearer-future pieces mixed in. */
+export function pileAdditions(active: SnapBrick[], reserve: SnapBrick[], upcoming: SnapBrick[]): SnapBrick[] {
+    const unmatched = [...active];
+    const available = [...reserve];
     const additions: SnapBrick[] = [];
-    for (const brick of reserve) {
-        if (visible.filter(piece => pieceMatches(piece, brick)).length >= 3) continue;
-        visible.push(brick);
-        additions.push(brick);
+    const addMatch = (target: SnapBrick): boolean => {
+        if (active.length + additions.length >= 30) return false;
+        const index = available.findIndex(piece => pieceMatches(piece, target));
+        if (index < 0) return false;
+        additions.push(available.splice(index, 1)[0]);
+        return true;
+    };
+    // Consume each visible match once: repeated upcoming steps need repeated pieces.
+    // Physical IDs are interchangeable and may differ from the target IDs after resume.
+    for (const target of upcoming.slice(0, 24)) {
+        const index = unmatched.findIndex(piece => pieceMatches(piece, target));
+        if (index >= 0) unmatched.splice(index, 1);
+        else addMatch(target);
     }
-    for (const brick of reserve) {
-        if (visible.length >= 30) break;
-        if (additions.includes(brick)) continue;
-        visible.push(brick);
-        additions.push(brick);
+    // Existing future pieces keep their place; never remove or reshuffle the live pile.
+    const oversized = (piece: SnapBrick) => piece.w * piece.d >= 16;
+    let futureCount = unmatched.length;
+    let largeFutureCount = unmatched.filter(oversized).length;
+    for (const target of upcoming.slice(24)) {
+        if (futureCount >= 6 || active.length + additions.length >= 30) break;
+        const index = unmatched.findIndex(piece => pieceMatches(piece, target));
+        if (index >= 0) { unmatched.splice(index, 1); continue; }
+        if (oversized(target) && largeFutureCount >= 2) continue;
+        if (addMatch(target)) {
+            futureCount++;
+            if (oversized(target)) largeFutureCount++;
+        }
     }
-    // Once the pile is small, keep it at 30 rather than growing it again
-    // while it contains duplicates admitted by the small-pile exception.
-    return active.length > 0 && active.length <= 30
-        ? additions.slice(0, 30 - active.length) : additions;
+    return additions;
 }
 
 export function validPlacedIds(level: SnapLevel, placedIds: unknown): placedIds is string[] {

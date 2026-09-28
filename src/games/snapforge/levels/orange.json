@@ -1,0 +1,260 @@
+{
+  "id": "orange",
+  "title": "Orange",
+  "description": "A round orange with a small green calyx and a broad side leaf.",
+  "collection": "fruit",
+  "order": 2,
+  "version": 1,
+  "targetParts": 24,
+  "vetted": 1,
+  "palette": {
+    "orange": "#F58A1F",
+    "green": "#378345"
+  },
+  "bricks": [
+    {
+      "id": "brick-001",
+      "x": 4,
+      "y": 2,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "orange"
+    },
+    {
+      "id": "brick-002",
+      "x": 2,
+      "y": 4,
+      "z": 0,
+      "w": 6,
+      "d": 2,
+      "h": 1,
+      "color": "orange"
+    },
+    {
+      "id": "brick-003",
+      "x": 4,
+      "y": 6,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "orange"
+    },
+    {
+      "id": "brick-004",
+      "x": 3,
+      "y": 1,
+      "z": 1,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "orange"
+    },
+    {
+      "id": "brick-005",
+      "x": 1,
+      "y": 3,
+      "z": 1,
+      "w": 8,
+      "d": 4,
+      "h": 2,
+      "color": "orange"
+    },
+    {
+      "id": "brick-006",
+      "x": 3,
+      "y": 7,
+      "z": 1,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "orange"
+    },
+    {
+      "id": "brick-007",
+      "x": 2,
+      "y": 0,
+      "z": 3,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "orange"
+    },
+    {
+      "id": "brick-008",
+      "x": 0,
+      "y": 2,
+      "z": 3,
+      "w": 10,
+      "d": 6,
+      "h": 2,
+      "color": "orange"
+    },
+    {
+      "id": "brick-009",
+      "x": 2,
+      "y": 8,
+      "z": 3,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "orange"
+    },
+    {
+      "id": "brick-010",
+      "x": 2,
+      "y": 0,
+      "z": 5,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "orange"
+    },
+    {
+      "id": "brick-011",
+      "x": 0,
+      "y": 2,
+      "z": 5,
+      "w": 10,
+      "d": 6,
+      "h": 2,
+      "color": "orange"
+    },
+    {
+      "id": "brick-012",
+      "x": 2,
+      "y": 8,
+      "z": 5,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "orange"
+    },
+    {
+      "id": "brick-013",
+      "x": 2,
+      "y": 0,
+      "z": 7,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "orange"
+    },
+    {
+      "id": "brick-014",
+      "x": 0,
+      "y": 2,
+      "z": 7,
+      "w": 10,
+      "d": 6,
+      "h": 2,
+      "color": "orange"
+    },
+    {
+      "id": "brick-015",
+      "x": 2,
+      "y": 8,
+      "z": 7,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "orange"
+    },
+    {
+      "id": "brick-016",
+      "x": 3,
+      "y": 1,
+      "z": 9,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "orange"
+    },
+    {
+      "id": "brick-017",
+      "x": 1,
+      "y": 3,
+      "z": 9,
+      "w": 8,
+      "d": 4,
+      "h": 2,
+      "color": "orange"
+    },
+    {
+      "id": "brick-018",
+      "x": 3,
+      "y": 7,
+      "z": 9,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "orange"
+    },
+    {
+      "id": "brick-019",
+      "x": 3,
+      "y": 3,
+      "z": 11,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "orange"
+    },
+    {
+      "id": "brick-020",
+      "x": 4,
+      "y": 4,
+      "z": 12,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "green"
+    },
+    {
+      "id": "brick-021",
+      "x": 5,
+      "y": 4,
+      "z": 13,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "green"
+    },
+    {
+      "id": "brick-022",
+      "x": 8,
+      "y": 4,
+      "z": 14,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "green"
+    }
+  ],
+  "buildSequence": [
+    "brick-002",
+    "brick-001",
+    "brick-003",
+    "brick-005",
+    "brick-004",
+    "brick-006",
+    "brick-008",
+    "brick-007",
+    "brick-009",
+    "brick-011",
+    "brick-010",
+    "brick-012",
+    "brick-014",
+    "brick-013",
+    "brick-015",
+    "brick-017",
+    "brick-016",
+    "brick-018",
+    "brick-019",
+    "brick-020",
+    "brick-021",
+    "brick-022"
+  ]
+}
