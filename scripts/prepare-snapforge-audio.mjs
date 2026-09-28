@@ -12,7 +12,6 @@ const ENVELOPE_STEP = 0.005;
 /** Freesound previews need no login; a logged-in download saved as `<id>.wav` in WORK takes precedence. */
 const SOURCES = {
     bricks: 'https://cdn.freesound.org/previews/257/257246_4286987-hq.mp3',
-    apart: 'https://cdn.freesound.org/previews/104/104829_1386366-hq.mp3',
     floor: 'https://cdn.freesound.org/previews/707/707543_14747739-hq.mp3'
 };
 
@@ -24,7 +23,6 @@ const SOURCES = {
 const CLIPS = [
     { name: 'snap', source: 'bricks', from: 0, to: 0.6, onset: 0.1, floor: 0.02, maxLength: 0.3, fadeOut: 0.04 },
     { name: 'grab', source: 'bricks', from: 0.6, to: 1.6, onset: 0.1, floor: 0.02, maxLength: 0.3, fadeOut: 0.04 },
-    { name: 'breakup', source: 'apart', from: 0, to: 1.46, onset: 0.1, floor: 0.03, maxLength: 0.9, fadeOut: 0.25 },
     { name: 'pour', source: 'floor', from: 1.3, to: 4.4, onset: 0.3, floor: 0.03, maxLength: 1.6, fadeOut: 0.45, boost: 7 }
 ];
 
