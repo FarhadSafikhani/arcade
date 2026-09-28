@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snapforge · Vibe Arcade</title>
+  <script type="module" crossorigin src="/arcade/assets/snapforge-BNv4UHrK.js"></script>
+  <link rel="modulepreload" crossorigin href="/arcade/assets/modulepreload-polyfill-YP0FEG5d.js">
+  <link rel="stylesheet" crossorigin href="/arcade/assets/snapforge--UlV1X7E.css">
+</head>
+<body>
+    <main id="snapforge" class="snapforge">
+        <header class="site-header">
+            <a id="backButton" class="arcade-link" href="/arcade/" aria-label="Back to arcade">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+                <span id="backLabel">Arcade</span>
+            </a>
+            <div class="header-center">
+                <div class="brand"><span>✳</span> SNAPFORGE</div>
+                <div class="play-heading"><h1 id="playTitle">Little Duck</h1><strong id="stepCounter" class="step-counter">1 / 35</strong></div>
+            </div>
+            <button id="soundButton" class="light-button sound-button" type="button" aria-label="Mute sound" aria-pressed="false" title="Mute sound">
+                <svg class="sound-on-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6.5 9H3v6h3.5L11 19V5Z"/><path d="M15 9a4 4 0 0 1 0 6"/><path d="M18 6a8 8 0 0 1 0 12"/></svg>
+                <svg class="sound-off-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6.5 9H3v6h3.5L11 19V5Z"/><path d="m16 9 5 6m0-6-5 6"/></svg>
+            </button>
+        </header>
+        <section id="galleryScreen" class="gallery-screen" aria-label="Model gallery">
+            <h1 class="gallery-title"><span class="gallery-title-mark" aria-hidden="true">✳</span><span>SNAP<span class="gallery-title-accent">FORGE</span></span></h1>
+            <span id="loadingNote" role="status">Warming up the 3D studio…</span>
+            <div id="collectionList" class="collection-list"></div>
+            <div id="collectionPanel" class="collection-panel" hidden>
+                <strong id="galleryCount"></strong>
+                <div id="galleryArrows" class="gallery-arrows">
+                    <button id="galleryPrevious" type="button" aria-label="Previous model">←</button>
+                    <button id="galleryNext" type="button" aria-label="Next model">→</button>
+                </div>
+                <div id="galleryTrack" class="gallery-track" tabindex="0" aria-label="Snapforge models"></div>
+            </div>
+            <p class="sound-credits">Sounds from <a href="https://freesound.org/" target="_blank" rel="noopener">Freesound</a>:
+                <a href="https://freesound.org/s/104829/" target="_blank" rel="noopener">Lego_fall_apart3</a> by CGEffex
+                (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>, edited),
+                <a href="https://freesound.org/s/257246/" target="_blank" rel="noopener">Disassembling two LEGO Bricks</a> by LauraWebdev (CC0),
+                <a href="https://freesound.org/s/707543/" target="_blank" rel="noopener">Lego falling on wooden floor</a> by LiezelDippenaar (CC0)</p>
+        </section>
+        <section id="playScreen" class="play-screen" aria-label="Build model" hidden>
+            <div class="studio-layout">
+                <section class="studio-panel model-panel" aria-label="3D model">
+                    <div id="modelViewport" class="scene-viewport model-viewport" aria-label="Drag to turn the model"></div>
+                </section>
+                <section class="studio-panel pile-panel" aria-label="3D brick pile">
+                    <div id="pileViewport" class="scene-viewport pile-viewport" aria-label="Drag bricks around or onto the model"></div>
+                </section>
+            </div>
+            <p id="buildMessage" class="visually-hidden" role="status">Watch the model come apart…</p>
+            <button id="hintButton" class="hint-button" type="button" aria-label="Hint" title="Hint" disabled>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6m-5 3h4M8.5 14.5a6 6 0 1 1 7 0C14.5 15.2 14 16 14 18h-4c0-2-.5-2.8-1.5-3.5Z"/></svg>
+            </button>
+            <section id="completion" class="completion" aria-labelledby="completionTitle" hidden>
+                <div id="completionBurst" class="completion-burst" aria-hidden="true"></div>
+                <div class="completion-card">
+                    <h2 id="completionTitle" tabindex="-1">You made it!</h2>
+                    <p id="completionDescription" role="status"></p>
+                </div>
+                <div id="completionStage" class="completion-stage"></div>
+                <div class="completion-footer">
+                    <div class="completion-actions">
+                        <button id="completionGalleryButton" type="button">Back to gallery</button>
+                    </div>
+                </div>
+            </section>
+        </section>
+    </main>
+</body>
+</html>
