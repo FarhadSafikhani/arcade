@@ -3,6 +3,7 @@ import { GalleryMotion } from './gallery-motion';
 import { collectionLevels, collections, CollectionId, modelUnlocked } from './collections';
 import { buildOrder, SnapLevel, validPlacedIds, validateLevel } from './level';
 import { SnapScene3D } from './scene3d';
+import { openModelViewer } from './model-viewer';
 import { createClickBuffer, loadSnapSamples, SnapSamples } from './sound';
 
 interface PartialBuild { version: number; placedIds: string[]; }
@@ -445,6 +446,7 @@ class SnapforgeGame {
                 card.tabIndex = 0;
                 card.addEventListener('click', () => this.startLevel(level, Boolean(this.partial(level))));
                 card.addEventListener('keydown', event => {
+                    if (event.target !== card) return;
                     if (event.key === 'Enter' || event.key === ' ') {
                         event.preventDefault();
                         card.click();
@@ -456,7 +458,20 @@ class SnapforgeGame {
                 action.textContent = 'Finish previous model';
                 action.classList.add('is-disabled');
             }
-            copy.append(eyebrow, title, pieceCount, action);
+            const actions = document.createElement('div');
+            actions.className = 'card-actions';
+            actions.appendChild(action);
+            if (isUnlocked) {
+                const view = document.createElement('button');
+                view.type = 'button'; view.className = 'card-view'; view.textContent = 'View';
+                view.setAttribute('aria-label', `View ${item.title}`);
+                view.addEventListener('click', event => {
+                    event.stopPropagation();
+                    if (!this.galleryMotion.suppressesClick(event)) openModelViewer(item.level);
+                });
+                actions.appendChild(view);
+            }
+            copy.append(eyebrow, title, pieceCount, actions);
             card.append(visual, copy);
             this.galleryTrack.appendChild(card);
         }

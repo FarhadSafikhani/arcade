@@ -1,0 +1,280 @@
+{
+  "id": "chicken",
+  "title": "Chicken",
+  "description": "A white farm hen with a red comb and proud tail.",
+  "collection": "farm",
+  "order": 2,
+  "version": 1,
+  "targetParts": 30,
+  "palette": {
+    "white": "#F7F2E5",
+    "cream": "#D9CDB8",
+    "orange": "#E99B30",
+    "red": "#CA3536",
+    "dark": "#20252A"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 4
+  },
+  "volumes": [
+    {
+      "name": "foot-1",
+      "x": 5,
+      "y": 1,
+      "z": 0,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "leg-1",
+      "x": 5,
+      "y": 1,
+      "z": 1,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "foot-5",
+      "x": 5,
+      "y": 5,
+      "z": 0,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "leg-5",
+      "x": 5,
+      "y": 5,
+      "z": 1,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "body-foundation",
+      "x": 2,
+      "y": 1,
+      "z": 3,
+      "w": 8,
+      "d": 6,
+      "h": 1,
+      "color": "white",
+      "protected": true
+    },
+    {
+      "name": "body",
+      "x": 2,
+      "y": 2,
+      "z": 4,
+      "w": 6,
+      "d": 4,
+      "h": 3,
+      "color": "white"
+    },
+    {
+      "name": "breast",
+      "x": 7,
+      "y": 2,
+      "z": 4,
+      "w": 3,
+      "d": 4,
+      "h": 3,
+      "color": "white",
+      "overlay": true
+    },
+    {
+      "name": "back",
+      "x": 3,
+      "y": 2,
+      "z": 7,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "name": "wing-left",
+      "x": 3,
+      "y": 1,
+      "z": 4,
+      "w": 3,
+      "d": 1,
+      "h": 2,
+      "color": "cream",
+      "protected": true
+    },
+    {
+      "name": "wing-right",
+      "x": 3,
+      "y": 6,
+      "z": 4,
+      "w": 3,
+      "d": 1,
+      "h": 2,
+      "color": "cream",
+      "protected": true
+    },
+    {
+      "name": "wing-left-tip",
+      "x": 2,
+      "y": 1,
+      "z": 4,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "cream"
+    },
+    {
+      "name": "wing-right-tip",
+      "x": 2,
+      "y": 6,
+      "z": 4,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "cream"
+    },
+    {
+      "name": "neck",
+      "x": 7,
+      "y": 2,
+      "z": 7,
+      "w": 3,
+      "d": 4,
+      "h": 2,
+      "color": "white"
+    },
+    {
+      "name": "head",
+      "x": 7,
+      "y": 2,
+      "z": 9,
+      "w": 3,
+      "d": 4,
+      "h": 2,
+      "color": "white"
+    },
+    {
+      "name": "beak",
+      "x": 9,
+      "y": 3,
+      "z": 8,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "orange",
+      "protected": true,
+      "overlay": true
+    },
+    {
+      "name": "wattle",
+      "x": 9,
+      "y": 3,
+      "z": 7,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "red",
+      "overlay": true
+    },
+    {
+      "name": "eye-left",
+      "x": 9,
+      "y": 2,
+      "z": 10,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "eye-right",
+      "x": 9,
+      "y": 5,
+      "z": 10,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "comb-base",
+      "x": 7,
+      "y": 3,
+      "z": 11,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "red"
+    },
+    {
+      "name": "comb-front",
+      "x": 9,
+      "y": 3,
+      "z": 12,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "red"
+    },
+    {
+      "name": "comb-back",
+      "x": 7,
+      "y": 3,
+      "z": 12,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "red"
+    },
+    {
+      "name": "tail-base",
+      "x": 1,
+      "y": 2,
+      "z": 5,
+      "w": 2,
+      "d": 4,
+      "h": 2,
+      "color": "white",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "tail-rise",
+      "x": 0,
+      "y": 2,
+      "z": 7,
+      "w": 2,
+      "d": 4,
+      "h": 2,
+      "color": "white",
+      "protected": true
+    },
+    {
+      "name": "tail-tip",
+      "x": 0,
+      "y": 3,
+      "z": 9,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "white"
+    }
+  ]
+}

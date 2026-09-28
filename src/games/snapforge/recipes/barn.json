@@ -1,0 +1,349 @@
+{
+  "id": "barn",
+  "title": "Barn",
+  "description": "A red farm barn with white trim and a hayloft.",
+  "collection": "farm",
+  "order": 5,
+  "version": 1,
+  "targetParts": 60,
+  "palette": {
+    "red": "#B93934",
+    "white": "#F4EBDD",
+    "roof": "#3D4853",
+    "wood": "#66412D",
+    "stone": "#8E8981",
+    "glass": "#8CC9D7"
+  },
+  "symmetry": {
+    "axis": "x",
+    "plane": 6
+  },
+  "volumes": [
+    {
+      "name": "foundation",
+      "x": 1,
+      "y": 1,
+      "z": 0,
+      "w": 10,
+      "d": 6,
+      "h": 1,
+      "color": "stone"
+    },
+    {
+      "name": "walls",
+      "x": 1,
+      "y": 1,
+      "z": 1,
+      "w": 10,
+      "d": 6,
+      "h": 6,
+      "color": "red"
+    },
+    {
+      "name": "double-door",
+      "x": 4,
+      "y": 1,
+      "z": 1,
+      "w": 4,
+      "d": 1,
+      "h": 4,
+      "color": "wood",
+      "overlay": true
+    },
+    {
+      "name": "door-left-trim",
+      "x": 3,
+      "y": 1,
+      "z": 1,
+      "w": 1,
+      "d": 1,
+      "h": 5,
+      "color": "white",
+      "overlay": true
+    },
+    {
+      "name": "door-right-trim",
+      "x": 8,
+      "y": 1,
+      "z": 1,
+      "w": 1,
+      "d": 1,
+      "h": 5,
+      "color": "white",
+      "overlay": true
+    },
+    {
+      "name": "door-header",
+      "x": 3,
+      "y": 1,
+      "z": 5,
+      "w": 6,
+      "d": 1,
+      "h": 1,
+      "color": "white",
+      "overlay": true
+    },
+    {
+      "name": "door-center",
+      "x": 5,
+      "y": 1,
+      "z": 1,
+      "w": 2,
+      "d": 1,
+      "h": 4,
+      "color": "red",
+      "overlay": true
+    },
+    {
+      "name": "door-crossbar",
+      "x": 4,
+      "y": 1,
+      "z": 3,
+      "w": 4,
+      "d": 1,
+      "h": 1,
+      "color": "white",
+      "overlay": true
+    },
+    {
+      "name": "front-corner-left",
+      "x": 1,
+      "y": 1,
+      "z": 1,
+      "w": 1,
+      "d": 1,
+      "h": 6,
+      "color": "white",
+      "overlay": true
+    },
+    {
+      "name": "front-corner-right",
+      "x": 10,
+      "y": 1,
+      "z": 1,
+      "w": 1,
+      "d": 1,
+      "h": 6,
+      "color": "white",
+      "overlay": true
+    },
+    {
+      "name": "roof-eaves",
+      "x": 0,
+      "y": 0,
+      "z": 7,
+      "w": 12,
+      "d": 8,
+      "h": 1,
+      "color": "roof",
+      "protected": true
+    },
+    {
+      "name": "gable-0",
+      "x": 2,
+      "y": 1,
+      "z": 8,
+      "w": 8,
+      "d": 6,
+      "h": 1,
+      "color": "red"
+    },
+    {
+      "name": "roof-left-0",
+      "x": 1,
+      "y": 0,
+      "z": 8,
+      "w": 1,
+      "d": 8,
+      "h": 1,
+      "color": "roof"
+    },
+    {
+      "name": "roof-right-0",
+      "x": 10,
+      "y": 0,
+      "z": 8,
+      "w": 1,
+      "d": 8,
+      "h": 1,
+      "color": "roof"
+    },
+    {
+      "name": "gable-1",
+      "x": 3,
+      "y": 1,
+      "z": 9,
+      "w": 6,
+      "d": 6,
+      "h": 1,
+      "color": "red"
+    },
+    {
+      "name": "roof-left-1",
+      "x": 2,
+      "y": 0,
+      "z": 9,
+      "w": 1,
+      "d": 8,
+      "h": 1,
+      "color": "roof"
+    },
+    {
+      "name": "roof-right-1",
+      "x": 9,
+      "y": 0,
+      "z": 9,
+      "w": 1,
+      "d": 8,
+      "h": 1,
+      "color": "roof"
+    },
+    {
+      "name": "gable-2",
+      "x": 4,
+      "y": 1,
+      "z": 10,
+      "w": 4,
+      "d": 6,
+      "h": 1,
+      "color": "red"
+    },
+    {
+      "name": "roof-left-2",
+      "x": 3,
+      "y": 0,
+      "z": 10,
+      "w": 1,
+      "d": 8,
+      "h": 1,
+      "color": "roof"
+    },
+    {
+      "name": "roof-right-2",
+      "x": 8,
+      "y": 0,
+      "z": 10,
+      "w": 1,
+      "d": 8,
+      "h": 1,
+      "color": "roof"
+    },
+    {
+      "name": "gable-3",
+      "x": 5,
+      "y": 1,
+      "z": 11,
+      "w": 2,
+      "d": 6,
+      "h": 1,
+      "color": "red"
+    },
+    {
+      "name": "roof-left-3",
+      "x": 4,
+      "y": 0,
+      "z": 11,
+      "w": 1,
+      "d": 8,
+      "h": 1,
+      "color": "roof"
+    },
+    {
+      "name": "roof-right-3",
+      "x": 7,
+      "y": 0,
+      "z": 11,
+      "w": 1,
+      "d": 8,
+      "h": 1,
+      "color": "roof"
+    },
+    {
+      "name": "roof-ridge",
+      "x": 5,
+      "y": 0,
+      "z": 12,
+      "w": 2,
+      "d": 8,
+      "h": 1,
+      "color": "roof"
+    },
+    {
+      "name": "loft-opening",
+      "x": 5,
+      "y": 1,
+      "z": 8,
+      "w": 2,
+      "d": 1,
+      "h": 2,
+      "color": "wood",
+      "overlay": true
+    },
+    {
+      "name": "loft-sill",
+      "x": 4,
+      "y": 1,
+      "z": 8,
+      "w": 4,
+      "d": 1,
+      "h": 1,
+      "color": "white",
+      "overlay": true
+    },
+    {
+      "name": "loft-left",
+      "x": 4,
+      "y": 1,
+      "z": 9,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "white",
+      "overlay": true
+    },
+    {
+      "name": "loft-right",
+      "x": 7,
+      "y": 1,
+      "z": 9,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "white",
+      "overlay": true
+    },
+    {
+      "name": "loft-header",
+      "x": 5,
+      "y": 1,
+      "z": 10,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "white",
+      "overlay": true
+    },
+    {
+      "name": "side-window-1",
+      "x": 1,
+      "y": 3,
+      "z": 3,
+      "w": 1,
+      "d": 2,
+      "h": 2,
+      "color": "glass",
+      "overlay": true
+    },
+    {
+      "name": "side-window-10",
+      "x": 10,
+      "y": 3,
+      "z": 3,
+      "w": 1,
+      "d": 2,
+      "h": 2,
+      "color": "glass",
+      "overlay": true
+    }
+  ]
+}

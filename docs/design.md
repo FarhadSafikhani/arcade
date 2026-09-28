@@ -35,3 +35,5 @@ Height-2 bricks occupy two layers, have smooth sides and studs only on top, and 
 Little Turtle is Starter #1, with N = 20. Apple is Starter #2, with N = 30 (28 pieces), followed by Little Duck at Starter #3, with N = 35 (34 pieces), and Little House at Starter #4, with N = 40. Pineapple is Fruit #3, Sports Car is Car #2, and Castle is Landmarks #1; the ocean Sea Turtle stays separate. Legacy targets record existing counts, not approved designs. Redesign those models individually using this loop.
 
 Police Car is Starter #5, with N = 50 (51 pieces), following Little House.
+
+Farm Collection follows Starter Collection. Its recipe-authored sequence is Sheep (21 pieces, N = 20), Chicken (29, N = 30), Cow (41, N = 40), Horse (50, N = 50), and Barn (59, N = 60). All five start at version 1 and `vetted: 0`, with mirrored geometry, colors, and seams. Farm progression is independent of Starter; Sheep is immediately playable.

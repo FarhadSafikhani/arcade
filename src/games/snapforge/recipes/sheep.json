@@ -1,0 +1,209 @@
+{
+  "id": "sheep",
+  "title": "Sheep",
+  "description": "A woolly sheep with a dark face and four little legs.",
+  "collection": "farm",
+  "order": 1,
+  "version": 1,
+  "targetParts": 20,
+  "palette": {
+    "wool": "#F4EBD5",
+    "dark": "#45403C",
+    "eye": "#111820"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 4
+  },
+  "volumes": [
+    {
+      "name": "leg-2-1",
+      "x": 2,
+      "y": 1,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "dark",
+      "protected": true
+    },
+    {
+      "name": "leg-2-5",
+      "x": 2,
+      "y": 5,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "dark",
+      "protected": true
+    },
+    {
+      "name": "leg-6-1",
+      "x": 6,
+      "y": 1,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "dark",
+      "protected": true
+    },
+    {
+      "name": "leg-6-5",
+      "x": 6,
+      "y": 5,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "dark",
+      "protected": true
+    },
+    {
+      "name": "fleece-belly",
+      "x": 1,
+      "y": 1,
+      "z": 2,
+      "w": 8,
+      "d": 6,
+      "h": 2,
+      "color": "wool",
+      "protected": true
+    },
+    {
+      "name": "fleece-back",
+      "x": 2,
+      "y": 1,
+      "z": 4,
+      "w": 6,
+      "d": 6,
+      "h": 2,
+      "color": "wool"
+    },
+    {
+      "name": "fleece-crown",
+      "x": 3,
+      "y": 2,
+      "z": 6,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "wool"
+    },
+    {
+      "name": "rump",
+      "x": 0,
+      "y": 2,
+      "z": 4,
+      "w": 2,
+      "d": 4,
+      "h": 1,
+      "color": "wool",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "neck",
+      "x": 7,
+      "y": 2,
+      "z": 4,
+      "w": 3,
+      "d": 4,
+      "h": 2,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "face",
+      "x": 9,
+      "y": 2,
+      "z": 4,
+      "w": 2,
+      "d": 4,
+      "h": 2,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "forehead-wool",
+      "x": 8,
+      "y": 2,
+      "z": 6,
+      "w": 2,
+      "d": 4,
+      "h": 1,
+      "color": "wool"
+    },
+    {
+      "name": "ear-left",
+      "x": 8,
+      "y": 0,
+      "z": 6,
+      "w": 1,
+      "d": 3,
+      "h": 1,
+      "color": "dark",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "ear-right",
+      "x": 8,
+      "y": 5,
+      "z": 6,
+      "w": 1,
+      "d": 3,
+      "h": 1,
+      "color": "dark",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "eye-left",
+      "x": 10,
+      "y": 2,
+      "z": 5,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "eye",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "eye-right",
+      "x": 10,
+      "y": 5,
+      "z": 5,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "eye",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "tail",
+      "x": 0,
+      "y": 3,
+      "z": 5,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "wool"
+    },
+    {
+      "name": "jaw-bridge",
+      "x": 7,
+      "y": 2,
+      "z": 4,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "dark",
+      "overlay": true,
+      "protected": true
+    }
+  ]
+}

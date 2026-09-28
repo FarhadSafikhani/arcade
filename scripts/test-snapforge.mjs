@@ -99,9 +99,10 @@ test('height participates in rotated matching, resume validation, and pile group
     assert.equal(pileAdditions([], [...active, ...reserve]).filter(b => b.h === 2).length, 3);
 });
 
-test('eight collections have ordered models and independent unlock paths', () => {
+test('nine collections have ordered models and independent unlock paths', () => {
     const expected = new Map([
         ['starter', ['turtle', 'apple', 'duck', 'house', 'police-car']],
+        ['farm', ['sheep', 'chicken', 'cow', 'horse', 'barn']],
         ['land-animal', ['rabbit', 'fox', 'elephant']],
         ['fruit', ['cherry', 'watermelon', 'pineapple', 'pear']],
         ['bird', ['chick', 'owl', 'parrot']],
@@ -110,7 +111,7 @@ test('eight collections have ordered models and independent unlock paths', () =>
         ['ocean', ['fish', 'sea-turtle', 'shark']],
         ['dinosaur', ['stegosaurus', 'triceratops', 't-rex']]
     ]);
-    assert.equal(catalog.length, 26);
+    assert.equal(catalog.length, 31);
     for (const [collection, ids] of expected) {
         const group = catalog.filter(level => level.collection === collection).sort((a, b) => a.order - b.order);
         assert.deepEqual(group.map(level => level.id), ids);

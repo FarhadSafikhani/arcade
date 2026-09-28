@@ -2,6 +2,7 @@ import type { SnapLevel } from './level';
 
 export const collections = [
     { id: 'starter', name: 'Starter Collection' },
+    { id: 'farm', name: 'Farm Collection' },
     { id: 'land-animal', name: 'Land Animal Collection' },
     { id: 'fruit', name: 'Fruit Collection' },
     { id: 'bird', name: 'Bird Collection' },

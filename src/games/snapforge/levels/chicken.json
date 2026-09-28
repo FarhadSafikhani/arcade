@@ -1,0 +1,340 @@
+{
+  "id": "chicken",
+  "title": "Chicken",
+  "description": "A white farm hen with a red comb and proud tail.",
+  "collection": "farm",
+  "order": 2,
+  "version": 1,
+  "targetParts": 30,
+  "vetted": 0,
+  "palette": {
+    "white": "#F7F2E5",
+    "cream": "#D9CDB8",
+    "orange": "#E99B30",
+    "red": "#CA3536",
+    "dark": "#20252A"
+  },
+  "bricks": [
+    {
+      "id": "brick-001",
+      "x": 5,
+      "y": 1,
+      "z": 0,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "orange"
+    },
+    {
+      "id": "brick-002",
+      "x": 5,
+      "y": 5,
+      "z": 0,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "orange"
+    },
+    {
+      "id": "brick-003",
+      "x": 5,
+      "y": 1,
+      "z": 1,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "orange"
+    },
+    {
+      "id": "brick-004",
+      "x": 5,
+      "y": 5,
+      "z": 1,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "orange"
+    },
+    {
+      "id": "brick-005",
+      "x": 2,
+      "y": 1,
+      "z": 3,
+      "w": 8,
+      "d": 6,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "id": "brick-006",
+      "x": 2,
+      "y": 1,
+      "z": 4,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "cream"
+    },
+    {
+      "id": "brick-007",
+      "x": 3,
+      "y": 1,
+      "z": 4,
+      "w": 3,
+      "d": 1,
+      "h": 2,
+      "color": "cream"
+    },
+    {
+      "id": "brick-008",
+      "x": 2,
+      "y": 2,
+      "z": 4,
+      "w": 1,
+      "d": 4,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "id": "brick-009",
+      "x": 3,
+      "y": 2,
+      "z": 4,
+      "w": 7,
+      "d": 4,
+      "h": 2,
+      "color": "white"
+    },
+    {
+      "id": "brick-010",
+      "x": 2,
+      "y": 6,
+      "z": 4,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "cream"
+    },
+    {
+      "id": "brick-011",
+      "x": 3,
+      "y": 6,
+      "z": 4,
+      "w": 3,
+      "d": 1,
+      "h": 2,
+      "color": "cream"
+    },
+    {
+      "id": "brick-012",
+      "x": 1,
+      "y": 2,
+      "z": 5,
+      "w": 2,
+      "d": 4,
+      "h": 2,
+      "color": "white"
+    },
+    {
+      "id": "brick-013",
+      "x": 3,
+      "y": 2,
+      "z": 6,
+      "w": 6,
+      "d": 4,
+      "h": 2,
+      "color": "white"
+    },
+    {
+      "id": "brick-014",
+      "x": 9,
+      "y": 2,
+      "z": 6,
+      "w": 1,
+      "d": 4,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "id": "brick-015",
+      "x": 0,
+      "y": 2,
+      "z": 7,
+      "w": 2,
+      "d": 4,
+      "h": 2,
+      "color": "white"
+    },
+    {
+      "id": "brick-016",
+      "x": 9,
+      "y": 2,
+      "z": 7,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "white"
+    },
+    {
+      "id": "brick-017",
+      "x": 9,
+      "y": 3,
+      "z": 7,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "red"
+    },
+    {
+      "id": "brick-018",
+      "x": 9,
+      "y": 5,
+      "z": 7,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "white"
+    },
+    {
+      "id": "brick-019",
+      "x": 7,
+      "y": 2,
+      "z": 8,
+      "w": 2,
+      "d": 4,
+      "h": 2,
+      "color": "white"
+    },
+    {
+      "id": "brick-020",
+      "x": 9,
+      "y": 3,
+      "z": 8,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "orange"
+    },
+    {
+      "id": "brick-021",
+      "x": 9,
+      "y": 2,
+      "z": 9,
+      "w": 1,
+      "d": 4,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "id": "brick-022",
+      "x": 0,
+      "y": 3,
+      "z": 9,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "id": "brick-023",
+      "x": 7,
+      "y": 2,
+      "z": 10,
+      "w": 2,
+      "d": 4,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "id": "brick-024",
+      "x": 9,
+      "y": 2,
+      "z": 10,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark"
+    },
+    {
+      "id": "brick-025",
+      "x": 9,
+      "y": 3,
+      "z": 10,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "id": "brick-026",
+      "x": 9,
+      "y": 5,
+      "z": 10,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark"
+    },
+    {
+      "id": "brick-027",
+      "x": 7,
+      "y": 3,
+      "z": 11,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "red"
+    },
+    {
+      "id": "brick-028",
+      "x": 7,
+      "y": 3,
+      "z": 12,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "red"
+    },
+    {
+      "id": "brick-029",
+      "x": 9,
+      "y": 3,
+      "z": 12,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "red"
+    }
+  ],
+  "buildSequence": [
+    "brick-001",
+    "brick-002",
+    "brick-003",
+    "brick-004",
+    "brick-005",
+    "brick-009",
+    "brick-008",
+    "brick-007",
+    "brick-011",
+    "brick-006",
+    "brick-010",
+    "brick-012",
+    "brick-013",
+    "brick-014",
+    "brick-015",
+    "brick-017",
+    "brick-016",
+    "brick-018",
+    "brick-019",
+    "brick-020",
+    "brick-021",
+    "brick-022",
+    "brick-023",
+    "brick-025",
+    "brick-024",
+    "brick-026",
+    "brick-027",
+    "brick-028",
+    "brick-029"
+  ]
+}

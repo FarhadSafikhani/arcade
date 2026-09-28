@@ -208,6 +208,17 @@ button:disabled { cursor: default; }
 .gallery-card.is-available:hover .card-action, .gallery-card.is-available:focus-visible .card-action,
 .completion-actions button:hover { background: var(--coral); }
 .card-action.is-disabled { width: 100%; background: #e9ebea; color: #8993a0; }
+.card-actions { display: flex; gap: 8px; }
+.card-view { min-height: 43px; padding: 0 17px; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); font: inherit; font-size: 13px; font-weight: 900; cursor: pointer; }
+.card-view:hover, .card-view:focus-visible { border-color: var(--coral); color: var(--coral); }
+.model-viewer { width: min(900px, calc(100vw - 24px)); max-width: none; max-height: calc(100dvh - 24px); padding: 20px; border: 0; border-radius: 24px; background: #fff; color: var(--ink); box-shadow: 0 24px 80px #18202e66; }
+.model-viewer::backdrop { background: #18202eb3; }
+.model-viewer h2 { margin: 0 90px 14px 0; }
+.model-viewer-close { position: absolute; top: 16px; right: 20px; padding: 9px 15px; border: 0; border-radius: 10px; background: var(--ink); color: white; font: inherit; font-weight: 900; cursor: pointer; }
+.model-viewer-stage { height: min(65dvh, 620px); min-height: 260px; overflow: hidden; border-radius: 16px; touch-action: none; cursor: grab; }
+.model-viewer-stage:active { cursor: grabbing; }
+.model-viewer-stage canvas { display: block; width: 100%; height: 100%; }
+.model-viewer p { margin: 10px 0 0; text-align: center; color: #788292; font-size: 13px; }
 .header-center { display: flex; align-items: center; justify-content: center; gap: 38px; min-width: 0; }
 .play-heading { display: flex; align-items: center; gap: 16px; min-width: 0; }
 .play-heading h1 { margin: 0; font-size: clamp(14px, 2vw, 22px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

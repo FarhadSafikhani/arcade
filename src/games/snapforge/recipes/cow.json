@@ -1,0 +1,323 @@
+{
+  "id": "cow",
+  "title": "Cow",
+  "description": "A spotted dairy cow with a pink muzzle and sturdy hooves.",
+  "collection": "farm",
+  "order": 3,
+  "version": 1,
+  "targetParts": 40,
+  "palette": {
+    "white": "#F5EFE1",
+    "black": "#303135",
+    "pink": "#E99B9F"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 4
+  },
+  "volumes": [
+    {
+      "name": "hoof-2-1",
+      "x": 2,
+      "y": 1,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "black",
+      "protected": true
+    },
+    {
+      "name": "leg-2-1",
+      "x": 2,
+      "y": 1,
+      "z": 1,
+      "w": 2,
+      "d": 2,
+      "h": 3,
+      "color": "white",
+      "protected": true
+    },
+    {
+      "name": "hoof-2-5",
+      "x": 2,
+      "y": 5,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "black",
+      "protected": true
+    },
+    {
+      "name": "leg-2-5",
+      "x": 2,
+      "y": 5,
+      "z": 1,
+      "w": 2,
+      "d": 2,
+      "h": 3,
+      "color": "white",
+      "protected": true
+    },
+    {
+      "name": "hoof-8-1",
+      "x": 8,
+      "y": 1,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "black",
+      "protected": true
+    },
+    {
+      "name": "leg-8-1",
+      "x": 8,
+      "y": 1,
+      "z": 1,
+      "w": 2,
+      "d": 2,
+      "h": 3,
+      "color": "white",
+      "protected": true
+    },
+    {
+      "name": "hoof-8-5",
+      "x": 8,
+      "y": 5,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "black",
+      "protected": true
+    },
+    {
+      "name": "leg-8-5",
+      "x": 8,
+      "y": 5,
+      "z": 1,
+      "w": 2,
+      "d": 2,
+      "h": 3,
+      "color": "white",
+      "protected": true
+    },
+    {
+      "name": "belly",
+      "x": 1,
+      "y": 1,
+      "z": 4,
+      "w": 10,
+      "d": 6,
+      "h": 1,
+      "color": "white",
+      "protected": true
+    },
+    {
+      "name": "belly-top",
+      "x": 1,
+      "y": 1,
+      "z": 5,
+      "w": 10,
+      "d": 6,
+      "h": 1,
+      "color": "white",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "back",
+      "x": 2,
+      "y": 1,
+      "z": 6,
+      "w": 8,
+      "d": 6,
+      "h": 2,
+      "color": "white"
+    },
+    {
+      "name": "back-crown",
+      "x": 3,
+      "y": 2,
+      "z": 8,
+      "w": 6,
+      "d": 4,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "name": "neck",
+      "x": 9,
+      "y": 2,
+      "z": 6,
+      "w": 3,
+      "d": 4,
+      "h": 3,
+      "color": "white",
+      "overlay": true
+    },
+    {
+      "name": "head",
+      "x": 10,
+      "y": 2,
+      "z": 9,
+      "w": 4,
+      "d": 4,
+      "h": 2,
+      "color": "white"
+    },
+    {
+      "name": "muzzle",
+      "x": 11,
+      "y": 2,
+      "z": 9,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "pink",
+      "protected": true,
+      "overlay": true
+    },
+    {
+      "name": "nose-left",
+      "x": 14,
+      "y": 2,
+      "z": 10,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "black",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "nose-right",
+      "x": 14,
+      "y": 5,
+      "z": 10,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "black",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "eye-left",
+      "x": 12,
+      "y": 2,
+      "z": 10,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "black",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "eye-right",
+      "x": 12,
+      "y": 5,
+      "z": 10,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "black",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "ear-left",
+      "x": 10,
+      "y": 0,
+      "z": 10,
+      "w": 2,
+      "d": 3,
+      "h": 1,
+      "color": "black",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "ear-right",
+      "x": 10,
+      "y": 5,
+      "z": 10,
+      "w": 2,
+      "d": 3,
+      "h": 1,
+      "color": "black",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "tail-root",
+      "x": 0,
+      "y": 3,
+      "z": 5,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "white",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "tail-tip",
+      "x": 0,
+      "y": 3,
+      "z": 6,
+      "w": 1,
+      "d": 2,
+      "h": 2,
+      "color": "black"
+    },
+    {
+      "name": "rump-patch-1",
+      "x": 2,
+      "y": 1,
+      "z": 5,
+      "w": 3,
+      "d": 1,
+      "h": 3,
+      "color": "black",
+      "overlay": true
+    },
+    {
+      "name": "rump-patch-6",
+      "x": 2,
+      "y": 6,
+      "z": 5,
+      "w": 3,
+      "d": 1,
+      "h": 3,
+      "color": "black",
+      "overlay": true
+    },
+    {
+      "name": "back-patch",
+      "x": 4,
+      "y": 2,
+      "z": 8,
+      "w": 3,
+      "d": 4,
+      "h": 1,
+      "color": "black",
+      "overlay": true
+    },
+    {
+      "name": "head-foundation",
+      "x": 10,
+      "y": 2,
+      "z": 9,
+      "w": 1,
+      "d": 4,
+      "h": 1,
+      "color": "white",
+      "overlay": true,
+      "protected": true
+    }
+  ]
+}
