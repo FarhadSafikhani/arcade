@@ -7,7 +7,7 @@ import pourUrl from './audio/pour.mp3';
 export type SnapSample = 'snap' | 'grab' | 'breakup' | 'pour';
 export type SnapSamples = Record<SnapSample, AudioBuffer>;
 
-/** Recorded clips. snap, grab, and pour are cut by scripts/prepare-snapforge-audio.mjs; breakup is original. Sources are in audio/CREDITS.md. */
+/** Recorded clips. snap, grab, and pour are cut by scripts/prepare-snapforge-audio.mjs; breakup is original. */
 const SAMPLE_URLS: Record<SnapSample, string> = { snap: snapUrl, grab: grabUrl, breakup: breakupUrl, pour: pourUrl };
 
 /** Decodes every clip once. Resolves null if any clip fails, because sound is optional. */
