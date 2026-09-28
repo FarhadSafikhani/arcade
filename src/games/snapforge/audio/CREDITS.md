@@ -1,6 +1,8 @@
 # Snapforge sound credits
 
-The clips in this folder are cut from Freesound's high-quality MP3 previews by `npm run prepare:snapforge-audio`
+`music.mp3` is the looping Snapforge theme. It is not produced by the prepare script.
+
+The effect clips in this folder are cut from Freesound's high-quality MP3 previews by `npm run prepare:snapforge-audio`
 (`scripts/prepare-snapforge-audio.mjs`). The script prints the exact source range of each clip; the ranges below are
 from the current cut. The CC BY 4.0 source is also credited on the Snapforge gallery screen.
 

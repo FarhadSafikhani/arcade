@@ -4,6 +4,7 @@ import { availableCollections, collectionLevels, collections, CollectionId, mode
 import { buildOrder, SnapLevel, validPlacedIds, validateLevel } from './level';
 import { SnapScene3D } from './scene3d';
 import { openModelViewer } from './model-viewer';
+import musicUrl from './audio/music.mp3';
 import { createClickBuffer, loadSnapSamples, SnapSamples } from './sound';
 
 interface PartialBuild { version: number; placedIds: string[]; }
@@ -66,6 +67,7 @@ class SnapforgeGame {
     private selectedByCollection = new Map<CollectionId, number>();
     private galleryMotion!: GalleryMotion;
     private audio: AudioContext | null = null;
+    private music: HTMLAudioElement | null = null;
     private clickBuffer: AudioBuffer | null = null;
     private samples: SnapSamples | null = null;
     private samplesRequested = false;
@@ -78,6 +80,7 @@ class SnapforgeGame {
         this.renderCollections();
         this.renderGallery();
         this.updateSound();
+        this.syncMusic();
         if (import.meta.env.DEV) {
             const panel = document.createElement('details');
             panel.className = 'dev-panel';
@@ -121,8 +124,13 @@ class SnapforgeGame {
             this.root.appendChild(panel);
         }
         // Placement completes in an animation frame, so unlock audio during a user gesture.
-        this.root.addEventListener('pointerdown', () => this.prepareAudio(), { passive: true });
-        this.root.addEventListener('keydown', () => this.prepareAudio());
+        // The mute control handles music itself; starting it on the way down would blip before the click.
+        const unlockAudio = (event: Event) => {
+            if (event.target instanceof Element && event.target.closest('#soundButton')) return;
+            this.prepareAudio();
+        };
+        this.root.addEventListener('pointerdown', unlockAudio, { passive: true });
+        this.root.addEventListener('keydown', unlockAudio);
         this.play.addEventListener('contextmenu', event => event.preventDefault());
         // Capture before actions hide/rebuild their controls or disable the final gallery arrow.
         this.root.addEventListener('click', event => {
@@ -136,6 +144,7 @@ class SnapforgeGame {
             this.progress.muted = !this.progress.muted;
             if (this.progress.muted) this.stopIntroEffects();
             this.save(); this.updateSound();
+            this.syncMusic();
             if (!this.progress.muted) this.playEffect('click');
         });
         this.back.addEventListener('click', event => {
@@ -160,10 +169,12 @@ class SnapforgeGame {
         byId<HTMLButtonElement>('galleryNext').addEventListener('click', () => this.galleryMotion.step(1));
         this.galleryMotion.reset(this.selectedIndex);
         window.addEventListener('pagehide', event => {
+            this.music?.pause();
             this.stopIntroEffects();
             this.galleryMotion.suspend();
             if (!event.persisted) { this.galleryMotion.destroy(); this.scene?.destroy(); }
         });
+        window.addEventListener('pageshow', () => this.syncMusic());
         this.hint.addEventListener('click', () => {
             if (this.scene?.hint()) {
                 this.resetHintPrompt();
@@ -206,8 +217,31 @@ class SnapforgeGame {
         this.sound.setAttribute('aria-pressed', String(this.progress.muted));
         this.sound.title = label;
     }
+    private ensureMusic(): HTMLAudioElement | null {
+        if (this.music) return this.music;
+        try {
+            const music = new Audio(musicUrl);
+            music.loop = true;
+            music.preload = 'auto';
+            music.volume = 0.42;
+            this.music = music;
+            return music;
+        } catch { return null; /* Music is optional. */ }
+    }
+    /** Starts the looping theme, or pauses it while sound is muted. Autoplay may wait for a gesture. */
+    private syncMusic(): void {
+        const music = this.ensureMusic();
+        if (!music) return;
+        if (this.progress.muted) {
+            music.pause();
+            return;
+        }
+        const pending = music.play();
+        if (pending) void pending.catch(() => { /* The next pointer or key press retries. */ });
+    }
     private prepareAudio(): AudioContext | null {
         if (this.progress.muted) return null;
+        this.syncMusic();
         try {
             this.audio ??= new AudioContext();
             if (this.audio.state === 'suspended') void this.audio.resume().catch(() => {});

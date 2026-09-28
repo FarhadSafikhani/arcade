@@ -15,7 +15,8 @@
     "clean": "rimraf dist",
     "build:clean": "npm run clean && npm run build:prod",
     "validate:snapforge": "node scripts/validate-snapforge.mjs",
-    "test:snapforge": "node --test scripts/test-snapforge.mjs scripts/test-snapforge-overlay.mjs scripts/test-snapforge-gallery.mjs scripts/test-snapforge-compiler.mjs",
+    "test:snapforge": "node --test scripts/test-snapforge.mjs scripts/test-snapforge-compiler.mjs",
+    "test:snapforge:scene": "node --test scripts/test-snapforge-scene.mjs scripts/test-snapforge-overlay.mjs scripts/test-snapforge-gallery.mjs",
     "compile:snapforge": "node scripts/compile-snapforge.mjs",
     "prepare:snapforge-audio": "node scripts/prepare-snapforge-audio.mjs",
     "check:snapforge-recipes": "node scripts/check-snapforge-recipes.mjs"

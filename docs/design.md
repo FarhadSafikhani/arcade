@@ -1,3 +1,7 @@
+# Snapforge brick design
+
+This page is the rule set for how Snapforge bricks are made and how their design works. It states lasting constraints: color, construction, shape, connection, packing, and review. It is not a journal of changes, a catalog of models, or a place for editorial notes.
+
 # Puzzle color design
 
 Use color to describe the subject first. Give a piece a different color only when that color belongs on that part of the model. For the duck, the body and wing are yellow, the beak and feet are orange, and the eyes are dark. Do not add isolated accent colors just to make individual bricks easier to identify.
@@ -16,24 +20,20 @@ Height-2 bricks occupy two layers, have smooth sides and studs only on top, and 
 
 # Snapforge model design system
 
-**Recognize → Sculpt → Connect → Pack → Review.** The LLM designs the subject; the compiler chooses exact bricks. Work from a shape recipe, not a hand-written brick list. See [AUTHORING.md](../src/games/snapforge/AUTHORING.md) for the recipe format, commands, and versioning.
+**Recognize ? Sculpt ? Connect ? Pack ? Review.** The LLM designs the subject; the compiler chooses exact bricks. Work from a shape recipe, not a hand-written brick list. See [AUTHORING.md](../src/games/snapforge/AUTHORING.md) for the recipe format, commands, and versioning.
 
-1. **Recognize.** State the subject, target N, symmetry plane, and 2–3 features that make it unmistakable. For a turtle: domed shell, low body with four legs, projecting head. Choose a small subject-appropriate palette. These features are the design's priorities.
+1. **Recognize.** State the subject, target N, symmetry plane, and 2�3 features that make it unmistakable. For a turtle: domed shell, low body with four legs, projecting head. Choose a small subject-appropriate palette. These features are the design's priorities.
 2. **Sculpt.** Block out named volumes from large masses to small details. Check front, side, and top proportions before adding eyes or decoration. If the plain silhouette fails, fix the proportions. Mirror paired features by construction; do not approximate each side independently. Resolution means useful contour and recognition, not voxel count.
 3. **Connect.** Design a coherent first piece and a readable route from foundation to body to details. Prefer top-side construction: place bricks on top of already supported pieces. Use underside attachment when it naturally fits a hanging feature, such as a tail, rope, vine, or dangling ornament. Mark those volumes with `attachment: "underside"`, build their anchor first, then attach the hanging pieces downward. Every piece must remain stud-connected and its attachment must already be placed. Where an appendage only touches a side, redesign its attachment. Never patch the shape with scattered single-cell support posts.
 4. **Pack.** Compile the exact colored shape using broad rectangles and heights 1 and 2 together. Inspect custom sizes, small pieces, stacked layers, and merge opportunities. **Every split must earn its place through shape, color, symmetry, connection, or a clearer assembly.** Protect only justified feature boundaries; protection is not a way to inflate the count.
 5. **Review.** Run the authoring checks, then inspect the actual gallery, loose pile, first steps, and completed build from all four resting views at desktop and phone sizes. Ask: *Does it read without its title? Are both sides intentional? Does the build make sense? Can any seam disappear without losing something useful?* Fix the cause in the recipe and repeat. Passing geometry checks does not establish visual quality.
 
-**Budget:** Each model has a positive integer `targetParts` N; allow **N ±2** and increase targets deliberately through a collection. Over budget: remove unnecessary seams first, then simplify low-value detail. Under budget: improve a meaningful contour or defining feature. Never split clean bricks or add decoration solely to reach N. If quality and budget cannot both be met, report the conflict rather than disguising it.
+**Budget:** Each model has a positive integer `targetParts` N; allow **N �2** and increase targets deliberately through a collection. Over budget: remove unnecessary seams first, then simplify low-value detail. Under budget: improve a meaningful contour or defining feature. Never split clean bricks or add decoration solely to reach N. If quality and budget cannot both be met, report the conflict rather than disguising it.
 
 **Symmetry:** Models must be symmetric when the subject warrants it: shape, colors, paired features, and brick seams. Document intentional poses or asymmetric features as narrowly scoped exceptions with a reason.
 
-**Parts:** Prefer familiar rectangles, including quarter turns. Allow custom integer footprints when an odd width or long thin piece improves shape or construction. Ordinary brick heights remain 1 or 2. A wheel is one atomic 3×1 h3 part (or rotated), with a tire and hub, connected sideways at axle height. Its tire radius is 1.3 world units, 25% larger than the original 1.04, with its center unchanged. Changing the packing must preserve occupied shape and colors; changing the shape is a separate design decision.
+**Parts:** Prefer familiar rectangles, including quarter turns. Allow custom integer footprints when an odd width or long thin piece improves shape or construction. Ordinary brick heights remain 1 or 2. A wheel is one atomic 3�1 h3 part (or rotated), with a tire and hub, connected sideways at axle height. Its tire radius is 1.3 world units, and its center stays fixed relative to the part. Changing the packing must preserve occupied shape and colors; changing the shape is a separate design decision.
 
 **Handoff:** Report actual/N pieces, defining features, justified custom parts or exceptions, checks performed, and any remaining visual limitations. Leave new or changed generated models at **`vetted: 0`**. Only an explicit user request may promote them to 1; unchanged regeneration preserves that decision. Vetting never affects unlocking or gallery visibility.
 
-Little Turtle is Starter #1, with N = 20. Apple is Starter #2, with N = 30 (28 pieces), followed by Little Duck at Starter #3, with N = 35 (34 pieces), and Little House at Starter #4, with N = 40. Pineapple is Fruit #3, Sports Car is Car #2, and Castle is Landmarks #1; the ocean Sea Turtle stays separate. Legacy targets record existing counts, not approved designs. Redesign those models individually using this loop.
-
-Police Car is Starter #5, with N = 50 (51 pieces), following Little House.
-
-Farm Collection follows Starter Collection. Its recipe-authored sequence is Sheep (21 pieces, N = 20), Chicken (29, N = 30), Cow (41, N = 40), Horse (55, N = 55), and Barn (92, N = 92). Sheep and Cow are version 2; Horse and Barn are version 3; Chicken remains version 1. All five are explicitly approved with `vetted: 1`, with mirrored geometry, colors, and seams. Farm progression is independent of Starter; Sheep is immediately playable.
+An existing piece count is not an approved design. Redesign a model individually through this loop.
