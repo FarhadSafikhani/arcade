@@ -1,5 +1,23 @@
 import * as THREE from 'three';
 
+const overlayBounds = new THREE.Box3();
+
+export function fitOverlayDepth(camera: THREE.OrthographicCamera, scene: THREE.Object3D): void {
+    overlayBounds.setFromObject(scene);
+    if (overlayBounds.isEmpty()) return;
+
+    // This camera faces straight down -Z. Moving it along Z leaves the
+    // orthographic screen size and pointer alignment unchanged.
+    const z = Math.max(50, overlayBounds.max.z + 1);
+    const far = Math.max(100, z - overlayBounds.min.z + 1);
+    if (camera.position.z === z && camera.near === 0.1 && camera.far === far) return;
+    camera.position.z = z;
+    camera.near = 0.1;
+    camera.far = far;
+    camera.updateProjectionMatrix();
+    camera.updateMatrixWorld();
+}
+
 export function configureOverlayCamera(camera: THREE.OrthographicCamera, width: number, height: number): void {
     camera.left = 0; camera.right = width;
     // Keep a normal 3D projection: reversing top/bottom also reverses face winding.

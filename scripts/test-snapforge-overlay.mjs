@@ -8,7 +8,7 @@ const source = readFileSync(new URL('../src/games/snapforge/overlay3d.ts', impor
 const compiled = ts.transpileModule(source, {
     compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 }
 }).outputText.replace("from 'three'", `from '${import.meta.resolve('three')}'`);
-const { configureOverlayCamera, overlayRotation, overlayToScreen, screenToOverlay } =
+const { configureOverlayCamera, fitOverlayDepth, overlayRotation, overlayToScreen, screenToOverlay } =
     await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`);
 
 function viewCamera(yaw, elevation) {
@@ -18,6 +18,36 @@ function viewCamera(yaw, elevation) {
     camera.updateMatrixWorld();
     return camera;
 }
+
+test('large held and flying pieces fit in depth without changing their screen projection', () => {
+    const camera = new THREE.OrthographicCamera(0, 1, 1, 0, -100, 100);
+    configureOverlayCamera(camera, 1200, 900);
+    const scene = new THREE.Scene();
+    const plate = new THREE.Mesh(new THREE.BoxGeometry(32, 0.72, 32));
+    plate.scale.setScalar(24);
+    plate.position.copy(screenToOverlay(700, 400, 900));
+    scene.add(plate);
+    const positions = plate.geometry.attributes.position;
+    let originallyClipped = false;
+    for (const angle of [0, 0.3, 0.8, 1.5, 2.6, 4.4]) {
+        plate.rotation.set(angle, angle / 2, angle / 3);
+        scene.updateMatrixWorld(true);
+        const points = Array.from({ length: positions.count }, (_, index) =>
+            new THREE.Vector3().fromBufferAttribute(positions, index).applyMatrix4(plate.matrixWorld));
+        const before = points.map(point => point.clone().project(camera));
+        originallyClipped ||= before.some(point => Math.abs(point.z) > 1);
+        fitOverlayDepth(camera, scene);
+        points.forEach((point, index) => {
+            const after = point.clone().project(camera);
+            assert.ok(after.z > -1 && after.z < 1, 'every corner must be inside the depth range');
+            assert.ok(Math.abs(after.x - before[index].x) < 1e-8, 'horizontal projection stays fixed');
+            assert.ok(Math.abs(after.y - before[index].y) < 1e-8, 'vertical projection stays fixed');
+        });
+    }
+    assert.ok(originallyClipped, 'fixture reproduces the shallow depth clipping');
+    plate.geometry.dispose();
+    plate.material.dispose();
+});
 
 function topFaceArea(rotation, camera, position = new THREE.Vector3(), scale = 1) {
     // Counterclockwise top-face triangle, viewed from above the brick.

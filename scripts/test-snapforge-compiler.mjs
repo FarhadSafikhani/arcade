@@ -16,6 +16,43 @@ const box = (name, x, y, z, w, d, h, extras = {}) => ({ name, x, y, z, w, d, h, 
 const turtleRecipe = JSON.parse(readFileSync(new URL('../src/games/snapforge/recipes/turtle.json', import.meta.url)));
 const turtle = JSON.parse(readFileSync(new URL('../src/games/snapforge/levels/turtle.json', import.meta.url)));
 
+test('underside attachments build downward from an anchored root and reject unsupported chains', () => {
+    const input = recipe([
+        box('pillar', 1, 0, 0, 1, 2, 5, { protected: true }),
+        box('root', 0, 0, 5, 2, 2, 2, { protected: true }),
+        box('hanging-middle', 0, 0, 3, 1, 2, 2, { attachment: 'underside' }),
+        box('hanging-end', 0, 0, 1, 1, 2, 2, { attachment: 'underside' })
+    ], { symmetry: { axis: 'y', plane: 1 } });
+    const { level } = compileRecipe(input);
+    const order = buildOrder(level);
+    const tail = order.filter(b => b.attachment === 'underside');
+    assert.deepEqual(tail.map(b => b.z), [3, 1]);
+    assert.ok(order.findIndex(b => b.z === 5) < order.indexOf(tail[0]));
+    assert.deepEqual(compileRecipe(input, level).level, level);
+    const missingOrder = structuredClone(level);
+    delete missingOrder.buildSequence;
+    assert.throws(() => validateLevel(missingOrder), /require a supported buildSequence/);
+    const wrongOrder = structuredClone(level);
+    wrongOrder.buildSequence = [...level.buildSequence].reverse();
+    assert.throws(() => validateLevel(wrongOrder), /before its support/);
+    const unmarked = structuredClone(input);
+    unmarked.volumes.forEach(v => delete v.attachment);
+    assert.throws(() => compileRecipe(unmarked), /Support failure/);
+    assert.throws(() => compileRecipe(recipe([
+        box('floating-chain', 0, 0, 1, 1, 2, 4, { attachment: 'underside' })
+    ])), /Support failure/);
+    assert.throws(() => compileRecipe(recipe([
+        box('cycle-bottom', 0, 0, 1, 1, 2, 2, { attachment: 'underside' }),
+        box('cycle-top', 0, 0, 3, 1, 2, 2)
+    ])), /Support failure/);
+    assert.throws(() => compileRecipe(recipe([
+        box('bad-wheel', 0, 0, 0, 3, 1, 3, { kind: 'wheel', attachment: 'underside' })
+    ])), /invalid attachment/);
+    const invalid = structuredClone(level);
+    invalid.bricks[0].attachment = 'sideways';
+    assert.throws(() => validateLevel(invalid), /invalid attachment/);
+});
+
 test('wheels stay atomic and mirrored with side axle connections', () => {
     const input = recipe([box('left-wheel', 0, 0, 0, 3, 1, 3, { kind: 'wheel' }),
         box('right-wheel', 0, 3, 0, 3, 1, 3, { kind: 'wheel' }), box('chassis', 0, 1, 0, 3, 2, 2)],

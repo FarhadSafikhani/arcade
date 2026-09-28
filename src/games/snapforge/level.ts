@@ -7,6 +7,7 @@ export interface SnapBrick {
     d: number;
     h?: 1 | 2 | 3;
     kind?: 'brick' | 'wheel';
+    attachment?: 'underside';
     color: string;
 }
 
@@ -32,7 +33,7 @@ const isNatural = (value: unknown): value is number =>
 
 const cellKey = (x: number, y: number, z: number): string => `${x},${y},${z}`;
 
-/** Wheel hubs attach sideways at axle height; ordinary bricks attach to studs below. */
+/** Wheels attach at axles; underside bricks attach their top studs to the brick above. */
 export function supportIds(brick: SnapBrick, occupied: Map<string, string>, byId: Map<string, SnapBrick>): Set<string> {
     const ids = new Set<string>();
     const add = (x: number, y: number, z: number) => {
@@ -48,7 +49,8 @@ export function supportIds(brick: SnapBrick, occupied: Map<string, string>, byId
             add(brick.x + brick.w, brick.y + 1, brick.z + 1);
         }
     } else for (let x = brick.x; x < brick.x + brick.w; x++)
-        for (let y = brick.y; y < brick.y + brick.d; y++) add(x, y, brick.z - 1);
+        for (let y = brick.y; y < brick.y + brick.d; y++)
+            add(x, y, brick.attachment === 'underside' ? brick.z + (brick.h ?? 1) : brick.z - 1);
     return ids;
 }
 
@@ -88,6 +90,8 @@ export function validateLevel(input: unknown): SnapLevel {
         if (brick.kind !== undefined && brick.kind !== 'brick' && brick.kind !== 'wheel') {
             throw new Error(`${id}/${brick.id}: unknown part kind`);
         }
+        if (brick.attachment !== undefined && (brick.attachment !== 'underside' || brick.kind === 'wheel'))
+            throw new Error(`${id}/${brick.id}: invalid attachment`);
         if (brick.kind === 'wheel') {
             if (brick.h !== 3 || Math.min(Number(brick.w), Number(brick.d)) !== 1 ||
                 Math.max(Number(brick.w), Number(brick.d)) !== 3)
@@ -112,9 +116,9 @@ export function validateLevel(input: unknown): SnapLevel {
     const byId = new Map((bricks as SnapBrick[]).map(brick => [brick.id, brick]));
     for (const candidate of bricks) {
         const brick = candidate as SnapBrick;
-        if (brick.z === 0) continue;
+        if (brick.z === 0 && brick.attachment !== 'underside') continue;
         const supported = supportIds(brick, occupied, byId).size > 0;
-        if (!supported) throw new Error(`${id}/${brick.id}: floating brick has no studs beneath it`);
+        if (!supported) throw new Error(`${id}/${brick.id}: floating brick has no ${brick.attachment === 'underside' ? 'attachment above' : 'studs beneath it'}`);
     }
 
     const first = occupied.keys().next().value as string;
@@ -132,6 +136,8 @@ export function validateLevel(input: unknown): SnapLevel {
         }
     }
     if (visited.size !== occupied.size) throw new Error(`${id}: model has disconnected pieces`);
+    if (bricks.some(b => b.attachment === 'underside') && input.buildSequence === undefined)
+        throw new Error(`${id}: underside attachments require a supported buildSequence`);
     if (input.buildSequence !== undefined) {
         const sequence = input.buildSequence;
         if (!Array.isArray(sequence) || sequence.length !== bricks.length || new Set(sequence).size !== bricks.length ||
@@ -141,7 +147,7 @@ export function validateLevel(input: unknown): SnapLevel {
         const byId = new Map((bricks as SnapBrick[]).map(brick => [brick.id, brick]));
         for (const brickId of sequence) {
             const brick = byId.get(brickId)!;
-            const supported = brick.z === 0 || Array.from(supportIds(brick, occupied, byId)).some(id => placed.has(id));
+            const supported = (brick.z === 0 && brick.attachment !== 'underside') || Array.from(supportIds(brick, occupied, byId)).some(id => placed.has(id));
             if (!supported) throw new Error(`${id}/${brickId}: buildSequence places brick before its support`);
             placed.add(brickId);
         }

@@ -5,7 +5,7 @@ import RAPIER from '@dimforge/rapier3d-compat';
 import { mysteryModel, disposeMystery } from './mystery3d';
 import { brickMesh, brickPosition, BRICK_HEIGHT, WHEEL_RADIUS, WHEEL_CENTER_Y, disposeBrick } from './brick3d';
 import { buildOrder, pieceMatches, pileAdditions, SnapBrick, SnapLevel } from './level';
-import { configureOverlayCamera, overlayRotation, overlayToScreen, screenToOverlay } from './overlay3d';
+import { configureOverlayCamera, fitOverlayDepth, overlayRotation, overlayToScreen, screenToOverlay } from './overlay3d';
 
 interface LooseBrick { brick: SnapBrick; mesh: THREE.Group; body: RAPIER.RigidBody; }
 interface Flight { brick: SnapBrick; mesh: THREE.Group; from: THREE.Vector2; to: THREE.Vector2;
@@ -21,6 +21,8 @@ const HELD_ROTATION_DURATION = 850;
 const SHIMMER_SWEEP_DURATION = 500;
 const SHIMMER_PAUSE_DURATION = 5000;
 const REJECTION_FLASH_DURATION = 420;
+const SHOWCASE_FAST_SPIN = Math.PI * 0.8;
+const SHOWCASE_SLOW_SPIN = Math.PI * 0.12;
 const GRAVITY = 19;
 /** Tuned by ear: the pour feels in sync when it starts this long before the first physical impact. */
 const POUR_LEAD = 800;
@@ -91,6 +93,7 @@ export class SnapScene3D {
     private modelRadius = 18;
     private showcasing = false;
     private revealRemaining = 0;
+    private showcaseAutoSpin = false;
     private showcaseBounds = new THREE.Sphere();
     private hintId = '';
     private hintUntil = 0;
@@ -322,6 +325,7 @@ export class SnapScene3D {
         this.onIntroCancel();
         this.showcasing = false;
         this.revealRemaining = 0;
+        this.showcaseAutoSpin = false;
         if (this.orbitPointer !== null && this.modelElement.hasPointerCapture(this.orbitPointer))
             this.modelElement.releasePointerCapture(this.orbitPointer);
         this.orbitPointer = null;
@@ -359,18 +363,21 @@ export class SnapScene3D {
         this.clearTarget();
         new THREE.Box3().setFromObject(this.modelGroup).getBoundingSphere(this.showcaseBounds);
         this.revealRemaining = REDUCED_MOTION.matches ? 0 : Math.PI * 2;
+        this.showcaseAutoSpin = !REDUCED_MOTION.matches;
         this.resize();
     }
 
     rotateShowcase(amount: number): void {
         if (!this.showcasing) return;
         this.revealRemaining = 0;
+        this.showcaseAutoSpin = false;
         this.yaw += amount;
     }
 
     resetShowcase(): void {
         if (!this.showcasing) return;
         this.revealRemaining = 0;
+        this.showcaseAutoSpin = false;
         this.yaw = this.restingYaw;
     }
 
@@ -565,6 +572,7 @@ export class SnapScene3D {
     private modelDown = (event: PointerEvent): void => {
         if (!this.playing || !this.interactive || event.button !== 0 || this.orbitPointer !== null) return;
         this.revealRemaining = 0;
+        this.showcaseAutoSpin = false;
         this.orbitPointer = event.pointerId;
         this.orbitLastX = event.clientX;
         this.orbiting = true;
@@ -770,11 +778,12 @@ export class SnapScene3D {
                 this.hintBeacon.position.set(position.x, height + 1.15 + Math.sin(now / 120) * 0.12, position.z);
                 this.hintMarker.scale.setScalar(1 + 0.09 * Math.sin(now / 100));
             }
-            if (this.showcasing && !this.orbiting && this.revealRemaining > 0) {
-                const turn = Math.min(this.revealRemaining, delta * Math.PI * 0.8);
-                this.yaw += turn;
-                this.revealRemaining -= turn;
-                if (REDUCED_MOTION.matches) this.revealRemaining = 0;
+            if (this.showcasing && !this.orbiting && this.showcaseAutoSpin) {
+                const easing = THREE.MathUtils.smoothstep(this.revealRemaining, 0, Math.PI);
+                const speed = THREE.MathUtils.lerp(SHOWCASE_SLOW_SPIN, SHOWCASE_FAST_SPIN, easing);
+                this.yaw += delta * speed;
+                this.revealRemaining = Math.max(0, this.revealRemaining - delta * speed);
+                if (REDUCED_MOTION.matches) this.showcaseAutoSpin = false;
             } else if (!this.orbiting && !this.showcasing) {
                 const difference = Math.atan2(Math.sin(this.restingYaw - this.yaw), Math.cos(this.restingYaw - this.yaw));
                 this.yaw += difference * Math.min(1, delta * 4.5);
@@ -838,6 +847,7 @@ export class SnapScene3D {
         }
         if (this.flights.length || this.drag) {
             const width = this.canvas.clientWidth, height = this.canvas.clientHeight;
+            fitOverlayDepth(this.overlayCamera, this.overlayScene);
             this.renderer.setViewport(0, 0, width, height);
             this.renderer.setScissor(0, 0, width, height);
             this.renderer.render(this.overlayScene, this.overlayCamera);

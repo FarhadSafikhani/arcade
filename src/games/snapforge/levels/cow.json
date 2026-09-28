@@ -4,9 +4,9 @@
   "description": "A spotted dairy cow with a pink muzzle and sturdy hooves.",
   "collection": "farm",
   "order": 3,
-  "version": 1,
+  "version": 2,
   "targetParts": 40,
-  "vetted": 0,
+  "vetted": 1,
   "palette": {
     "white": "#F5EFE1",
     "black": "#303135",
@@ -158,43 +158,23 @@
       "x": 2,
       "y": 1,
       "z": 5,
-      "w": 3,
-      "d": 1,
-      "h": 2,
-      "color": "black"
+      "w": 9,
+      "d": 6,
+      "h": 1,
+      "color": "white"
     },
     {
       "id": "brick-016",
-      "x": 5,
-      "y": 1,
+      "x": 1,
+      "y": 3,
       "z": 5,
-      "w": 6,
-      "d": 1,
+      "w": 1,
+      "d": 2,
       "h": 1,
-      "color": "white"
+      "color": "black"
     },
     {
       "id": "brick-017",
-      "x": 2,
-      "y": 2,
-      "z": 5,
-      "w": 9,
-      "d": 4,
-      "h": 1,
-      "color": "white"
-    },
-    {
-      "id": "brick-018",
-      "x": 0,
-      "y": 3,
-      "z": 5,
-      "w": 2,
-      "d": 2,
-      "h": 1,
-      "color": "white"
-    },
-    {
-      "id": "brick-019",
       "x": 1,
       "y": 5,
       "z": 5,
@@ -204,27 +184,17 @@
       "color": "white"
     },
     {
-      "id": "brick-020",
+      "id": "brick-018",
       "x": 2,
-      "y": 6,
-      "z": 5,
+      "y": 1,
+      "z": 6,
       "w": 3,
       "d": 1,
       "h": 2,
       "color": "black"
     },
     {
-      "id": "brick-021",
-      "x": 5,
-      "y": 6,
-      "z": 5,
-      "w": 6,
-      "d": 1,
-      "h": 1,
-      "color": "white"
-    },
-    {
-      "id": "brick-022",
+      "id": "brick-019",
       "x": 5,
       "y": 1,
       "z": 6,
@@ -234,7 +204,7 @@
       "color": "white"
     },
     {
-      "id": "brick-023",
+      "id": "brick-020",
       "x": 2,
       "y": 2,
       "z": 6,
@@ -244,17 +214,27 @@
       "color": "white"
     },
     {
-      "id": "brick-024",
-      "x": 0,
+      "id": "brick-021",
+      "x": 1,
       "y": 3,
       "z": 6,
       "w": 1,
       "d": 2,
       "h": 2,
+      "color": "white"
+    },
+    {
+      "id": "brick-022",
+      "x": 2,
+      "y": 6,
+      "z": 6,
+      "w": 3,
+      "d": 1,
+      "h": 2,
       "color": "black"
     },
     {
-      "id": "brick-025",
+      "id": "brick-023",
       "x": 5,
       "y": 6,
       "z": 6,
@@ -264,27 +244,7 @@
       "color": "white"
     },
     {
-      "id": "brick-026",
-      "x": 2,
-      "y": 1,
-      "z": 7,
-      "w": 3,
-      "d": 1,
-      "h": 1,
-      "color": "black"
-    },
-    {
-      "id": "brick-027",
-      "x": 2,
-      "y": 6,
-      "z": 7,
-      "w": 3,
-      "d": 1,
-      "h": 1,
-      "color": "black"
-    },
-    {
-      "id": "brick-028",
+      "id": "brick-024",
       "x": 3,
       "y": 2,
       "z": 8,
@@ -294,7 +254,7 @@
       "color": "white"
     },
     {
-      "id": "brick-029",
+      "id": "brick-025",
       "x": 4,
       "y": 2,
       "z": 8,
@@ -304,7 +264,7 @@
       "color": "black"
     },
     {
-      "id": "brick-030",
+      "id": "brick-026",
       "x": 7,
       "y": 2,
       "z": 8,
@@ -314,17 +274,27 @@
       "color": "white"
     },
     {
-      "id": "brick-031",
+      "id": "brick-027",
+      "x": 1,
+      "y": 3,
+      "z": 8,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "id": "brick-028",
       "x": 10,
       "y": 2,
       "z": 9,
       "w": 1,
       "d": 4,
-      "h": 1,
+      "h": 2,
       "color": "white"
     },
     {
-      "id": "brick-032",
+      "id": "brick-029",
       "x": 11,
       "y": 2,
       "z": 9,
@@ -334,37 +304,17 @@
       "color": "pink"
     },
     {
-      "id": "brick-033",
-      "x": 10,
-      "y": 0,
-      "z": 10,
-      "w": 2,
-      "d": 3,
-      "h": 1,
-      "color": "black"
-    },
-    {
-      "id": "brick-034",
-      "x": 12,
+      "id": "brick-030",
+      "x": 11,
       "y": 2,
       "z": 10,
-      "w": 1,
-      "d": 1,
+      "w": 3,
+      "d": 4,
       "h": 1,
-      "color": "black"
+      "color": "pink"
     },
     {
-      "id": "brick-035",
-      "x": 13,
-      "y": 2,
-      "z": 10,
-      "w": 1,
-      "d": 1,
-      "h": 1,
-      "color": "white"
-    },
-    {
-      "id": "brick-036",
+      "id": "brick-031",
       "x": 14,
       "y": 2,
       "z": 10,
@@ -374,28 +324,18 @@
       "color": "black"
     },
     {
-      "id": "brick-037",
-      "x": 10,
+      "id": "brick-032",
+      "x": 14,
       "y": 3,
       "z": 10,
-      "w": 4,
+      "w": 1,
       "d": 2,
       "h": 1,
-      "color": "white"
+      "color": "pink"
     },
     {
-      "id": "brick-038",
-      "x": 10,
-      "y": 5,
-      "z": 10,
-      "w": 2,
-      "d": 3,
-      "h": 1,
-      "color": "black"
-    },
-    {
-      "id": "brick-039",
-      "x": 12,
+      "id": "brick-033",
+      "x": 14,
       "y": 5,
       "z": 10,
       "w": 1,
@@ -404,10 +344,70 @@
       "color": "black"
     },
     {
-      "id": "brick-040",
-      "x": 13,
+      "id": "brick-034",
+      "x": 10,
+      "y": 2,
+      "z": 11,
+      "w": 3,
+      "d": 4,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "id": "brick-035",
+      "x": 10,
+      "y": 1,
+      "z": 12,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "black"
+    },
+    {
+      "id": "brick-036",
+      "x": 11,
+      "y": 2,
+      "z": 12,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "id": "brick-037",
+      "x": 12,
+      "y": 2,
+      "z": 12,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "black"
+    },
+    {
+      "id": "brick-038",
+      "x": 10,
+      "y": 3,
+      "z": 12,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "id": "brick-039",
+      "x": 10,
       "y": 5,
-      "z": 10,
+      "z": 12,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "black"
+    },
+    {
+      "id": "brick-040",
+      "x": 11,
+      "y": 5,
+      "z": 12,
       "w": 1,
       "d": 1,
       "h": 1,
@@ -415,9 +415,9 @@
     },
     {
       "id": "brick-041",
-      "x": 14,
+      "x": 12,
       "y": 5,
-      "z": 10,
+      "z": 12,
       "w": 1,
       "d": 1,
       "h": 1,
@@ -438,32 +438,32 @@
     "brick-011",
     "brick-012",
     "brick-013",
-    "brick-017",
-    "brick-016",
-    "brick-021",
-    "brick-018",
     "brick-015",
-    "brick-020",
     "brick-014",
+    "brick-016",
+    "brick-017",
+    "brick-020",
     "brick-019",
     "brick-023",
+    "brick-018",
     "brick-022",
+    "brick-021",
+    "brick-026",
     "brick-025",
     "brick-024",
-    "brick-026",
     "brick-027",
-    "brick-030",
     "brick-029",
     "brick-028",
+    "brick-030",
     "brick-032",
     "brick-031",
-    "brick-037",
     "brick-033",
-    "brick-038",
     "brick-034",
+    "brick-038",
     "brick-035",
-    "brick-036",
     "brick-039",
+    "brick-036",
+    "brick-037",
     "brick-040",
     "brick-041"
   ]

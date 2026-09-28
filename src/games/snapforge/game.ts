@@ -461,7 +461,7 @@ class SnapforgeGame {
             const actions = document.createElement('div');
             actions.className = 'card-actions';
             actions.appendChild(action);
-            if (isUnlocked) {
+            if (isCompleted && !isInProgress) {
                 const view = document.createElement('button');
                 view.type = 'button'; view.className = 'card-view'; view.textContent = 'View';
                 view.setAttribute('aria-label', `View ${item.title}`);
@@ -478,9 +478,12 @@ class SnapforgeGame {
         this.updateGalleryControls();
     }
     private updateGalleryControls(): void {
-        this.previewCount.textContent = `${this.selectedIndex + 1} / ${this.activeLevels().length}`;
+        const levels = this.activeLevels();
+        const completed = levels.filter(level => this.progress.completed.includes(level.id)).length;
+        this.previewCount.textContent = `${completed} / ${levels.length}`;
+        this.previewCount.setAttribute('aria-label', `${completed} of ${levels.length} models completed`);
         byId<HTMLButtonElement>('galleryPrevious').disabled = this.selectedIndex === 0;
-        byId<HTMLButtonElement>('galleryNext').disabled = this.selectedIndex === this.activeLevels().length - 1;
+        byId<HTMLButtonElement>('galleryNext').disabled = this.selectedIndex === levels.length - 1;
     }
     private closeShowcase(): void {
         this.completion.hidden = true;
