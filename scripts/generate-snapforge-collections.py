@@ -146,27 +146,7 @@ m.box(4, 6, 3, 5, 9, 11, 'stem').box(5, 8, 3, 5, 10, 11, 'leaf')
 m.box(2, 3, 1, 2, 4, 6, 'light')
 m.save()
 
-def bird(id, title, order, main, wing, feature):
-    m = Model(id, title, 'bird', order, f'Build a colorful {title.lower()}.',
-              dict(main=main, wing=wing, beak='#F5A740', dark='#27334D', light='#FFF7DE', feet='#D8783D'))
-    m.box(2, 7, 2, 6, 1, 5, 'main').box(3, 6, 2, 6, 5, 8, 'main')
-    m.box(2, 4, 1, 2, 2, 5, 'wing').box(5, 7, 6, 7, 2, 5, 'wing')
-    m.box(3, 4, 2, 3, 0, 2, 'feet').box(5, 6, 5, 6, 0, 2, 'feet')
-    m.box(6, 8, 3, 5, 5, 6, 'beak')
-    m.box(5, 6, 2, 3, 6, 7, 'dark').box(5, 6, 5, 6, 6, 7, 'dark')
-    if feature == 'chick': m.box(3, 5, 3, 5, 8, 9, 'main')
-    if feature == 'owl':
-        m.box(3, 4, 2, 3, 7, 9, 'wing').box(5, 6, 5, 6, 7, 9, 'wing')
-        m.box(4, 5, 2, 3, 6, 7, 'light').box(4, 5, 5, 6, 6, 7, 'light')
-        m.box(5, 6, 2, 3, 6, 7, 'dark').box(5, 6, 5, 6, 6, 7, 'dark')
-    if feature == 'parrot':
-        m.box(1, 3, 3, 5, 2, 6, 'wing').box(0, 2, 3, 5, 0, 4, 'wing')
-        m.box(3, 6, 2, 6, 7, 9, 'wing').box(6, 9, 3, 5, 5, 6, 'beak')
-    return m
-
-bird('chick', 'Chick', 1, '#F8D957', '#E9BA42', 'chick').save()
-bird('owl', 'Owl', 2, '#9B6C4D', '#704C3B', 'owl').save()
-bird('parrot', 'Parrot', 3, '#51B884', '#DE5C4C', 'parrot').save()
+# Bird Collection is authored entirely through recipes.
 
 def car(id, title, order, body, roof, kind):
     m = Model(id, title, 'car', order, f'Build a brick-built {title.lower()}.',

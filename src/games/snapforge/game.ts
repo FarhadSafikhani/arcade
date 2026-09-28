@@ -11,6 +11,7 @@ interface PartialBuild { version: number; placedIds: string[]; }
 interface Progress { completed: string[]; partials: Record<string, PartialBuild>; seenIntro: string[]; muted: boolean; unlockAll: boolean; }
 
 const STORAGE_KEY = 'snapforge-3d-progress-v2';
+const DEV_MUSIC_KEY = 'snapforge-dev-disable-music';
 const levels = new Map<string, SnapLevel>();
 for (const input of Object.values(import.meta.glob('./levels/*.json', { eager: true, import: 'default' }))) {
     try { const level = validateLevel(input); levels.set(level.id, level); }
@@ -75,54 +76,25 @@ class SnapforgeGame {
     private introGeneration = 0;
     private devSnap: HTMLButtonElement | null = null;
     private devFinish: HTMLButtonElement | null = null;
+    private devMusic: HTMLButtonElement | null = null;
+    private devPop: HTMLButtonElement | null = null;
+    private devPanel: HTMLDetailsElement | null = null;
+    private devWindow: Window | null = null;
+    private devPopGeneration = 0;
+    private musicDisabled = false;
+    private devSnapDisabled = true;
+    private devFinishDisabled = true;
 
     constructor() {
         this.renderCollections();
         this.renderGallery();
+        if (import.meta.env.DEV) {
+            try { this.musicDisabled = localStorage.getItem(DEV_MUSIC_KEY) === '1'; }
+            catch { /* Dev preference is optional. */ }
+        }
         this.updateSound();
         this.syncMusic();
-        if (import.meta.env.DEV) {
-            const panel = document.createElement('details');
-            panel.className = 'dev-panel';
-            const toggle = document.createElement('summary');
-            toggle.textContent = '[DEV]';
-            const actions = document.createElement('div');
-            actions.className = 'dev-actions';
-            this.devSnap = document.createElement('button');
-            this.devSnap.type = 'button';
-            this.devSnap.textContent = 'Snap next piece';
-            this.devSnap.disabled = true;
-            this.devSnap.addEventListener('click', () => this.scene?.snapNextPiece());
-            this.devFinish = document.createElement('button');
-            this.devFinish.type = 'button';
-            this.devFinish.textContent = 'Finish model';
-            this.devFinish.disabled = true;
-            this.devFinish.addEventListener('click', () => {
-                if (!this.current || !this.scene) return;
-                this.scene.skipIntro();
-                while (this.current && this.placedIds.length < this.current.bricks.length && this.scene.snapNextPiece()) { /* Place each remaining piece. */ }
-            });
-            const unlockAll = document.createElement('button');
-            unlockAll.type = 'button';
-            unlockAll.textContent = 'Unlock all';
-            unlockAll.addEventListener('click', () => {
-                this.progress.unlockAll = true;
-                this.save();
-                this.renderGallery();
-                this.scene?.setPreviews(this.galleryTrack, this.previewEntries());
-                this.galleryMotion?.reset(this.selectedIndex);
-            });
-            const reset = document.createElement('button');
-            reset.type = 'button';
-            reset.textContent = 'Fresh start';
-            reset.addEventListener('click', () => {
-                localStorage.clear();
-                window.location.reload();
-            });
-            actions.append(this.devSnap, this.devFinish, unlockAll, reset);
-            panel.append(toggle, actions);
-            this.root.appendChild(panel);
-        }
+        if (import.meta.env.DEV) this.installDevPanel();
         // Placement completes in an animation frame, so unlock audio during a user gesture.
         // The mute control handles music itself; starting it on the way down would blip before the click.
         const unlockAudio = (event: Event) => {
@@ -136,7 +108,7 @@ class SnapforgeGame {
         this.root.addEventListener('click', event => {
             const control = event.target instanceof Element
                 ? event.target.closest('button, a[href], [role="button"]') : null;
-            if (!control || control === this.sound || control.matches(':disabled, [aria-disabled="true"]')) return;
+            if (!control || control === this.sound || control === this.devMusic || control.matches(':disabled, [aria-disabled="true"]')) return;
             if (control.closest('#galleryTrack') && this.galleryMotion?.suppressesClick(event)) return;
             this.playEffect('click');
         }, true);
@@ -169,6 +141,7 @@ class SnapforgeGame {
         byId<HTMLButtonElement>('galleryNext').addEventListener('click', () => this.galleryMotion.step(1));
         this.galleryMotion.reset(this.selectedIndex);
         window.addEventListener('pagehide', event => {
+            this.devWindow?.close();
             this.music?.pause();
             this.stopIntroEffects();
             this.galleryMotion.suspend();
@@ -228,16 +201,172 @@ class SnapforgeGame {
             return music;
         } catch { return null; /* Music is optional. */ }
     }
-    /** Starts the looping theme, or pauses it while sound is muted. Autoplay may wait for a gesture. */
+    /** Starts the looping theme, or pauses it while sound is muted or dev has disabled music. */
     private syncMusic(): void {
-        const music = this.ensureMusic();
-        if (!music) return;
-        if (this.progress.muted) {
-            music.pause();
+        if (this.progress.muted || this.musicDisabled) {
+            this.music?.pause();
             return;
         }
+        const music = this.ensureMusic();
+        if (!music) return;
         const pending = music.play();
-        if (pending) void pending.catch(() => { /* The next pointer or key press retries. */ });
+        if (pending) void pending.then(() => {
+            if (this.progress.muted || this.musicDisabled) music.pause();
+        }).catch(() => { /* The next pointer or key press retries. */ });
+    }
+    private installDevPanel(): void {
+        try { this.devPanel?.remove(); } catch { /* The popped document may already be gone. */ }
+        const panel = document.createElement('details');
+        panel.className = 'dev-panel';
+        const toggle = document.createElement('summary');
+        toggle.textContent = '[DEV]';
+        const actions = document.createElement('div');
+        actions.className = 'dev-actions';
+        this.devSnap = document.createElement('button');
+        this.devSnap.type = 'button';
+        this.devSnap.textContent = 'Snap next piece';
+        this.devSnap.disabled = this.devSnapDisabled;
+        this.devSnap.addEventListener('click', () => this.scene?.snapNextPiece());
+        this.devFinish = document.createElement('button');
+        this.devFinish.type = 'button';
+        this.devFinish.textContent = 'Finish model';
+        this.devFinish.disabled = this.devFinishDisabled;
+        this.devFinish.addEventListener('click', () => {
+            if (!this.current || !this.scene) return;
+            this.scene.skipIntro();
+            while (this.current && this.placedIds.length < this.current.bricks.length && this.scene.snapNextPiece()) { /* Place each remaining piece. */ }
+        });
+        const unlockAll = document.createElement('button');
+        unlockAll.type = 'button';
+        unlockAll.textContent = 'Unlock all';
+        unlockAll.addEventListener('click', () => {
+            this.progress.unlockAll = true;
+            this.save();
+            this.renderGallery();
+            this.scene?.setPreviews(this.galleryTrack, this.previewEntries());
+            this.galleryMotion?.reset(this.selectedIndex);
+        });
+        const reset = document.createElement('button');
+        reset.type = 'button';
+        reset.textContent = 'Fresh start';
+        reset.addEventListener('click', () => {
+            this.devWindow?.close();
+            localStorage.clear();
+            window.location.reload();
+        });
+        this.devMusic = document.createElement('button');
+        this.devMusic.type = 'button';
+        // The root gesture handler would start the theme on the way down, before this click silences it.
+        this.devMusic.addEventListener('pointerdown', event => event.stopPropagation());
+        this.devMusic.addEventListener('click', () => {
+            this.musicDisabled = !this.musicDisabled;
+            try { localStorage.setItem(DEV_MUSIC_KEY, this.musicDisabled ? '1' : '0'); }
+            catch { /* Dev preference is optional. */ }
+            this.updateDevMusic();
+            this.syncMusic();
+            if (!this.progress.muted) this.playEffect('click');
+        });
+        this.updateDevMusic();
+        this.devPop = document.createElement('button');
+        this.devPop.type = 'button';
+        this.devPop.addEventListener('click', () => this.popDevPanel());
+        this.updateDevPopLabel();
+        actions.append(this.devSnap, this.devFinish, unlockAll, reset, this.devMusic, this.devPop);
+        panel.append(toggle, actions);
+        this.devPanel = panel;
+        this.root.appendChild(panel);
+    }
+    private updateDevMusic(): void {
+        if (!this.devMusic) return;
+        this.devMusic.textContent = this.musicDisabled ? 'Enable music' : 'Disable music';
+        this.devMusic.setAttribute('aria-pressed', String(this.musicDisabled));
+    }
+    private updateDevPopLabel(): void {
+        if (!this.devPop) return;
+        const popped = !!this.devWindow && !this.devWindow.closed && this.devPanel?.ownerDocument !== document;
+        this.devPop.textContent = popped ? 'Dock dev panel' : 'Pop dev panel';
+    }
+    private setDevPieceControls(snapDisabled: boolean, finishDisabled: boolean): void {
+        this.devSnapDisabled = snapDisabled;
+        this.devFinishDisabled = finishDisabled;
+        if (this.devSnap) this.devSnap.disabled = snapDisabled;
+        if (this.devFinish) this.devFinish.disabled = finishDisabled;
+    }
+    /** Moves the live dev panel into a child window. Closing that window docks it again. */
+    private popDevPanel(): void {
+        if (this.devWindow && !this.devWindow.closed) {
+            const popup = this.devWindow;
+            window.setTimeout(() => popup.close(), 0);
+            return;
+        }
+        const generation = ++this.devPopGeneration;
+        const popup = window.open('', `snapforge-dev-${generation}`, 'popup=yes,width=280,height=460');
+        let doc: Document | null = null;
+        try { doc = popup?.document ?? null; } catch { doc = null; }
+        if (!popup || !doc?.body || !this.devPanel) {
+            this.notePopBlocked();
+            try { popup?.close(); } catch { /* A blocked window may already be unreachable. */ }
+            return;
+        }
+        this.devWindow = popup;
+        doc.title = 'Snapforge dev';
+        doc.head.replaceChildren();
+        doc.body.replaceChildren();
+        for (const node of document.querySelectorAll('link[rel="stylesheet"]')) {
+            if (!(node instanceof HTMLLinkElement) || !node.href) continue;
+            const link = doc.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = node.href;
+            doc.head.appendChild(link);
+        }
+        for (const node of document.querySelectorAll('style')) doc.head.appendChild(doc.importNode(node, true));
+        const layout = doc.createElement('style');
+        layout.textContent = 'html,body{margin:0;height:100%;background:#27334d}';
+        doc.head.appendChild(layout);
+        this.devPanel.classList.add('is-popped');
+        this.devPanel.open = true;
+        doc.body.appendChild(doc.adoptNode(this.devPanel));
+        this.updateDevPopLabel();
+        let settled = false;
+        const finishPop = () => {
+            if (settled || generation !== this.devPopGeneration) return;
+            settled = true;
+            this.recoverDevPanel();
+            try { if (!popup.closed) popup.close(); } catch { /* The window is already gone. */ }
+        };
+        // beforeunload still has the document, so the panel can move home before the window is discarded.
+        popup.addEventListener('beforeunload', finishPop);
+        popup.addEventListener('pagehide', finishPop);
+        const watch = window.setInterval(() => {
+            if (generation !== this.devPopGeneration) {
+                try { if (!popup.closed) popup.close(); } catch { /* The window is already gone. */ }
+            } else if (!popup.closed) return;
+            if (!popup.closed) return;
+            window.clearInterval(watch);
+            if (!settled) finishPop();
+        }, 200);
+        popup.focus();
+    }
+    private notePopBlocked(): void {
+        if (!this.devPop) return;
+        this.devPop.textContent = 'Pop-up blocked';
+        window.setTimeout(() => this.updateDevPopLabel(), 1600);
+    }
+    private recoverDevPanel(): void {
+        const panel = this.devPanel;
+        if (panel && panel.ownerDocument !== document) {
+            panel.classList.remove('is-popped');
+            try { this.root.appendChild(document.adoptNode(panel)); }
+            catch {
+                this.devPanel = null;
+                this.installDevPanel();
+            }
+        } else if (!panel || !panel.isConnected) {
+            this.devPanel = null;
+            this.installDevPanel();
+        } else panel.classList.remove('is-popped');
+        this.devWindow = null;
+        this.updateDevPopLabel();
     }
     private prepareAudio(): AudioContext | null {
         if (this.progress.muted) return null;
@@ -541,8 +670,7 @@ class SnapforgeGame {
         this.closeShowcase();
         this.scene?.leaveLevel();
         this.current = null;
-        if (this.devSnap) this.devSnap.disabled = true;
-        if (this.devFinish) this.devFinish.disabled = true;
+        this.setDevPieceControls(true, true);
         this.play.hidden = true;
         this.gallery.hidden = false;
         this.root.classList.remove('is-playing');
@@ -572,14 +700,13 @@ class SnapforgeGame {
         byId<HTMLElement>('playTitle').textContent = level.title;
         this.introPlaying = !resume;
         this.hint.disabled = !resume;
-        if (this.devSnap) this.devSnap.disabled = !resume;
-        if (this.devFinish) this.devFinish.disabled = false;
+        this.setDevPieceControls(!resume, false);
         this.message.textContent = resume ? '' : 'Watch the model come apart…';
         this.updateStep();
         this.scene.startLevel(level, this.placedIds, !resume, () => {
             this.introPlaying = false;
             this.hint.disabled = false;
-            if (this.devSnap) this.devSnap.disabled = false;
+            this.setDevPieceControls(false, false);
             if (!this.progress.seenIntro.includes(level.id)) this.progress.seenIntro.push(level.id);
             this.save();
             this.updateStep();
@@ -625,8 +752,7 @@ class SnapforgeGame {
         this.message.textContent = 'You built it!';
         this.counter.textContent = `${this.placedIds.length} / ${this.placedIds.length}`;
         this.hint.disabled = true;
-        if (this.devSnap) this.devSnap.disabled = true;
-        if (this.devFinish) this.devFinish.disabled = true;
+        this.setDevPieceControls(true, true);
         this.celebrate();
         this.play.classList.add('is-complete');
         this.completion.hidden = false;

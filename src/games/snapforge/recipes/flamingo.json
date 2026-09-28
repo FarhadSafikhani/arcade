@@ -1,0 +1,351 @@
+{
+  "id": "flamingo",
+  "title": "Flamingo",
+  "description": "A rose-pink flamingo with long slender legs, folded wings, an S-shaped neck, and a black-tipped downturned bill.",
+  "collection": "bird",
+  "order": 5,
+  "version": 1,
+  "targetParts": 50,
+  "palette": {
+    "black": "#202A35",
+    "white": "#F7F3E8",
+    "pink": "#ED83A6",
+    "red": "#D9393D"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 4
+  },
+  "volumes": [
+    {
+      "name": "foot-left",
+      "x": 5,
+      "y": 1,
+      "z": 0,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "pink",
+      "protected": true
+    },
+    {
+      "name": "foot-right",
+      "x": 5,
+      "y": 5,
+      "z": 0,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "pink",
+      "protected": true
+    },
+    {
+      "name": "lower-leg-left",
+      "x": 5,
+      "y": 1,
+      "z": 1,
+      "w": 1,
+      "d": 2,
+      "h": 6,
+      "color": "pink"
+    },
+    {
+      "name": "lower-leg-right",
+      "x": 5,
+      "y": 5,
+      "z": 1,
+      "w": 1,
+      "d": 2,
+      "h": 6,
+      "color": "pink"
+    },
+    {
+      "name": "knee-left",
+      "x": 5,
+      "y": 1,
+      "z": 7,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "pink"
+    },
+    {
+      "name": "knee-right",
+      "x": 5,
+      "y": 5,
+      "z": 7,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "pink"
+    },
+    {
+      "name": "upper-leg-left",
+      "x": 6,
+      "y": 1,
+      "z": 8,
+      "w": 1,
+      "d": 2,
+      "h": 5,
+      "color": "pink"
+    },
+    {
+      "name": "upper-leg-right",
+      "x": 6,
+      "y": 5,
+      "z": 8,
+      "w": 1,
+      "d": 2,
+      "h": 5,
+      "color": "pink"
+    },
+    {
+      "name": "belly",
+      "x": 3,
+      "y": 1,
+      "z": 13,
+      "w": 7,
+      "d": 6,
+      "h": 1,
+      "color": "pink",
+      "protected": true
+    },
+    {
+      "name": "body",
+      "x": 2,
+      "y": 1,
+      "z": 14,
+      "w": 8,
+      "d": 6,
+      "h": 2,
+      "color": "pink"
+    },
+    {
+      "name": "back",
+      "x": 3,
+      "y": 2,
+      "z": 16,
+      "w": 6,
+      "d": 4,
+      "h": 2,
+      "color": "pink"
+    },
+    {
+      "name": "wing-root-left",
+      "x": 3,
+      "y": 0,
+      "z": 15,
+      "w": 5,
+      "d": 2,
+      "h": 1,
+      "color": "red",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "wing-root-right",
+      "x": 3,
+      "y": 6,
+      "z": 15,
+      "w": 5,
+      "d": 2,
+      "h": 1,
+      "color": "red",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "wing-middle-left",
+      "x": 3,
+      "y": 0,
+      "z": 16,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "pink",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "wing-middle-right",
+      "x": 3,
+      "y": 6,
+      "z": 16,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "pink",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "wing-top-left",
+      "x": 4,
+      "y": 1,
+      "z": 17,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "pink",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "wing-top-right",
+      "x": 4,
+      "y": 6,
+      "z": 17,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "pink",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "tail-root",
+      "x": 0,
+      "y": 2,
+      "z": 14,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "pink",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "tail-tip",
+      "x": 0,
+      "y": 3,
+      "z": 15,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "black"
+    },
+    {
+      "name": "neck-base",
+      "x": 8,
+      "y": 3,
+      "z": 16,
+      "w": 3,
+      "d": 2,
+      "h": 2,
+      "color": "pink",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "neck-forward",
+      "x": 10,
+      "y": 3,
+      "z": 18,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "pink"
+    },
+    {
+      "name": "neck-bend",
+      "x": 8,
+      "y": 3,
+      "z": 22,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "pink",
+      "protected": true
+    },
+    {
+      "name": "neck-rise",
+      "x": 8,
+      "y": 3,
+      "z": 24,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "pink"
+    },
+    {
+      "name": "head",
+      "x": 8,
+      "y": 2,
+      "z": 28,
+      "w": 4,
+      "d": 4,
+      "h": 2,
+      "color": "pink",
+      "protected": true
+    },
+    {
+      "name": "head-foundation",
+      "x": 8,
+      "y": 2,
+      "z": 28,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "pink",
+      "protected": true,
+      "overlay": true
+    },
+    {
+      "name": "crown",
+      "x": 9,
+      "y": 2,
+      "z": 30,
+      "w": 2,
+      "d": 4,
+      "h": 1,
+      "color": "pink"
+    },
+    {
+      "name": "bill-root",
+      "x": 11,
+      "y": 3,
+      "z": 29,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "white",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "bill-drop",
+      "x": 13,
+      "y": 3,
+      "z": 27,
+      "w": 1,
+      "d": 2,
+      "h": 2,
+      "color": "black",
+      "attachment": "underside"
+    },
+    {
+      "name": "eye-left",
+      "x": 11,
+      "y": 2,
+      "z": 29,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "black",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "eye-right",
+      "x": 11,
+      "y": 5,
+      "z": 29,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "black",
+      "overlay": true,
+      "protected": true
+    }
+  ]
+}

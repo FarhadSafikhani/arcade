@@ -1,0 +1,310 @@
+{
+  "id": "mallard",
+  "title": "Mallard Duck",
+  "description": "A colorful mallard with an emerald head, white collar, chestnut breast, and blue wing flashes.",
+  "collection": "bird",
+  "order": 2,
+  "version": 1,
+  "targetParts": 26,
+  "vetted": 0,
+  "palette": {
+    "black": "#202A35",
+    "white": "#F7F3E8",
+    "orange": "#F28B32",
+    "brown": "#79503C",
+    "green": "#16845B",
+    "blue": "#2274C7",
+    "yellow": "#F4CE3B",
+    "gray": "#8997A0"
+  },
+  "bricks": [
+    {
+      "id": "brick-001",
+      "x": 6,
+      "y": 1,
+      "z": 0,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "orange"
+    },
+    {
+      "id": "brick-002",
+      "x": 6,
+      "y": 5,
+      "z": 0,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "orange"
+    },
+    {
+      "id": "brick-003",
+      "x": 3,
+      "y": 1,
+      "z": 1,
+      "w": 7,
+      "d": 6,
+      "h": 2,
+      "color": "gray"
+    },
+    {
+      "id": "brick-004",
+      "x": 3,
+      "y": 0,
+      "z": 3,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "id": "brick-005",
+      "x": 7,
+      "y": 1,
+      "z": 3,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "gray"
+    },
+    {
+      "id": "brick-006",
+      "x": 8,
+      "y": 1,
+      "z": 3,
+      "w": 2,
+      "d": 6,
+      "h": 2,
+      "color": "brown"
+    },
+    {
+      "id": "brick-007",
+      "x": 0,
+      "y": 2,
+      "z": 3,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "black"
+    },
+    {
+      "id": "brick-008",
+      "x": 4,
+      "y": 2,
+      "z": 3,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "gray"
+    },
+    {
+      "id": "brick-009",
+      "x": 3,
+      "y": 6,
+      "z": 3,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "id": "brick-010",
+      "x": 7,
+      "y": 6,
+      "z": 3,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "gray"
+    },
+    {
+      "id": "brick-011",
+      "x": 3,
+      "y": 0,
+      "z": 4,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "blue"
+    },
+    {
+      "id": "brick-012",
+      "x": 6,
+      "y": 1,
+      "z": 4,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "gray"
+    },
+    {
+      "id": "brick-013",
+      "x": 7,
+      "y": 1,
+      "z": 4,
+      "w": 1,
+      "d": 6,
+      "h": 1,
+      "color": "gray"
+    },
+    {
+      "id": "brick-014",
+      "x": 0,
+      "y": 2,
+      "z": 4,
+      "w": 2,
+      "d": 4,
+      "h": 1,
+      "color": "black"
+    },
+    {
+      "id": "brick-015",
+      "x": 3,
+      "y": 2,
+      "z": 4,
+      "w": 4,
+      "d": 4,
+      "h": 2,
+      "color": "gray"
+    },
+    {
+      "id": "brick-016",
+      "x": 3,
+      "y": 6,
+      "z": 4,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "blue"
+    },
+    {
+      "id": "brick-017",
+      "x": 6,
+      "y": 6,
+      "z": 4,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "gray"
+    },
+    {
+      "id": "brick-018",
+      "x": 7,
+      "y": 2,
+      "z": 5,
+      "w": 3,
+      "d": 4,
+      "h": 1,
+      "color": "brown"
+    },
+    {
+      "id": "brick-019",
+      "x": 7,
+      "y": 2,
+      "z": 6,
+      "w": 3,
+      "d": 4,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "id": "brick-020",
+      "x": 7,
+      "y": 2,
+      "z": 7,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "green"
+    },
+    {
+      "id": "brick-021",
+      "x": 7,
+      "y": 2,
+      "z": 8,
+      "w": 3,
+      "d": 4,
+      "h": 2,
+      "color": "green"
+    },
+    {
+      "id": "brick-022",
+      "x": 10,
+      "y": 2,
+      "z": 8,
+      "w": 3,
+      "d": 4,
+      "h": 1,
+      "color": "yellow"
+    },
+    {
+      "id": "brick-023",
+      "x": 10,
+      "y": 2,
+      "z": 9,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "black"
+    },
+    {
+      "id": "brick-024",
+      "x": 10,
+      "y": 3,
+      "z": 9,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "green"
+    },
+    {
+      "id": "brick-025",
+      "x": 10,
+      "y": 5,
+      "z": 9,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "black"
+    },
+    {
+      "id": "brick-026",
+      "x": 8,
+      "y": 2,
+      "z": 10,
+      "w": 2,
+      "d": 4,
+      "h": 1,
+      "color": "green"
+    }
+  ],
+  "buildSequence": [
+    "brick-001",
+    "brick-002",
+    "brick-003",
+    "brick-007",
+    "brick-008",
+    "brick-006",
+    "brick-004",
+    "brick-009",
+    "brick-005",
+    "brick-010",
+    "brick-015",
+    "brick-014",
+    "brick-011",
+    "brick-013",
+    "brick-016",
+    "brick-012",
+    "brick-017",
+    "brick-018",
+    "brick-019",
+    "brick-020",
+    "brick-021",
+    "brick-022",
+    "brick-024",
+    "brick-023",
+    "brick-025",
+    "brick-026"
+  ]
+}

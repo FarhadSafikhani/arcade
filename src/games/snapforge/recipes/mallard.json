@@ -1,0 +1,248 @@
+{
+  "id": "mallard",
+  "title": "Mallard Duck",
+  "description": "A colorful mallard with an emerald head, white collar, chestnut breast, and blue wing flashes.",
+  "collection": "bird",
+  "order": 2,
+  "version": 1,
+  "targetParts": 26,
+  "palette": {
+    "black": "#202A35",
+    "white": "#F7F3E8",
+    "orange": "#F28B32",
+    "brown": "#79503C",
+    "green": "#16845B",
+    "blue": "#2274C7",
+    "yellow": "#F4CE3B",
+    "gray": "#8997A0"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 4
+  },
+  "volumes": [
+    {
+      "name": "webbed-foot-left",
+      "x": 6,
+      "y": 1,
+      "z": 0,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "webbed-foot-right",
+      "x": 6,
+      "y": 5,
+      "z": 0,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "belly",
+      "x": 3,
+      "y": 1,
+      "z": 1,
+      "w": 7,
+      "d": 6,
+      "h": 2,
+      "color": "gray",
+      "protected": true
+    },
+    {
+      "name": "body",
+      "x": 3,
+      "y": 1,
+      "z": 3,
+      "w": 7,
+      "d": 6,
+      "h": 2,
+      "color": "gray"
+    },
+    {
+      "name": "back",
+      "x": 3,
+      "y": 2,
+      "z": 5,
+      "w": 5,
+      "d": 4,
+      "h": 1,
+      "color": "gray"
+    },
+    {
+      "name": "breast",
+      "x": 8,
+      "y": 1,
+      "z": 3,
+      "w": 2,
+      "d": 6,
+      "h": 2,
+      "color": "brown",
+      "overlay": true
+    },
+    {
+      "name": "tail-root",
+      "x": 0,
+      "y": 2,
+      "z": 3,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "black",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "tail-tip",
+      "x": 0,
+      "y": 2,
+      "z": 4,
+      "w": 2,
+      "d": 4,
+      "h": 1,
+      "color": "black"
+    },
+    {
+      "name": "wing-left",
+      "x": 3,
+      "y": 0,
+      "z": 3,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "white",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "wing-right",
+      "x": 3,
+      "y": 6,
+      "z": 3,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "white",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "wing-flash-left",
+      "x": 3,
+      "y": 0,
+      "z": 4,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "blue",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "wing-flash-right",
+      "x": 3,
+      "y": 6,
+      "z": 4,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "blue",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "neck",
+      "x": 7,
+      "y": 2,
+      "z": 5,
+      "w": 3,
+      "d": 4,
+      "h": 1,
+      "color": "brown",
+      "overlay": true
+    },
+    {
+      "name": "collar",
+      "x": 7,
+      "y": 2,
+      "z": 6,
+      "w": 3,
+      "d": 4,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "name": "head",
+      "x": 7,
+      "y": 2,
+      "z": 7,
+      "w": 4,
+      "d": 4,
+      "h": 3,
+      "color": "green"
+    },
+    {
+      "name": "head-foundation",
+      "x": 7,
+      "y": 2,
+      "z": 7,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "green",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "crown",
+      "x": 8,
+      "y": 2,
+      "z": 10,
+      "w": 2,
+      "d": 4,
+      "h": 1,
+      "color": "green"
+    },
+    {
+      "name": "bill",
+      "x": 10,
+      "y": 2,
+      "z": 8,
+      "w": 3,
+      "d": 4,
+      "h": 1,
+      "color": "yellow",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "eye-left",
+      "x": 10,
+      "y": 2,
+      "z": 9,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "black",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "eye-right",
+      "x": 10,
+      "y": 5,
+      "z": 9,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "black",
+      "overlay": true,
+      "protected": true
+    }
+  ]
+}

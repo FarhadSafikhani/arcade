@@ -1,0 +1,373 @@
+{
+  "id": "eagle",
+  "title": "Eagle",
+  "description": "A bald eagle with a white head and tail, hooked golden beak, and outstretched layered wings.",
+  "collection": "bird",
+  "order": 3,
+  "version": 1,
+  "targetParts": 32,
+  "vetted": 0,
+  "palette": {
+    "black": "#202A35",
+    "white": "#F7F3E8",
+    "brown": "#79503C",
+    "yellow": "#F4CE3B"
+  },
+  "bricks": [
+    {
+      "id": "brick-001",
+      "x": 6,
+      "y": 9,
+      "z": 0,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "yellow"
+    },
+    {
+      "id": "brick-002",
+      "x": 6,
+      "y": 13,
+      "z": 0,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "yellow"
+    },
+    {
+      "id": "brick-003",
+      "x": 6,
+      "y": 9,
+      "z": 1,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "yellow"
+    },
+    {
+      "id": "brick-004",
+      "x": 6,
+      "y": 13,
+      "z": 1,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "yellow"
+    },
+    {
+      "id": "brick-005",
+      "x": 3,
+      "y": 9,
+      "z": 3,
+      "w": 6,
+      "d": 6,
+      "h": 2,
+      "color": "brown"
+    },
+    {
+      "id": "brick-006",
+      "x": 3,
+      "y": 6,
+      "z": 5,
+      "w": 5,
+      "d": 4,
+      "h": 2,
+      "color": "brown"
+    },
+    {
+      "id": "brick-007",
+      "x": 1,
+      "y": 10,
+      "z": 5,
+      "w": 3,
+      "d": 4,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "id": "brick-008",
+      "x": 4,
+      "y": 10,
+      "z": 5,
+      "w": 5,
+      "d": 4,
+      "h": 1,
+      "color": "brown"
+    },
+    {
+      "id": "brick-009",
+      "x": 3,
+      "y": 14,
+      "z": 5,
+      "w": 5,
+      "d": 4,
+      "h": 2,
+      "color": "brown"
+    },
+    {
+      "id": "brick-010",
+      "x": 0,
+      "y": 10,
+      "z": 6,
+      "w": 2,
+      "d": 4,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "id": "brick-011",
+      "x": 3,
+      "y": 10,
+      "z": 6,
+      "w": 6,
+      "d": 4,
+      "h": 2,
+      "color": "brown"
+    },
+    {
+      "id": "brick-012",
+      "x": 2,
+      "y": 3,
+      "z": 7,
+      "w": 5,
+      "d": 5,
+      "h": 1,
+      "color": "brown"
+    },
+    {
+      "id": "brick-013",
+      "x": 2,
+      "y": 16,
+      "z": 7,
+      "w": 5,
+      "d": 5,
+      "h": 1,
+      "color": "brown"
+    },
+    {
+      "id": "brick-014",
+      "x": 2,
+      "y": 0,
+      "z": 8,
+      "w": 4,
+      "d": 6,
+      "h": 1,
+      "color": "black"
+    },
+    {
+      "id": "brick-015",
+      "x": 3,
+      "y": 10,
+      "z": 8,
+      "w": 6,
+      "d": 4,
+      "h": 1,
+      "color": "brown"
+    },
+    {
+      "id": "brick-016",
+      "x": 2,
+      "y": 18,
+      "z": 8,
+      "w": 4,
+      "d": 6,
+      "h": 1,
+      "color": "black"
+    },
+    {
+      "id": "brick-017",
+      "x": 0,
+      "y": 1,
+      "z": 9,
+      "w": 3,
+      "d": 1,
+      "h": 1,
+      "color": "black"
+    },
+    {
+      "id": "brick-018",
+      "x": 1,
+      "y": 3,
+      "z": 9,
+      "w": 3,
+      "d": 1,
+      "h": 1,
+      "color": "black"
+    },
+    {
+      "id": "brick-019",
+      "x": 2,
+      "y": 5,
+      "z": 9,
+      "w": 3,
+      "d": 1,
+      "h": 1,
+      "color": "black"
+    },
+    {
+      "id": "brick-020",
+      "x": 7,
+      "y": 10,
+      "z": 9,
+      "w": 2,
+      "d": 4,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "id": "brick-021",
+      "x": 2,
+      "y": 18,
+      "z": 9,
+      "w": 3,
+      "d": 1,
+      "h": 1,
+      "color": "black"
+    },
+    {
+      "id": "brick-022",
+      "x": 1,
+      "y": 20,
+      "z": 9,
+      "w": 3,
+      "d": 1,
+      "h": 1,
+      "color": "black"
+    },
+    {
+      "id": "brick-023",
+      "x": 0,
+      "y": 22,
+      "z": 9,
+      "w": 3,
+      "d": 1,
+      "h": 1,
+      "color": "black"
+    },
+    {
+      "id": "brick-024",
+      "x": 7,
+      "y": 10,
+      "z": 10,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "id": "brick-025",
+      "x": 12,
+      "y": 11,
+      "z": 10,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "yellow",
+      "attachment": "underside"
+    },
+    {
+      "id": "brick-026",
+      "x": 7,
+      "y": 10,
+      "z": 11,
+      "w": 3,
+      "d": 4,
+      "h": 2,
+      "color": "white"
+    },
+    {
+      "id": "brick-027",
+      "x": 10,
+      "y": 10,
+      "z": 11,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "id": "brick-028",
+      "x": 10,
+      "y": 11,
+      "z": 11,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "yellow"
+    },
+    {
+      "id": "brick-029",
+      "x": 10,
+      "y": 13,
+      "z": 11,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "id": "brick-030",
+      "x": 10,
+      "y": 10,
+      "z": 12,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "black"
+    },
+    {
+      "id": "brick-031",
+      "x": 10,
+      "y": 11,
+      "z": 12,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "id": "brick-032",
+      "x": 10,
+      "y": 13,
+      "z": 12,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "black"
+    }
+  ],
+  "buildSequence": [
+    "brick-001",
+    "brick-002",
+    "brick-003",
+    "brick-004",
+    "brick-005",
+    "brick-006",
+    "brick-008",
+    "brick-009",
+    "brick-007",
+    "brick-011",
+    "brick-010",
+    "brick-012",
+    "brick-013",
+    "brick-014",
+    "brick-015",
+    "brick-016",
+    "brick-020",
+    "brick-017",
+    "brick-018",
+    "brick-019",
+    "brick-021",
+    "brick-022",
+    "brick-023",
+    "brick-024",
+    "brick-026",
+    "brick-028",
+    "brick-025",
+    "brick-027",
+    "brick-029",
+    "brick-031",
+    "brick-030",
+    "brick-032"
+  ]
+}

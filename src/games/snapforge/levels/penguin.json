@@ -1,0 +1,272 @@
+{
+  "id": "penguin",
+  "title": "Penguin",
+  "description": "An upright black-and-white penguin with a snowy belly, short flippers, and orange webbed feet.",
+  "collection": "bird",
+  "order": 1,
+  "version": 1,
+  "targetParts": 22,
+  "vetted": 0,
+  "palette": {
+    "black": "#202A35",
+    "white": "#F7F3E8",
+    "orange": "#F28B32"
+  },
+  "bricks": [
+    {
+      "id": "brick-001",
+      "x": 4,
+      "y": 1,
+      "z": 0,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "orange"
+    },
+    {
+      "id": "brick-002",
+      "x": 4,
+      "y": 5,
+      "z": 0,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "orange"
+    },
+    {
+      "id": "brick-003",
+      "x": 3,
+      "y": 1,
+      "z": 1,
+      "w": 4,
+      "d": 6,
+      "h": 2,
+      "color": "black"
+    },
+    {
+      "id": "brick-004",
+      "x": 2,
+      "y": 1,
+      "z": 3,
+      "w": 4,
+      "d": 6,
+      "h": 2,
+      "color": "black"
+    },
+    {
+      "id": "brick-005",
+      "x": 6,
+      "y": 1,
+      "z": 3,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "black"
+    },
+    {
+      "id": "brick-006",
+      "x": 6,
+      "y": 2,
+      "z": 3,
+      "w": 1,
+      "d": 4,
+      "h": 2,
+      "color": "white"
+    },
+    {
+      "id": "brick-007",
+      "x": 6,
+      "y": 6,
+      "z": 3,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "black"
+    },
+    {
+      "id": "brick-008",
+      "x": 3,
+      "y": 0,
+      "z": 5,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "black"
+    },
+    {
+      "id": "brick-009",
+      "x": 2,
+      "y": 1,
+      "z": 5,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "black"
+    },
+    {
+      "id": "brick-010",
+      "x": 5,
+      "y": 1,
+      "z": 5,
+      "w": 2,
+      "d": 1,
+      "h": 2,
+      "color": "black"
+    },
+    {
+      "id": "brick-011",
+      "x": 2,
+      "y": 2,
+      "z": 5,
+      "w": 4,
+      "d": 4,
+      "h": 2,
+      "color": "black"
+    },
+    {
+      "id": "brick-012",
+      "x": 6,
+      "y": 2,
+      "z": 5,
+      "w": 1,
+      "d": 4,
+      "h": 2,
+      "color": "white"
+    },
+    {
+      "id": "brick-013",
+      "x": 2,
+      "y": 6,
+      "z": 5,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "black"
+    },
+    {
+      "id": "brick-014",
+      "x": 3,
+      "y": 6,
+      "z": 5,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "black"
+    },
+    {
+      "id": "brick-015",
+      "x": 5,
+      "y": 6,
+      "z": 5,
+      "w": 2,
+      "d": 1,
+      "h": 2,
+      "color": "black"
+    },
+    {
+      "id": "brick-016",
+      "x": 3,
+      "y": 2,
+      "z": 7,
+      "w": 4,
+      "d": 4,
+      "h": 2,
+      "color": "black"
+    },
+    {
+      "id": "brick-017",
+      "x": 3,
+      "y": 2,
+      "z": 9,
+      "w": 3,
+      "d": 4,
+      "h": 2,
+      "color": "black"
+    },
+    {
+      "id": "brick-018",
+      "x": 6,
+      "y": 2,
+      "z": 9,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "black"
+    },
+    {
+      "id": "brick-019",
+      "x": 6,
+      "y": 3,
+      "z": 9,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "orange"
+    },
+    {
+      "id": "brick-020",
+      "x": 6,
+      "y": 5,
+      "z": 9,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "black"
+    },
+    {
+      "id": "brick-021",
+      "x": 6,
+      "y": 2,
+      "z": 10,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "id": "brick-022",
+      "x": 6,
+      "y": 3,
+      "z": 10,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "black"
+    },
+    {
+      "id": "brick-023",
+      "x": 6,
+      "y": 5,
+      "z": 10,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "white"
+    }
+  ],
+  "buildSequence": [
+    "brick-001",
+    "brick-002",
+    "brick-003",
+    "brick-004",
+    "brick-006",
+    "brick-005",
+    "brick-007",
+    "brick-011",
+    "brick-008",
+    "brick-012",
+    "brick-014",
+    "brick-010",
+    "brick-015",
+    "brick-009",
+    "brick-013",
+    "brick-016",
+    "brick-017",
+    "brick-019",
+    "brick-018",
+    "brick-020",
+    "brick-022",
+    "brick-021",
+    "brick-023"
+  ]
+}

@@ -1,0 +1,295 @@
+{
+  "id": "ostrich",
+  "title": "Ostrich",
+  "description": "A tall ostrich with long bare legs and neck, a black feathered body, white wings, and a tiny head.",
+  "collection": "bird",
+  "order": 4,
+  "version": 1,
+  "targetParts": 44,
+  "palette": {
+    "black": "#202A35",
+    "white": "#F7F3E8",
+    "orange": "#F28B32",
+    "cream": "#E7C5A5"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 4
+  },
+  "volumes": [
+    {
+      "name": "foot-left",
+      "x": 5,
+      "y": 1,
+      "z": 0,
+      "w": 5,
+      "d": 2,
+      "h": 1,
+      "color": "cream",
+      "protected": true
+    },
+    {
+      "name": "foot-right",
+      "x": 5,
+      "y": 5,
+      "z": 0,
+      "w": 5,
+      "d": 2,
+      "h": 1,
+      "color": "cream",
+      "protected": true
+    },
+    {
+      "name": "shin-left",
+      "x": 5,
+      "y": 1,
+      "z": 1,
+      "w": 1,
+      "d": 2,
+      "h": 6,
+      "color": "cream"
+    },
+    {
+      "name": "shin-right",
+      "x": 5,
+      "y": 5,
+      "z": 1,
+      "w": 1,
+      "d": 2,
+      "h": 6,
+      "color": "cream"
+    },
+    {
+      "name": "thigh-left",
+      "x": 4,
+      "y": 1,
+      "z": 7,
+      "w": 2,
+      "d": 2,
+      "h": 3,
+      "color": "cream",
+      "protected": true
+    },
+    {
+      "name": "thigh-right",
+      "x": 4,
+      "y": 5,
+      "z": 7,
+      "w": 2,
+      "d": 2,
+      "h": 3,
+      "color": "cream",
+      "protected": true
+    },
+    {
+      "name": "belly",
+      "x": 2,
+      "y": 1,
+      "z": 10,
+      "w": 8,
+      "d": 6,
+      "h": 2,
+      "color": "black",
+      "protected": true
+    },
+    {
+      "name": "body",
+      "x": 1,
+      "y": 1,
+      "z": 12,
+      "w": 9,
+      "d": 6,
+      "h": 3,
+      "color": "black"
+    },
+    {
+      "name": "back",
+      "x": 2,
+      "y": 2,
+      "z": 15,
+      "w": 6,
+      "d": 4,
+      "h": 2,
+      "color": "black"
+    },
+    {
+      "name": "wing-base-left",
+      "x": 3,
+      "y": 0,
+      "z": 12,
+      "w": 5,
+      "d": 2,
+      "h": 1,
+      "color": "white",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "wing-base-right",
+      "x": 3,
+      "y": 6,
+      "z": 12,
+      "w": 5,
+      "d": 2,
+      "h": 1,
+      "color": "white",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "wing-middle-left",
+      "x": 3,
+      "y": 0,
+      "z": 13,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "white",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "wing-middle-right",
+      "x": 3,
+      "y": 6,
+      "z": 13,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "white",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "wing-top-left",
+      "x": 4,
+      "y": 1,
+      "z": 15,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "name": "wing-top-right",
+      "x": 4,
+      "y": 6,
+      "z": 15,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "name": "tail-base",
+      "x": 0,
+      "y": 2,
+      "z": 12,
+      "w": 3,
+      "d": 4,
+      "h": 1,
+      "color": "white",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "tail-feathers",
+      "x": 0,
+      "y": 2,
+      "z": 13,
+      "w": 1,
+      "d": 4,
+      "h": 2,
+      "color": "white"
+    },
+    {
+      "name": "neck-root",
+      "x": 8,
+      "y": 3,
+      "z": 15,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "cream"
+    },
+    {
+      "name": "neck",
+      "x": 9,
+      "y": 3,
+      "z": 17,
+      "w": 1,
+      "d": 2,
+      "h": 8,
+      "color": "cream"
+    },
+    {
+      "name": "head",
+      "x": 8,
+      "y": 2,
+      "z": 25,
+      "w": 4,
+      "d": 4,
+      "h": 2,
+      "color": "cream",
+      "protected": true
+    },
+    {
+      "name": "head-foundation",
+      "x": 8,
+      "y": 2,
+      "z": 25,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "cream",
+      "protected": true,
+      "overlay": true
+    },
+    {
+      "name": "crown",
+      "x": 9,
+      "y": 2,
+      "z": 27,
+      "w": 2,
+      "d": 4,
+      "h": 1,
+      "color": "cream"
+    },
+    {
+      "name": "bill",
+      "x": 11,
+      "y": 3,
+      "z": 26,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "orange",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "eye-left",
+      "x": 11,
+      "y": 2,
+      "z": 26,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "black",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "eye-right",
+      "x": 11,
+      "y": 5,
+      "z": 26,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "black",
+      "overlay": true,
+      "protected": true
+    }
+  ]
+}

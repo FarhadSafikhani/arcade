@@ -1,0 +1,152 @@
+{
+  "id": "penguin",
+  "title": "Penguin",
+  "description": "An upright black-and-white penguin with a snowy belly, short flippers, and orange webbed feet.",
+  "collection": "bird",
+  "order": 1,
+  "version": 1,
+  "targetParts": 22,
+  "palette": {
+    "black": "#202A35",
+    "white": "#F7F3E8",
+    "orange": "#F28B32"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 4
+  },
+  "volumes": [
+    {
+      "name": "foot-left",
+      "x": 4,
+      "y": 1,
+      "z": 0,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "foot-right",
+      "x": 4,
+      "y": 5,
+      "z": 0,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "orange",
+      "protected": true
+    },
+    {
+      "name": "lower-body",
+      "x": 3,
+      "y": 1,
+      "z": 1,
+      "w": 4,
+      "d": 6,
+      "h": 2,
+      "color": "black",
+      "protected": true
+    },
+    {
+      "name": "body",
+      "x": 2,
+      "y": 1,
+      "z": 3,
+      "w": 5,
+      "d": 6,
+      "h": 4,
+      "color": "black"
+    },
+    {
+      "name": "white-belly",
+      "x": 6,
+      "y": 2,
+      "z": 3,
+      "w": 1,
+      "d": 4,
+      "h": 4,
+      "color": "white",
+      "overlay": true
+    },
+    {
+      "name": "shoulders",
+      "x": 3,
+      "y": 2,
+      "z": 7,
+      "w": 4,
+      "d": 4,
+      "h": 2,
+      "color": "black"
+    },
+    {
+      "name": "flipper-root-left",
+      "x": 3,
+      "y": 0,
+      "z": 5,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "black",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "flipper-root-right",
+      "x": 3,
+      "y": 6,
+      "z": 5,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "black",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "head",
+      "x": 3,
+      "y": 2,
+      "z": 9,
+      "w": 4,
+      "d": 4,
+      "h": 2,
+      "color": "black"
+    },
+    {
+      "name": "beak",
+      "x": 6,
+      "y": 3,
+      "z": 9,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "orange",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "eye-left",
+      "x": 6,
+      "y": 2,
+      "z": 10,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "white",
+      "overlay": true
+    },
+    {
+      "name": "eye-right",
+      "x": 6,
+      "y": 5,
+      "z": 10,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "white",
+      "overlay": true
+    }
+  ]
+}

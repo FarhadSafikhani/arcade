@@ -14,7 +14,7 @@ export const collections = [
 
 export type CollectionId = typeof collections[number]['id'];
 
-export const availableCollections: ReadonlySet<CollectionId> = new Set(['starter', 'farm', 'fruit']);
+export const availableCollections: ReadonlySet<CollectionId> = new Set(['starter', 'farm', 'fruit', 'bird']);
 
 export function collectionLevels(levels: Iterable<SnapLevel>, collection: CollectionId): SnapLevel[] {
     return [...levels].filter(level => level.collection === collection)
