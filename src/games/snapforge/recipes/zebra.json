@@ -1,0 +1,357 @@
+{
+  "id": "zebra",
+  "title": "Zebra",
+  "description": "A black-and-white zebra with bold stripes, an upright mane, and a dark hanging tail.",
+  "collection": "land-animal",
+  "order": 6,
+  "version": 2,
+  "targetParts": 69,
+  "palette": {
+    "body": "#F2EEE3",
+    "dark": "#303139"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 4
+  },
+  "volumes": [
+    {
+      "name": "hoof-2-left",
+      "x": 2,
+      "y": 1,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "dark"
+    },
+    {
+      "name": "hoof-2-right",
+      "x": 2,
+      "y": 5,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "dark"
+    },
+    {
+      "name": "leg-2-left",
+      "x": 2,
+      "y": 1,
+      "z": 1,
+      "w": 2,
+      "d": 2,
+      "h": 5,
+      "color": "body"
+    },
+    {
+      "name": "leg-2-right",
+      "x": 2,
+      "y": 5,
+      "z": 1,
+      "w": 2,
+      "d": 2,
+      "h": 5,
+      "color": "body"
+    },
+    {
+      "name": "hoof-9-left",
+      "x": 9,
+      "y": 1,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "dark"
+    },
+    {
+      "name": "hoof-9-right",
+      "x": 9,
+      "y": 5,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "dark"
+    },
+    {
+      "name": "leg-9-left",
+      "x": 9,
+      "y": 1,
+      "z": 1,
+      "w": 2,
+      "d": 2,
+      "h": 5,
+      "color": "body"
+    },
+    {
+      "name": "leg-9-right",
+      "x": 9,
+      "y": 5,
+      "z": 1,
+      "w": 2,
+      "d": 2,
+      "h": 5,
+      "color": "body"
+    },
+    {
+      "name": "belly",
+      "x": 1,
+      "y": 1,
+      "z": 6,
+      "w": 11,
+      "d": 6,
+      "h": 1,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "body",
+      "x": 1,
+      "y": 1,
+      "z": 7,
+      "w": 11,
+      "d": 6,
+      "h": 3,
+      "color": "body"
+    },
+    {
+      "name": "back",
+      "x": 2,
+      "y": 2,
+      "z": 10,
+      "w": 8,
+      "d": 4,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "neck-base",
+      "x": 9,
+      "y": 2,
+      "z": 10,
+      "w": 3,
+      "d": 4,
+      "h": 2,
+      "color": "body",
+      "overlay": true
+    },
+    {
+      "name": "neck-rise",
+      "x": 10,
+      "y": 2,
+      "z": 12,
+      "w": 3,
+      "d": 4,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "head-bridge",
+      "x": 11,
+      "y": 2,
+      "z": 14,
+      "w": 6,
+      "d": 4,
+      "h": 1,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "head",
+      "x": 11,
+      "y": 2,
+      "z": 15,
+      "w": 4,
+      "d": 4,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "muzzle",
+      "x": 15,
+      "y": 2,
+      "z": 15,
+      "w": 2,
+      "d": 4,
+      "h": 1,
+      "color": "dark"
+    },
+    {
+      "name": "eye-left",
+      "x": 14,
+      "y": 2,
+      "z": 16,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "eye-right",
+      "x": 14,
+      "y": 5,
+      "z": 16,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "ear-left",
+      "x": 11,
+      "y": 2,
+      "z": 17,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "ear-right",
+      "x": 11,
+      "y": 5,
+      "z": 17,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "mane-lower",
+      "x": 9,
+      "y": 3,
+      "z": 10,
+      "w": 1,
+      "d": 2,
+      "h": 2,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "mane-middle",
+      "x": 10,
+      "y": 3,
+      "z": 12,
+      "w": 1,
+      "d": 2,
+      "h": 2,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "mane-top",
+      "x": 11,
+      "y": 3,
+      "z": 14,
+      "w": 1,
+      "d": 2,
+      "h": 3,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "body-stripe-2",
+      "x": 2,
+      "y": 1,
+      "z": 8,
+      "w": 1,
+      "d": 6,
+      "h": 2,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "body-stripe-5",
+      "x": 5,
+      "y": 1,
+      "z": 7,
+      "w": 1,
+      "d": 6,
+      "h": 3,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "body-stripe-8",
+      "x": 8,
+      "y": 1,
+      "z": 7,
+      "w": 1,
+      "d": 6,
+      "h": 3,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "neck-stripe-13",
+      "x": 11,
+      "y": 2,
+      "z": 13,
+      "w": 2,
+      "d": 4,
+      "h": 1,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "tail-root",
+      "x": 0,
+      "y": 3,
+      "z": 8,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "dark",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "tail",
+      "x": 0,
+      "y": 3,
+      "z": 4,
+      "w": 1,
+      "d": 2,
+      "h": 4,
+      "color": "dark",
+      "attachment": "underside"
+    },
+    {
+      "name": "back-stripe-2",
+      "x": 2,
+      "y": 2,
+      "z": 10,
+      "w": 1,
+      "d": 4,
+      "h": 1,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "back-stripe-5",
+      "x": 5,
+      "y": 2,
+      "z": 10,
+      "w": 1,
+      "d": 4,
+      "h": 1,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "back-stripe-8",
+      "x": 8,
+      "y": 2,
+      "z": 10,
+      "w": 1,
+      "d": 4,
+      "h": 1,
+      "color": "dark",
+      "overlay": true
+    }
+  ]
+}

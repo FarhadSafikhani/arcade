@@ -44,11 +44,12 @@ test('wheel identity survives rotated matching, reserve grouping and saved progr
     assert.ok(validPlacedIds(level, ['rotated']));
 });
 
-test('height defaults to one and accepts only explicit one or two', () => {
-    for (const b of [unit, { ...unit, h: 1 }, { ...unit, h: 2 }]) {
+test('height defaults to one and accepts h3 only for 1×2 pillars', () => {
+    for (const b of [unit, { ...unit, h: 1 }, { ...unit, h: 2 }, { ...unit, h: 3 }, { ...unit, w: 1, d: 2, h: 3 }]) {
         assert.doesNotThrow(() => validateLevel(heightLevel([b])));
     }
-    for (const h of [0, -1, 3, 1.5, '2', null, false]) {
+    assert.throws(() => validateLevel(heightLevel([{ ...unit, w: 2, d: 2, h: 3 }])), /h must/);
+    for (const h of [0, -1, 4, 1.5, '2', null, false]) {
         assert.throws(() => validateLevel(heightLevel([{ ...unit, h }])), /h must be 1 or 2/);
     }
 });
@@ -83,14 +84,14 @@ test('nine collections have ordered models and independent unlock paths', () => 
         ['starter', ['turtle', 'apple', 'duck', 'house', 'police-car']],
         ['farm', ['sheep', 'chicken', 'cow', 'horse', 'barn']],
         ['fruit', ['pear', 'orange', 'cherry', 'watermelon', 'strawberry', 'pineapple']],
-        ['land-animal', ['rabbit', 'fox', 'elephant']],
+        ['land-animal', ['hippo', 'rhino', 'lion', 'elephant', 'giraffe', 'zebra']],
         ['bird', ['penguin', 'mallard', 'eagle', 'ostrich', 'flamingo', 'scarlet-macaw', 'peacock']],
-        ['car', ['compact-car', 'sports-car', 'pickup-truck', 'race-car']],
-        ['landmarks', ['castle']],
-        ['ocean', ['fish', 'sea-turtle', 'shark']],
+        ['car', ['pickup-truck', 'sports-car', 'super-car', 'ambulance', 'semi-truck', 'fire-truck']],
+        ['landmarks', ['stonehenge', 'pyramids', 'castle', 'eiffel-tower', 'cn-tower', 'colosseum', 'big-ben']],
+        ['ocean', ['manta-ray', 'clownfish', 'blue-tang', 'red-crab', 'blue-whale', 'great-white']],
         ['dinosaur', ['stegosaurus', 'triceratops', 't-rex']]
     ]);
-    assert.equal(catalog.length, 37);
+    assert.equal(catalog.length, 51);
     for (const [collection, ids] of expected) {
         const group = catalog.filter(level => level.collection === collection).sort((a, b) => a.order - b.order);
         assert.deepEqual(group.map(level => level.id), ids);
@@ -252,6 +253,8 @@ const { SnapScene3D } = await import(sceneModule('scene3d'));
 const THREE = await import('three');
 const { brickPosition } = await import(sceneModule('brick3d'));
 const { trayLayout, trayPoint } = await import(sceneModule('tray-layout'));
+const { modelBox, workingBox, boxSphere, fitDistance, fitSpinningBox, viewDirection, easeFrame, MIN_FOOTPRINT } =
+    await import(sceneModule('camera-fit'));
 
 function sceneHarness() {
     const scene = Object.create(SnapScene3D.prototype);
@@ -322,4 +325,69 @@ test('long custom parts fit the adaptive surface even in short landscape views',
     const radius = Math.hypot(brick.w, brick.d) / 2;
     assert.ok(point.x + radius < layout.width / 2);
     assert.ok(point.z + radius < layout.depth / 2);
+});
+
+function fitsInView(box, sphere, fov, aspect, yaw) {
+    const camera = new THREE.PerspectiveCamera(fov, aspect, .1, 300);
+    const distance = fitDistance(sphere.radius, fov, aspect), direction = viewDirection(yaw);
+    camera.position.set(sphere.x + direction.x * distance, sphere.y + direction.y * distance, sphere.z + direction.z * distance);
+    camera.lookAt(sphere.x, sphere.y, sphere.z); camera.updateMatrixWorld();
+    return [box.min.x, box.max.x].every(x => [box.min.y, box.max.y].every(y => [box.min.z, box.max.z].every(z => {
+        const point = new THREE.Vector3(x, y, z).project(camera);
+        return Math.abs(point.x) <= 1 && Math.abs(point.y) <= 1;
+    })));
+}
+
+test('the build view starts close, only grows, and always contains the working set', () => {
+    const bigBen = catalog.find(level => level.id === 'big-ben');
+    const order = buildOrder(bigBen), finished = boxSphere(modelBox(bigBen));
+    let box = null, radius = 0;
+    for (let placed = 0; placed <= order.length; placed++) {
+        box = workingBox(bigBen, order, placed, box);
+        const sphere = boxSphere(box);
+        assert.ok(sphere.radius >= radius - 1e-9, `zoomed back in at step ${placed}`);
+        radius = sphere.radius;
+        if (placed === 0) assert.ok(radius < finished.radius / 2);
+        if (placed % 36 === 0) for (const aspect of [0.6, 1.8, 3.2]) for (const yaw of [0, 1, 2.4, 4])
+            assert.ok(fitsInView(box, sphere, 38, aspect, yaw), `step ${placed} clipped at aspect ${aspect}`);
+    }
+    // Headroom kept from earlier targets leaves the last frame slightly above the finished model.
+    assert.ok(radius >= finished.radius && radius < finished.radius * 1.15);
+});
+
+test('a tiny model is never framed tighter than the minimum footprint', () => {
+    const tiny = heightLevel([unit]);
+    const sphere = boxSphere(workingBox(tiny, buildOrder(tiny), 0));
+    assert.ok(sphere.radius >= Math.hypot(MIN_FOOTPRINT / 2, MIN_FOOTPRINT / 2));
+});
+
+test('view easing approaches the target without overshoot and at any frame rate', () => {
+    const from = { x: 0, y: 2, z: 0, radius: 8 }, to = { x: 0, y: 14, z: 0, radius: 30 };
+    assert.deepEqual(easeFrame(from, to, .016, 0), to);
+    let coarse = from, fine = from;
+    for (let i = 0; i < 10; i++) coarse = easeFrame(coarse, to, .05, .17);
+    for (let i = 0; i < 20; i++) fine = easeFrame(fine, to, .025, .17);
+    assert.ok(Math.abs(coarse.radius - fine.radius) < 1e-9);
+    assert.ok(coarse.radius > from.radius && coarse.radius < to.radius && coarse.y < to.y);
+});
+
+test('gallery cards fit every turn angle and use less room than a sphere fit', () => {
+    for (const id of ['big-ben', 'semi-truck', 'turtle']) {
+        const level = catalog.find(item => item.id === id), box = modelBox(level), sphere = boxSphere(box);
+        const direction = viewDirection(Math.atan2(0.65, 0.85));
+        for (const aspect of [0.75, 1.34, 2]) {
+            const distance = fitSpinningBox(box, sphere, direction, 40, aspect, 1);
+            assert.ok(distance < fitDistance(sphere.radius, 40, aspect, 1), `${id}: no tighter than a sphere`);
+            const camera = new THREE.PerspectiveCamera(40, aspect, .1, 300);
+            camera.position.set(sphere.x + direction.x * distance, sphere.y + direction.y * distance, sphere.z + direction.z * distance);
+            camera.lookAt(sphere.x, sphere.y, sphere.z); camera.updateMatrixWorld();
+            let widest = 0;
+            for (let turn = 0.05; turn < Math.PI * 2; turn += 0.1) for (const x of [box.min.x, box.max.x])
+                for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) {
+                    const point = new THREE.Vector3(x, y, z).applyAxisAngle(new THREE.Vector3(0, 1, 0), turn).project(camera);
+                    widest = Math.max(widest, Math.abs(point.x), Math.abs(point.y));
+                }
+            assert.ok(widest <= 1.02 && widest > 0.9, `${id} at aspect ${aspect}: extent ${widest}`);
+        }
+    }
 });

@@ -1,0 +1,345 @@
+{
+  "id": "pickup-truck",
+  "title": "Pickup Truck",
+  "description": "A blue pickup with a tall cab, open cargo bed, silver bed rails and a drop-style tailgate.",
+  "collection": "car",
+  "order": 1,
+  "version": 2,
+  "targetParts": 38,
+  "palette": {
+    "body": "#367EC1",
+    "black": "#232733",
+    "glass": "#64B8DC",
+    "white": "#F1F3F5",
+    "lamp": "#FFE6A0",
+    "silver": "#9DA7B5",
+    "red": "#E83E35",
+    "amber": "#FF9E32"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 4
+  },
+  "volumes": [
+    {
+      "name": "chassis",
+      "x": 1,
+      "y": 1,
+      "z": 0,
+      "w": 16,
+      "d": 6,
+      "h": 2,
+      "color": "black"
+    },
+    {
+      "name": "wheel-2-left",
+      "x": 2,
+      "y": 0,
+      "z": 0,
+      "w": 3,
+      "d": 1,
+      "h": 3,
+      "color": "black",
+      "kind": "wheel"
+    },
+    {
+      "name": "wheel-2-right",
+      "x": 2,
+      "y": 7,
+      "z": 0,
+      "w": 3,
+      "d": 1,
+      "h": 3,
+      "color": "black",
+      "kind": "wheel"
+    },
+    {
+      "name": "wheel-13-left",
+      "x": 13,
+      "y": 0,
+      "z": 0,
+      "w": 3,
+      "d": 1,
+      "h": 3,
+      "color": "black",
+      "kind": "wheel"
+    },
+    {
+      "name": "wheel-13-right",
+      "x": 13,
+      "y": 7,
+      "z": 0,
+      "w": 3,
+      "d": 1,
+      "h": 3,
+      "color": "black",
+      "kind": "wheel"
+    },
+    {
+      "name": "body-floor",
+      "x": 1,
+      "y": 1,
+      "z": 2,
+      "w": 16,
+      "d": 6,
+      "h": 1,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "lower-body",
+      "x": 1,
+      "y": 1,
+      "z": 3,
+      "w": 16,
+      "d": 6,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "hood",
+      "x": 1,
+      "y": 1,
+      "z": 4,
+      "w": 4,
+      "d": 6,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "cabin-glass",
+      "x": 5,
+      "y": 1,
+      "z": 4,
+      "w": 5,
+      "d": 6,
+      "h": 2,
+      "color": "glass"
+    },
+    {
+      "name": "rear-pillar-left",
+      "x": 9,
+      "y": 1,
+      "z": 4,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "body",
+      "overlay": true
+    },
+    {
+      "name": "rear-pillar-right",
+      "x": 9,
+      "y": 6,
+      "z": 4,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "body",
+      "overlay": true
+    },
+    {
+      "name": "cabin-roof",
+      "x": 6,
+      "y": 1,
+      "z": 6,
+      "w": 4,
+      "d": 6,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "mirror-left",
+      "x": 5,
+      "y": 0,
+      "z": 4,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "black",
+      "overlay": true
+    },
+    {
+      "name": "mirror-right",
+      "x": 5,
+      "y": 6,
+      "z": 4,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "black",
+      "overlay": true
+    },
+    {
+      "name": "bed-floor",
+      "x": 10,
+      "y": 2,
+      "z": 4,
+      "w": 7,
+      "d": 4,
+      "h": 1,
+      "color": "black"
+    },
+    {
+      "name": "bed-side-left",
+      "x": 10,
+      "y": 1,
+      "z": 4,
+      "w": 7,
+      "d": 1,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "bed-side-right",
+      "x": 10,
+      "y": 6,
+      "z": 4,
+      "w": 7,
+      "d": 1,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "tailgate",
+      "x": 16,
+      "y": 2,
+      "z": 4,
+      "w": 1,
+      "d": 4,
+      "h": 2,
+      "color": "body",
+      "overlay": true
+    },
+    {
+      "name": "bed-rail-left",
+      "x": 10,
+      "y": 1,
+      "z": 6,
+      "w": 7,
+      "d": 1,
+      "h": 1,
+      "color": "silver"
+    },
+    {
+      "name": "bed-rail-right",
+      "x": 10,
+      "y": 6,
+      "z": 6,
+      "w": 7,
+      "d": 1,
+      "h": 1,
+      "color": "silver"
+    },
+    {
+      "name": "handle-left",
+      "x": 8,
+      "y": 1,
+      "z": 3,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "silver",
+      "overlay": true
+    },
+    {
+      "name": "handle-right",
+      "x": 8,
+      "y": 6,
+      "z": 3,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "silver",
+      "overlay": true
+    },
+    {
+      "name": "tailgate-handle",
+      "x": 16,
+      "y": 3,
+      "z": 5,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "silver",
+      "overlay": true
+    },
+    {
+      "name": "headlight-left",
+      "x": 1,
+      "y": 1,
+      "z": 3,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "lamp",
+      "overlay": true
+    },
+    {
+      "name": "headlight-right",
+      "x": 1,
+      "y": 5,
+      "z": 3,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "lamp",
+      "overlay": true
+    },
+    {
+      "name": "taillight-left",
+      "x": 16,
+      "y": 1,
+      "z": 3,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "red",
+      "overlay": true
+    },
+    {
+      "name": "taillight-right",
+      "x": 16,
+      "y": 6,
+      "z": 3,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "red",
+      "overlay": true
+    },
+    {
+      "name": "grille",
+      "x": 1,
+      "y": 3,
+      "z": 3,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "black",
+      "overlay": true
+    },
+    {
+      "name": "front-bumper",
+      "x": 0,
+      "y": 1,
+      "z": 2,
+      "w": 2,
+      "d": 6,
+      "h": 1,
+      "color": "silver",
+      "overlay": true
+    },
+    {
+      "name": "rear-bumper",
+      "x": 16,
+      "y": 1,
+      "z": 2,
+      "w": 2,
+      "d": 6,
+      "h": 1,
+      "color": "silver",
+      "overlay": true
+    }
+  ]
+}

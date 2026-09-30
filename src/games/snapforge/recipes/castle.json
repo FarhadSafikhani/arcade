@@ -1,0 +1,522 @@
+{
+  "id": "castle",
+  "title": "Castle",
+  "description": "A classic four-towered stone castle with an open gate, crenellated walls, and a raised central keep.",
+  "collection": "landmarks",
+  "order": 3,
+  "version": 3,
+  "targetParts": 83,
+  "palette": {
+    "stone": "#A6AAB0",
+    "roof": "#646E7B",
+    "gate": "#654330",
+    "grass": "#718757"
+  },
+  "symmetry": {
+    "axis": "x",
+    "plane": 9
+  },
+  "volumes": [
+    {
+      "name": "castle-ground",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "w": 18,
+      "d": 16,
+      "h": 1,
+      "color": "grass"
+    },
+    {
+      "name": "tower-1-1-shaft",
+      "x": 1,
+      "y": 1,
+      "z": 1,
+      "w": 4,
+      "d": 4,
+      "h": 10,
+      "color": "stone"
+    },
+    {
+      "name": "tower-1-1-crown",
+      "x": 1,
+      "y": 1,
+      "z": 11,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "roof"
+    },
+    {
+      "name": "tower-1-1-merlon-0-0",
+      "x": 1,
+      "y": 1,
+      "z": 12,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "tower-1-1-merlon-0-3",
+      "x": 1,
+      "y": 4,
+      "z": 12,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "tower-1-1-merlon-3-0",
+      "x": 4,
+      "y": 1,
+      "z": 12,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "tower-1-1-merlon-3-3",
+      "x": 4,
+      "y": 4,
+      "z": 12,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "tower-1-11-shaft",
+      "x": 1,
+      "y": 11,
+      "z": 1,
+      "w": 4,
+      "d": 4,
+      "h": 10,
+      "color": "stone"
+    },
+    {
+      "name": "tower-1-11-crown",
+      "x": 1,
+      "y": 11,
+      "z": 11,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "roof"
+    },
+    {
+      "name": "tower-1-11-merlon-0-0",
+      "x": 1,
+      "y": 11,
+      "z": 12,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "tower-1-11-merlon-0-3",
+      "x": 1,
+      "y": 14,
+      "z": 12,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "tower-1-11-merlon-3-0",
+      "x": 4,
+      "y": 11,
+      "z": 12,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "tower-1-11-merlon-3-3",
+      "x": 4,
+      "y": 14,
+      "z": 12,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "tower-13-1-shaft",
+      "x": 13,
+      "y": 1,
+      "z": 1,
+      "w": 4,
+      "d": 4,
+      "h": 10,
+      "color": "stone"
+    },
+    {
+      "name": "tower-13-1-crown",
+      "x": 13,
+      "y": 1,
+      "z": 11,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "roof"
+    },
+    {
+      "name": "tower-13-1-merlon-0-0",
+      "x": 13,
+      "y": 1,
+      "z": 12,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "tower-13-1-merlon-0-3",
+      "x": 13,
+      "y": 4,
+      "z": 12,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "tower-13-1-merlon-3-0",
+      "x": 16,
+      "y": 1,
+      "z": 12,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "tower-13-1-merlon-3-3",
+      "x": 16,
+      "y": 4,
+      "z": 12,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "tower-13-11-shaft",
+      "x": 13,
+      "y": 11,
+      "z": 1,
+      "w": 4,
+      "d": 4,
+      "h": 10,
+      "color": "stone"
+    },
+    {
+      "name": "tower-13-11-crown",
+      "x": 13,
+      "y": 11,
+      "z": 11,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "roof"
+    },
+    {
+      "name": "tower-13-11-merlon-0-0",
+      "x": 13,
+      "y": 11,
+      "z": 12,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "tower-13-11-merlon-0-3",
+      "x": 13,
+      "y": 14,
+      "z": 12,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "tower-13-11-merlon-3-0",
+      "x": 16,
+      "y": 11,
+      "z": 12,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "tower-13-11-merlon-3-3",
+      "x": 16,
+      "y": 14,
+      "z": 12,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "side-curtain-1",
+      "x": 1,
+      "y": 5,
+      "z": 1,
+      "w": 2,
+      "d": 6,
+      "h": 6,
+      "color": "stone"
+    },
+    {
+      "name": "side-curtain-15",
+      "x": 15,
+      "y": 5,
+      "z": 1,
+      "w": 2,
+      "d": 6,
+      "h": 6,
+      "color": "stone"
+    },
+    {
+      "name": "rear-curtain",
+      "x": 5,
+      "y": 13,
+      "z": 1,
+      "w": 8,
+      "d": 2,
+      "h": 6,
+      "color": "stone"
+    },
+    {
+      "name": "gate-pier-5",
+      "x": 5,
+      "y": 1,
+      "z": 1,
+      "w": 2,
+      "d": 2,
+      "h": 6,
+      "color": "stone"
+    },
+    {
+      "name": "gate-pier-11",
+      "x": 11,
+      "y": 1,
+      "z": 1,
+      "w": 2,
+      "d": 2,
+      "h": 6,
+      "color": "stone"
+    },
+    {
+      "name": "gateway-arch-shoulder-left",
+      "x": 7,
+      "y": 1,
+      "z": 5,
+      "w": 1,
+      "d": 2,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "gateway-arch-shoulder-right",
+      "x": 10,
+      "y": 1,
+      "z": 5,
+      "w": 1,
+      "d": 2,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "gateway-lintel",
+      "x": 5,
+      "y": 1,
+      "z": 7,
+      "w": 8,
+      "d": 2,
+      "h": 1,
+      "color": "stone"
+    },
+    {
+      "name": "front-merlon-5",
+      "x": 5,
+      "y": 1,
+      "z": 8,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "stone"
+    },
+    {
+      "name": "front-merlon-8",
+      "x": 8,
+      "y": 1,
+      "z": 8,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "stone"
+    },
+    {
+      "name": "front-merlon-11",
+      "x": 11,
+      "y": 1,
+      "z": 8,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "stone"
+    },
+    {
+      "name": "rear-merlon-5",
+      "x": 5,
+      "y": 13,
+      "z": 7,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "rear-merlon-8",
+      "x": 8,
+      "y": 13,
+      "z": 7,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "rear-merlon-11",
+      "x": 11,
+      "y": 13,
+      "z": 7,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "side-merlon-1-6",
+      "x": 1,
+      "y": 6,
+      "z": 7,
+      "w": 2,
+      "d": 1,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "side-merlon-1-9",
+      "x": 1,
+      "y": 9,
+      "z": 7,
+      "w": 2,
+      "d": 1,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "side-merlon-15-6",
+      "x": 15,
+      "y": 6,
+      "z": 7,
+      "w": 2,
+      "d": 1,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "side-merlon-15-9",
+      "x": 15,
+      "y": 9,
+      "z": 7,
+      "w": 2,
+      "d": 1,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "keep",
+      "x": 6,
+      "y": 7,
+      "z": 1,
+      "w": 6,
+      "d": 5,
+      "h": 9,
+      "color": "stone"
+    },
+    {
+      "name": "keep-roof",
+      "x": 6,
+      "y": 7,
+      "z": 10,
+      "w": 6,
+      "d": 5,
+      "h": 1,
+      "color": "roof"
+    },
+    {
+      "name": "keep-merlon-6-7",
+      "x": 6,
+      "y": 7,
+      "z": 11,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "keep-merlon-6-11",
+      "x": 6,
+      "y": 11,
+      "z": 11,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "keep-merlon-11-7",
+      "x": 11,
+      "y": 7,
+      "z": 11,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "keep-merlon-11-11",
+      "x": 11,
+      "y": 11,
+      "z": 11,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "stone"
+    },
+    {
+      "name": "keep-door",
+      "x": 8,
+      "y": 7,
+      "z": 1,
+      "w": 2,
+      "d": 1,
+      "h": 3,
+      "color": "gate",
+      "overlay": true
+    }
+  ]
+}

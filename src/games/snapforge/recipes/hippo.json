@@ -1,0 +1,220 @@
+{
+  "id": "hippo",
+  "title": "Hippo",
+  "description": "A round hippo with a broad muzzle, tiny ears, and short sturdy legs.",
+  "collection": "land-animal",
+  "order": 1,
+  "version": 2,
+  "targetParts": 26,
+  "palette": {
+    "body": "#927F99",
+    "muzzle": "#B7A0B7",
+    "dark": "#292630"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 4
+  },
+  "volumes": [
+    {
+      "name": "leg-2-left",
+      "x": 2,
+      "y": 1,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "leg-2-right",
+      "x": 2,
+      "y": 5,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "leg-8-left",
+      "x": 8,
+      "y": 1,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "leg-8-right",
+      "x": 8,
+      "y": 5,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "belly",
+      "x": 1,
+      "y": 1,
+      "z": 2,
+      "w": 10,
+      "d": 6,
+      "h": 2,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "round-back",
+      "x": 1,
+      "y": 0,
+      "z": 4,
+      "w": 8,
+      "d": 8,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "upper-back",
+      "x": 2,
+      "y": 1,
+      "z": 6,
+      "w": 7,
+      "d": 6,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "back-crown",
+      "x": 3,
+      "y": 2,
+      "z": 8,
+      "w": 5,
+      "d": 4,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "wide-jaw",
+      "x": 9,
+      "y": 1,
+      "z": 4,
+      "w": 5,
+      "d": 6,
+      "h": 1,
+      "color": "muzzle",
+      "protected": true
+    },
+    {
+      "name": "muzzle",
+      "x": 10,
+      "y": 1,
+      "z": 5,
+      "w": 4,
+      "d": 6,
+      "h": 2,
+      "color": "muzzle"
+    },
+    {
+      "name": "forehead",
+      "x": 8,
+      "y": 2,
+      "z": 5,
+      "w": 3,
+      "d": 4,
+      "h": 3,
+      "color": "body",
+      "overlay": true
+    },
+    {
+      "name": "nostril-left",
+      "x": 13,
+      "y": 2,
+      "z": 7,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark"
+    },
+    {
+      "name": "nostril-right",
+      "x": 13,
+      "y": 5,
+      "z": 7,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark"
+    },
+    {
+      "name": "eye-left",
+      "x": 10,
+      "y": 2,
+      "z": 7,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "eye-right",
+      "x": 10,
+      "y": 5,
+      "z": 7,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "ear-left",
+      "x": 8,
+      "y": 1,
+      "z": 8,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "ear-right",
+      "x": 8,
+      "y": 5,
+      "z": 8,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "tail-root",
+      "x": 0,
+      "y": 3,
+      "z": 4,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "body",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "little-tail",
+      "x": 0,
+      "y": 3,
+      "z": 3,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "body",
+      "attachment": "underside"
+    }
+  ]
+}

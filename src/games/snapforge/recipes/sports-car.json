@@ -1,0 +1,333 @@
+{
+  "id": "sports-car",
+  "title": "Sports Car",
+  "description": "A low red sports coupe with round wheels, blue glazing and its signature raised rear wing.",
+  "collection": "car",
+  "order": 2,
+  "version": 2,
+  "targetParts": 40,
+  "palette": {
+    "body": "#E83E35",
+    "black": "#232733",
+    "glass": "#64B8DC",
+    "white": "#F1F3F5",
+    "lamp": "#FFE6A0",
+    "silver": "#9DA7B5",
+    "red": "#E83E35",
+    "amber": "#FF9E32"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 4
+  },
+  "volumes": [
+    {
+      "name": "chassis",
+      "x": 1,
+      "y": 1,
+      "z": 0,
+      "w": 14,
+      "d": 6,
+      "h": 2,
+      "color": "black"
+    },
+    {
+      "name": "wheel-2-left",
+      "x": 2,
+      "y": 0,
+      "z": 0,
+      "w": 3,
+      "d": 1,
+      "h": 3,
+      "color": "black",
+      "kind": "wheel"
+    },
+    {
+      "name": "wheel-2-right",
+      "x": 2,
+      "y": 7,
+      "z": 0,
+      "w": 3,
+      "d": 1,
+      "h": 3,
+      "color": "black",
+      "kind": "wheel"
+    },
+    {
+      "name": "wheel-11-left",
+      "x": 11,
+      "y": 0,
+      "z": 0,
+      "w": 3,
+      "d": 1,
+      "h": 3,
+      "color": "black",
+      "kind": "wheel"
+    },
+    {
+      "name": "wheel-11-right",
+      "x": 11,
+      "y": 7,
+      "z": 0,
+      "w": 3,
+      "d": 1,
+      "h": 3,
+      "color": "black",
+      "kind": "wheel"
+    },
+    {
+      "name": "body-floor",
+      "x": 1,
+      "y": 1,
+      "z": 2,
+      "w": 14,
+      "d": 6,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "low-body",
+      "x": 0,
+      "y": 1,
+      "z": 3,
+      "w": 16,
+      "d": 6,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "hood",
+      "x": 0,
+      "y": 2,
+      "z": 4,
+      "w": 5,
+      "d": 4,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "rear-deck",
+      "x": 11,
+      "y": 2,
+      "z": 4,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "door-sill-left",
+      "x": 5,
+      "y": 1,
+      "z": 4,
+      "w": 7,
+      "d": 1,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "door-sill-right",
+      "x": 5,
+      "y": 6,
+      "z": 4,
+      "w": 7,
+      "d": 1,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "lower-glazing",
+      "x": 6,
+      "y": 2,
+      "z": 4,
+      "w": 5,
+      "d": 4,
+      "h": 1,
+      "color": "glass"
+    },
+    {
+      "name": "upper-glazing",
+      "x": 6,
+      "y": 2,
+      "z": 5,
+      "w": 5,
+      "d": 4,
+      "h": 1,
+      "color": "glass"
+    },
+    {
+      "name": "roof-core",
+      "x": 7,
+      "y": 3,
+      "z": 5,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "body",
+      "overlay": true
+    },
+    {
+      "name": "roof",
+      "x": 7,
+      "y": 2,
+      "z": 6,
+      "w": 3,
+      "d": 4,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "wing-pylon-left",
+      "x": 13,
+      "y": 1,
+      "z": 4,
+      "w": 1,
+      "d": 2,
+      "h": 2,
+      "color": "black",
+      "overlay": true
+    },
+    {
+      "name": "wing-pylon-right",
+      "x": 13,
+      "y": 5,
+      "z": 4,
+      "w": 1,
+      "d": 2,
+      "h": 2,
+      "color": "black",
+      "overlay": true
+    },
+    {
+      "name": "rear-wing",
+      "x": 13,
+      "y": 0,
+      "z": 6,
+      "w": 2,
+      "d": 8,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "headlight-left",
+      "x": 1,
+      "y": 1,
+      "z": 3,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "lamp",
+      "overlay": true
+    },
+    {
+      "name": "headlight-right",
+      "x": 1,
+      "y": 5,
+      "z": 3,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "lamp",
+      "overlay": true
+    },
+    {
+      "name": "taillight-left",
+      "x": 14,
+      "y": 1,
+      "z": 3,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "red",
+      "overlay": true
+    },
+    {
+      "name": "taillight-right",
+      "x": 14,
+      "y": 6,
+      "z": 3,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "red",
+      "overlay": true
+    },
+    {
+      "name": "grille",
+      "x": 1,
+      "y": 3,
+      "z": 3,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "black",
+      "overlay": true
+    },
+    {
+      "name": "front-bumper",
+      "x": 0,
+      "y": 1,
+      "z": 2,
+      "w": 2,
+      "d": 6,
+      "h": 1,
+      "color": "silver",
+      "overlay": true
+    },
+    {
+      "name": "rear-bumper",
+      "x": 14,
+      "y": 1,
+      "z": 2,
+      "w": 2,
+      "d": 6,
+      "h": 1,
+      "color": "silver",
+      "overlay": true
+    },
+    {
+      "name": "door-handle-left",
+      "x": 9,
+      "y": 1,
+      "z": 4,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "silver",
+      "overlay": true
+    },
+    {
+      "name": "door-handle-right",
+      "x": 9,
+      "y": 6,
+      "z": 4,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "silver",
+      "overlay": true
+    },
+    {
+      "name": "side-mirror-0",
+      "x": 6,
+      "y": 0,
+      "z": 4,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "black",
+      "overlay": true
+    },
+    {
+      "name": "side-mirror-6",
+      "x": 6,
+      "y": 6,
+      "z": 4,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "black",
+      "overlay": true
+    }
+  ]
+}

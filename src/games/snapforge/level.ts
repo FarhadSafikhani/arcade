@@ -5,7 +5,7 @@ export interface SnapBrick {
     z: number;
     w: number;
     d: number;
-    h?: 1 | 2 | 3;
+    h?: 1 | 2 | 3 | 4;
     kind?: 'brick' | 'wheel';
     attachment?: 'underside';
     color: string;
@@ -96,8 +96,11 @@ export function validateLevel(input: unknown): SnapLevel {
             if (brick.h !== 3 || Math.min(Number(brick.w), Number(brick.d)) !== 1 ||
                 Math.max(Number(brick.w), Number(brick.d)) !== 3)
                 throw new Error(`${id}/${brick.id}: wheel must be 3Ã—1 h3 (or rotated)`);
-        } else if (brick.h !== undefined && brick.h !== 1 && brick.h !== 2) {
-            throw new Error(`${id}/${brick.id}: h must be 1 or 2`);
+        } else if (brick.h !== undefined && brick.h !== 1 && brick.h !== 2 &&
+            !(brick.h === 3 && Math.min(Number(brick.w), Number(brick.d)) === 1 &&
+                Math.max(Number(brick.w), Number(brick.d)) === 2) &&
+            !(brick.h === 4 && Number(brick.w) <= 2 && Number(brick.d) <= 2)) {
+            throw new Error(`${id}/${brick.id}: h must be 1 or 2, or 3 for a 1×2 pillar`);
         }
         if (typeof brick.color !== 'string' || !(brick.color in palette)) {
             throw new Error(`${id}/${brick.id}: color must name a palette entry`);

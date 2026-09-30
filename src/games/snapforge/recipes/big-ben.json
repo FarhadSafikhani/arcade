@@ -1,0 +1,477 @@
+{
+  "id": "big-ben",
+  "title": "Big Ben",
+  "description": "A slender sandstone clock tower with four cream clock faces, Gothic pinnacles, and a dark stepped spire.",
+  "collection": "landmarks",
+  "order": 7,
+  "version": 2,
+  "targetParts": 93,
+  "palette": {
+    "stone": "#C5A16A",
+    "trim": "#E9D4A6",
+    "clock": "#FFF4D3",
+    "dark": "#36434C"
+  },
+  "symmetry": {
+    "axis": "x",
+    "plane": 5,
+    "exceptions": [
+      {
+        "volumes": [
+          "clock-face-1",
+          "clock-minute-1",
+          "clock-hour-1",
+          "side-clock-face-1",
+          "side-clock-minute-1",
+          "side-clock-hour-1",
+          "clock-face-8",
+          "clock-minute-8",
+          "clock-hour-8",
+          "side-clock-face-8",
+          "side-clock-minute-8",
+          "side-clock-hour-8"
+        ],
+        "reason": "The four clock dials show three o’clock; only their inset faces interrupt the mirrored tower facade."
+      }
+    ]
+  },
+  "volumes": [
+    {
+      "name": "plinth",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "w": 10,
+      "d": 10,
+      "h": 1,
+      "color": "stone"
+    },
+    {
+      "name": "plinth-step",
+      "x": 1,
+      "y": 1,
+      "z": 1,
+      "w": 8,
+      "d": 8,
+      "h": 1,
+      "color": "trim"
+    },
+    {
+      "name": "tower-shaft",
+      "x": 2,
+      "y": 2,
+      "z": 2,
+      "w": 6,
+      "d": 6,
+      "h": 20,
+      "color": "stone"
+    },
+    {
+      "name": "front-recess-2-13",
+      "x": 4,
+      "y": 2,
+      "z": 13,
+      "w": 2,
+      "d": 1,
+      "h": 4,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "front-recess-7-13",
+      "x": 4,
+      "y": 7,
+      "z": 13,
+      "w": 2,
+      "d": 1,
+      "h": 4,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "side-recess-2-13",
+      "x": 2,
+      "y": 4,
+      "z": 13,
+      "w": 1,
+      "d": 2,
+      "h": 4,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "side-recess-7-13",
+      "x": 7,
+      "y": 4,
+      "z": 13,
+      "w": 1,
+      "d": 2,
+      "h": 4,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "lower-cornice",
+      "x": 1,
+      "y": 1,
+      "z": 10,
+      "w": 8,
+      "d": 8,
+      "h": 1,
+      "color": "trim",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "clock-sill",
+      "x": 1,
+      "y": 1,
+      "z": 21,
+      "w": 8,
+      "d": 8,
+      "h": 1,
+      "color": "trim",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "clock-chamber",
+      "x": 1,
+      "y": 1,
+      "z": 22,
+      "w": 8,
+      "d": 8,
+      "h": 6,
+      "color": "stone"
+    },
+    {
+      "name": "clock-face-1",
+      "x": 3,
+      "y": 1,
+      "z": 23,
+      "w": 4,
+      "d": 1,
+      "h": 4,
+      "color": "clock",
+      "overlay": true
+    },
+    {
+      "name": "clock-minute-1",
+      "x": 4,
+      "y": 1,
+      "z": 25,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "clock-hour-1",
+      "x": 4,
+      "y": 1,
+      "z": 24,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "clock-face-8",
+      "x": 3,
+      "y": 8,
+      "z": 23,
+      "w": 4,
+      "d": 1,
+      "h": 4,
+      "color": "clock",
+      "overlay": true
+    },
+    {
+      "name": "clock-minute-8",
+      "x": 4,
+      "y": 8,
+      "z": 25,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "clock-hour-8",
+      "x": 4,
+      "y": 8,
+      "z": 24,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "side-clock-face-1",
+      "x": 1,
+      "y": 3,
+      "z": 23,
+      "w": 1,
+      "d": 4,
+      "h": 4,
+      "color": "clock",
+      "overlay": true
+    },
+    {
+      "name": "side-clock-minute-1",
+      "x": 1,
+      "y": 4,
+      "z": 25,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "side-clock-hour-1",
+      "x": 1,
+      "y": 4,
+      "z": 24,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "side-clock-face-8",
+      "x": 8,
+      "y": 3,
+      "z": 23,
+      "w": 1,
+      "d": 4,
+      "h": 4,
+      "color": "clock",
+      "overlay": true
+    },
+    {
+      "name": "side-clock-minute-8",
+      "x": 8,
+      "y": 4,
+      "z": 25,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "side-clock-hour-8",
+      "x": 8,
+      "y": 4,
+      "z": 24,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "clock-cornice",
+      "x": 1,
+      "y": 1,
+      "z": 28,
+      "w": 8,
+      "d": 8,
+      "h": 1,
+      "color": "trim"
+    },
+    {
+      "name": "belfry",
+      "x": 2,
+      "y": 2,
+      "z": 29,
+      "w": 6,
+      "d": 6,
+      "h": 2,
+      "color": "dark"
+    },
+    {
+      "name": "gothic-pinnacle-1-1",
+      "x": 1,
+      "y": 1,
+      "z": 29,
+      "w": 1,
+      "d": 1,
+      "h": 4,
+      "color": "trim"
+    },
+    {
+      "name": "gothic-pinnacle-1-8",
+      "x": 1,
+      "y": 8,
+      "z": 29,
+      "w": 1,
+      "d": 1,
+      "h": 4,
+      "color": "trim"
+    },
+    {
+      "name": "gothic-pinnacle-8-1",
+      "x": 8,
+      "y": 1,
+      "z": 29,
+      "w": 1,
+      "d": 1,
+      "h": 4,
+      "color": "trim"
+    },
+    {
+      "name": "gothic-pinnacle-8-8",
+      "x": 8,
+      "y": 8,
+      "z": 29,
+      "w": 1,
+      "d": 1,
+      "h": 4,
+      "color": "trim"
+    },
+    {
+      "name": "spire-skirt",
+      "x": 2,
+      "y": 2,
+      "z": 31,
+      "w": 6,
+      "d": 6,
+      "h": 1,
+      "color": "dark",
+      "protected": true
+    },
+    {
+      "name": "spire-lower",
+      "x": 2,
+      "y": 2,
+      "z": 32,
+      "w": 6,
+      "d": 6,
+      "h": 2,
+      "color": "dark"
+    },
+    {
+      "name": "spire-middle",
+      "x": 3,
+      "y": 3,
+      "z": 34,
+      "w": 4,
+      "d": 4,
+      "h": 3,
+      "color": "dark"
+    },
+    {
+      "name": "spire-tip",
+      "x": 4,
+      "y": 4,
+      "z": 37,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "dark"
+    },
+    {
+      "name": "recess-corner-2-2",
+      "x": 2,
+      "y": 2,
+      "z": 13,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "stone",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "recess-corner-2-6",
+      "x": 2,
+      "y": 6,
+      "z": 13,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "stone",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "recess-corner-6-2",
+      "x": 6,
+      "y": 2,
+      "z": 13,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "stone",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "recess-corner-6-6",
+      "x": 6,
+      "y": 6,
+      "z": 13,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "stone",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "clock-corner-1-1",
+      "x": 1,
+      "y": 1,
+      "z": 23,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "stone",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "clock-corner-1-7",
+      "x": 1,
+      "y": 7,
+      "z": 23,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "stone",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "clock-corner-7-1",
+      "x": 7,
+      "y": 1,
+      "z": 23,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "stone",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "clock-corner-7-7",
+      "x": 7,
+      "y": 7,
+      "z": 23,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "stone",
+      "overlay": true,
+      "protected": true
+    }
+  ]
+}

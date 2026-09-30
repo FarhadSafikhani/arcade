@@ -1,0 +1,296 @@
+{
+  "id": "clownfish",
+  "title": "Clownfish",
+  "description": "An orange reef fish with three white bands, black fin edges, and a spreading tail.",
+  "collection": "ocean",
+  "order": 2,
+  "version": 1,
+  "targetParts": 48,
+  "palette": {
+    "body": "#F47C24",
+    "dark": "#262B32",
+    "white": "#FFF3DA"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 4
+  },
+  "volumes": [
+    {
+      "name": "lower-belly",
+      "x": 5,
+      "y": 3,
+      "z": 0,
+      "w": 7,
+      "d": 2,
+      "h": 2,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "body-foundation",
+      "x": 3,
+      "y": 2,
+      "z": 2,
+      "w": 11,
+      "d": 4,
+      "h": 2,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "body-middle",
+      "x": 3,
+      "y": 2,
+      "z": 4,
+      "w": 12,
+      "d": 4,
+      "h": 4,
+      "color": "body"
+    },
+    {
+      "name": "nose-foundation",
+      "x": 13,
+      "y": 2,
+      "z": 4,
+      "w": 2,
+      "d": 4,
+      "h": 1,
+      "color": "body",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "upper-shoulder",
+      "x": 4,
+      "y": 2,
+      "z": 8,
+      "w": 9,
+      "d": 4,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "back-crown",
+      "x": 5,
+      "y": 3,
+      "z": 10,
+      "w": 6,
+      "d": 2,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "nose",
+      "x": 14,
+      "y": 3,
+      "z": 5,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "body",
+      "overlay": true
+    },
+    {
+      "name": "tail-neck",
+      "x": 0,
+      "y": 3,
+      "z": 4,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "body",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "tail-fan",
+      "x": 0,
+      "y": 3,
+      "z": 2,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "body",
+      "attachment": "underside",
+      "protected": true
+    },
+    {
+      "name": "tail-upper-fan",
+      "x": 0,
+      "y": 3,
+      "z": 6,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "tail-upper-tip",
+      "x": 0,
+      "y": 3,
+      "z": 8,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "tail-lower-tip",
+      "x": 0,
+      "y": 3,
+      "z": 1,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "body",
+      "attachment": "underside"
+    },
+    {
+      "name": "dorsal-edge",
+      "x": 5,
+      "y": 3,
+      "z": 11,
+      "w": 6,
+      "d": 2,
+      "h": 1,
+      "color": "dark"
+    },
+    {
+      "name": "dorsal-crest",
+      "x": 6,
+      "y": 3,
+      "z": 12,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "pectoral-fin-left",
+      "x": 9,
+      "y": 1,
+      "z": 4,
+      "w": 3,
+      "d": 1,
+      "h": 2,
+      "color": "body",
+      "attachment": "underside",
+      "protected": true
+    },
+    {
+      "name": "pectoral-fin-right",
+      "x": 9,
+      "y": 6,
+      "z": 4,
+      "w": 3,
+      "d": 1,
+      "h": 2,
+      "color": "body",
+      "attachment": "underside",
+      "protected": true
+    },
+    {
+      "name": "pectoral-root-left",
+      "x": 10,
+      "y": 1,
+      "z": 6,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "body",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "pectoral-root-right",
+      "x": 10,
+      "y": 5,
+      "z": 6,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "body",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "eye-left",
+      "x": 13,
+      "y": 2,
+      "z": 6,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "eye-right",
+      "x": 13,
+      "y": 5,
+      "z": 6,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "white-band-4",
+      "x": 4,
+      "y": 2,
+      "z": 4,
+      "w": 1,
+      "d": 4,
+      "h": 6,
+      "color": "white",
+      "overlay": true
+    },
+    {
+      "name": "white-band-8",
+      "x": 8,
+      "y": 2,
+      "z": 4,
+      "w": 1,
+      "d": 4,
+      "h": 6,
+      "color": "white",
+      "overlay": true
+    },
+    {
+      "name": "white-band-12",
+      "x": 12,
+      "y": 2,
+      "z": 4,
+      "w": 1,
+      "d": 4,
+      "h": 6,
+      "color": "white",
+      "overlay": true
+    },
+    {
+      "name": "tail-black-edge",
+      "x": 0,
+      "y": 3,
+      "z": 6,
+      "w": 1,
+      "d": 2,
+      "h": 2,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "lower-fin-edge",
+      "x": 6,
+      "y": 3,
+      "z": 0,
+      "w": 4,
+      "d": 2,
+      "h": 1,
+      "color": "dark",
+      "overlay": true
+    }
+  ]
+}

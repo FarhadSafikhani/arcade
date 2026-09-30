@@ -48,13 +48,16 @@ export function expandRecipe(recipe) {
             throw new Error(`${volume.name}: invalid attachment`);
         if (volume.kind === 'wheel' && (volume.h !== 3 || Math.min(volume.w, volume.d) !== 1 || Math.max(volume.w, volume.d) !== 3))
             throw new Error(`${volume.name}: wheel must be 3Ã—1 h3 (or rotated)`);
+        if (volume.pillar !== undefined && (volume.pillar !== true || volume.kind === 'wheel' || volume.h !== 3 ||
+            Math.min(volume.w, volume.d) !== 1 || Math.max(volume.w, volume.d) !== 2))
+            throw new Error(`${volume.name}: pillar must be 1×2 h3 (or rotated)`);
         for (const cell of brickCells(volume)) {
-            if (cells.get(cell)?.part || (volume.kind === 'wheel' && cells.has(cell)))
-                throw new Error(`${volume.name}: wheel assemblies cannot overlap or be overlaid`);
+            if (cells.get(cell)?.part || ((volume.kind === 'wheel' || volume.pillar) && cells.has(cell)))
+                throw new Error(`${volume.name}: atomic parts cannot overlap or be overlaid`);
             if (cells.has(cell) && volume.overlay !== true) throw new Error(`${volume.name}: overlap requires overlay: true`);
             cells.set(cell, { color: volume.color, region: volume.protected ? volume.name : '', exception: exceptions.has(volume.name),
                 ...(volume.attachment ? { attachment: volume.attachment } : {}),
-                ...(volume.kind === 'wheel' ? { part: volume } : {}) });
+                ...(volume.kind === 'wheel' || volume.pillar ? { part: volume } : {}) });
         }
     }
     for (const name of exceptions) if (!names.has(name)) throw new Error(`Unknown symmetry exception volume: ${name}`);
@@ -76,8 +79,8 @@ function candidatesFor(cells, symmetry) {
     for (const [x, y, z] of points) {
         const origin = cells.get(key(x, y, z));
         if (origin.part) {
-            const { x, y, z, w, d, h, color, kind } = origin.part;
-            const brick = { x, y, z, w, d, h, color, kind };
+            const { x, y, z, w, d, h, color, kind, attachment } = origin.part;
+            const brick = { x, y, z, w, d, h, color, ...(kind ? { kind } : {}), ...(attachment ? { attachment } : {}) };
             singles.set(shapeKey(brick), { brick, keys: brickCells(brick), exception: origin.exception });
             continue;
         }
@@ -239,6 +242,27 @@ export function compileRecipe(recipe, previous) {
 function numbered(groups) {
     return groups.flatMap(g => g.bricks).sort((a, b) => a.z - b.z || a.y - b.y || a.x - b.x || shapeKey(a).localeCompare(shapeKey(b)))
         .map((b, index) => ({ id: `brick-${String(index + 1).padStart(3, '0')}`, ...b }));
+}
+export function mergeHeightFourStacks(bricks) {
+    const result = bricks.map(b => ({ ...b }));
+    for (const bottom of [...result].sort((a, b) => a.z - b.z)) {
+        if (!result.includes(bottom) || bottom.kind === 'wheel' || bottom.attachment ||
+            bottom.w > 2 || bottom.d > 2 || bottom.h > 2) continue;
+        const stack = [bottom];
+        let height = bottom.h;
+        while (height < 4) {
+            const next = result.find(b => b !== bottom && !stack.includes(b) && b.kind !== 'wheel' && !b.attachment &&
+                b.x === bottom.x && b.y === bottom.y && b.w === bottom.w && b.d === bottom.d &&
+                b.color === bottom.color && b.z === bottom.z + height && b.h <= 2);
+            if (!next) break;
+            stack.push(next); height += next.h;
+        }
+        if (height !== 4 || stack.length < 2) continue;
+        bottom.h = 4;
+        for (const part of stack.slice(1)) result.splice(result.indexOf(part), 1);
+    }
+    return result.sort((a, b) => a.z - b.z || a.y - b.y || a.x - b.x)
+        .map((b, index) => ({ ...b, id: `brick-${String(index + 1).padStart(3, '0')}` }));
 }
 function mergeOpportunities(bricks) {
     const result = [];

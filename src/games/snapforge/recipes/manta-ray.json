@@ -1,0 +1,285 @@
+{
+  "id": "manta-ray",
+  "title": "Manta Ray",
+  "description": "A low charcoal manta with swept triangular wings, curled pale-lined head lobes, and a long thin tail.",
+  "collection": "ocean",
+  "order": 1,
+  "version": 1,
+  "targetParts": 28,
+  "palette": {
+    "body": "#293E45",
+    "belly": "#BACBCC",
+    "eye": "#101E24"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 12.5
+  },
+  "volumes": [
+    {
+      "name": "pale-belly",
+      "x": 10,
+      "y": 10,
+      "z": 0,
+      "w": 10,
+      "d": 5,
+      "h": 1,
+      "color": "belly",
+      "protected": true
+    },
+    {
+      "name": "tail-foundation",
+      "x": 8,
+      "y": 11,
+      "z": 0,
+      "w": 3,
+      "d": 3,
+      "h": 1,
+      "color": "body",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "body-disc",
+      "x": 9,
+      "y": 9,
+      "z": 1,
+      "w": 13,
+      "d": 7,
+      "h": 1,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "back-ridge",
+      "x": 10,
+      "y": 10,
+      "z": 2,
+      "w": 10,
+      "d": 5,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "wing-root-left",
+      "x": 11,
+      "y": 5,
+      "z": 2,
+      "w": 9,
+      "d": 5,
+      "h": 1,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "wing-root-right",
+      "x": 11,
+      "y": 15,
+      "z": 2,
+      "w": 9,
+      "d": 5,
+      "h": 1,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "wing-sweep-left",
+      "x": 12,
+      "y": 3,
+      "z": 1,
+      "w": 6,
+      "d": 4,
+      "h": 1,
+      "color": "body",
+      "protected": true,
+      "attachment": "underside"
+    },
+    {
+      "name": "wing-sweep-right",
+      "x": 12,
+      "y": 18,
+      "z": 1,
+      "w": 6,
+      "d": 4,
+      "h": 1,
+      "color": "body",
+      "protected": true,
+      "attachment": "underside"
+    },
+    {
+      "name": "wing-outer-left",
+      "x": 14,
+      "y": 1,
+      "z": 0,
+      "w": 4,
+      "d": 3,
+      "h": 1,
+      "color": "body",
+      "attachment": "underside"
+    },
+    {
+      "name": "wing-outer-right",
+      "x": 14,
+      "y": 21,
+      "z": 0,
+      "w": 4,
+      "d": 3,
+      "h": 1,
+      "color": "body",
+      "attachment": "underside"
+    },
+    {
+      "name": "wing-point-left",
+      "x": 16,
+      "y": 0,
+      "z": 0,
+      "w": 2,
+      "d": 4,
+      "h": 1,
+      "color": "body",
+      "overlay": true,
+      "protected": true,
+      "attachment": "underside"
+    },
+    {
+      "name": "wing-point-right",
+      "x": 16,
+      "y": 21,
+      "z": 0,
+      "w": 2,
+      "d": 4,
+      "h": 1,
+      "color": "body",
+      "overlay": true,
+      "protected": true,
+      "attachment": "underside"
+    },
+    {
+      "name": "tail-bridge",
+      "x": 6,
+      "y": 11,
+      "z": 1,
+      "w": 3,
+      "d": 3,
+      "h": 1,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "whip-tail",
+      "x": 0,
+      "y": 12,
+      "z": 0,
+      "w": 7,
+      "d": 1,
+      "h": 1,
+      "color": "body",
+      "attachment": "underside"
+    },
+    {
+      "name": "broad-head",
+      "x": 20,
+      "y": 10,
+      "z": 2,
+      "w": 3,
+      "d": 5,
+      "h": 1,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "head-lobe-root-left",
+      "x": 21,
+      "y": 9,
+      "z": 2,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "body",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "head-lobe-root-right",
+      "x": 21,
+      "y": 14,
+      "z": 2,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "body",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "curled-head-lobe-left",
+      "x": 23,
+      "y": 9,
+      "z": 3,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "curled-head-lobe-right",
+      "x": 23,
+      "y": 14,
+      "z": 3,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "pale-inner-curl-left",
+      "x": 23,
+      "y": 10,
+      "z": 4,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "belly"
+    },
+    {
+      "name": "pale-inner-curl-right",
+      "x": 23,
+      "y": 13,
+      "z": 4,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "belly"
+    },
+    {
+      "name": "small-eye-left",
+      "x": 21,
+      "y": 10,
+      "z": 3,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "eye"
+    },
+    {
+      "name": "small-eye-right",
+      "x": 21,
+      "y": 14,
+      "z": 3,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "eye"
+    },
+    {
+      "name": "head-crown",
+      "x": 20,
+      "y": 11,
+      "z": 3,
+      "w": 2,
+      "d": 3,
+      "h": 1,
+      "color": "body"
+    }
+  ]
+}

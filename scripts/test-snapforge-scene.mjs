@@ -147,7 +147,18 @@ test('height-2 mystery volumes and camera framing include the top layer', async 
     disposeMystery(mystery);
     const scene = sceneHarness();
     scene.startLevel(level, [], false, () => {});
-    assert.equal(scene.targetHeight, BRICK_HEIGHT);
+    assert.ok(scene.viewBox.max.y >= 2 * BRICK_HEIGHT);
+    assert.ok(scene.viewFullBox.max.y >= 2 * BRICK_HEIGHT);
+});
+
+test('the intro frames the whole model, then play frames only what is built', () => {
+    const bigBen = catalog.find(level => level.id === 'big-ben');
+    const scene = sceneHarness();
+    scene.startLevel(bigBen, [], true, () => {});
+    const introRadius = scene.view.radius;
+    assert.equal(scene.desiredView().radius, introRadius);
+    scene.finishIntro();
+    assert.ok(scene.desiredView().radius < introRadius / 2);
 });
 
 test('mystery intro hides finished bricks and launches every piece in one burst', () => {

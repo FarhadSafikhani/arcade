@@ -1,0 +1,467 @@
+{
+  "id": "eiffel-tower",
+  "title": "Eiffel Tower",
+  "description": "Four open splayed legs meet broad viewing decks beneath a tall tapering iron spire.",
+  "collection": "landmarks",
+  "order": 4,
+  "version": 1,
+  "targetParts": 85,
+  "palette": {
+    "iron": "#8E6C4F",
+    "deck": "#594C42",
+    "stone": "#C0B59A"
+  },
+  "symmetry": {
+    "axis": "x",
+    "plane": 9
+  },
+  "volumes": [
+    {
+      "name": "esplanade",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "w": 18,
+      "d": 18,
+      "h": 1,
+      "color": "stone"
+    },
+    {
+      "name": "lower-leg-0-1-1",
+      "x": 1,
+      "y": 1,
+      "z": 1,
+      "w": 3,
+      "d": 3,
+      "h": 3,
+      "color": "iron"
+    },
+    {
+      "name": "lower-leg-0-1-14",
+      "x": 1,
+      "y": 14,
+      "z": 1,
+      "w": 3,
+      "d": 3,
+      "h": 3,
+      "color": "iron"
+    },
+    {
+      "name": "lower-leg-0-14-1",
+      "x": 14,
+      "y": 1,
+      "z": 1,
+      "w": 3,
+      "d": 3,
+      "h": 3,
+      "color": "iron"
+    },
+    {
+      "name": "lower-leg-0-14-14",
+      "x": 14,
+      "y": 14,
+      "z": 1,
+      "w": 3,
+      "d": 3,
+      "h": 3,
+      "color": "iron"
+    },
+    {
+      "name": "lower-leg-1-2-2",
+      "x": 2,
+      "y": 2,
+      "z": 4,
+      "w": 3,
+      "d": 3,
+      "h": 3,
+      "color": "iron"
+    },
+    {
+      "name": "lower-leg-1-2-13",
+      "x": 2,
+      "y": 13,
+      "z": 4,
+      "w": 3,
+      "d": 3,
+      "h": 3,
+      "color": "iron"
+    },
+    {
+      "name": "lower-leg-1-13-2",
+      "x": 13,
+      "y": 2,
+      "z": 4,
+      "w": 3,
+      "d": 3,
+      "h": 3,
+      "color": "iron"
+    },
+    {
+      "name": "lower-leg-1-13-13",
+      "x": 13,
+      "y": 13,
+      "z": 4,
+      "w": 3,
+      "d": 3,
+      "h": 3,
+      "color": "iron"
+    },
+    {
+      "name": "lower-leg-2-3-3",
+      "x": 3,
+      "y": 3,
+      "z": 7,
+      "w": 3,
+      "d": 3,
+      "h": 3,
+      "color": "iron"
+    },
+    {
+      "name": "lower-leg-2-3-12",
+      "x": 3,
+      "y": 12,
+      "z": 7,
+      "w": 3,
+      "d": 3,
+      "h": 3,
+      "color": "iron"
+    },
+    {
+      "name": "lower-leg-2-12-3",
+      "x": 12,
+      "y": 3,
+      "z": 7,
+      "w": 3,
+      "d": 3,
+      "h": 3,
+      "color": "iron"
+    },
+    {
+      "name": "lower-leg-2-12-12",
+      "x": 12,
+      "y": 12,
+      "z": 7,
+      "w": 3,
+      "d": 3,
+      "h": 3,
+      "color": "iron"
+    },
+    {
+      "name": "lower-leg-3-4-4",
+      "x": 4,
+      "y": 4,
+      "z": 10,
+      "w": 3,
+      "d": 3,
+      "h": 3,
+      "color": "iron"
+    },
+    {
+      "name": "lower-leg-3-4-11",
+      "x": 4,
+      "y": 11,
+      "z": 10,
+      "w": 3,
+      "d": 3,
+      "h": 3,
+      "color": "iron"
+    },
+    {
+      "name": "lower-leg-3-11-4",
+      "x": 11,
+      "y": 4,
+      "z": 10,
+      "w": 3,
+      "d": 3,
+      "h": 3,
+      "color": "iron"
+    },
+    {
+      "name": "lower-leg-3-11-11",
+      "x": 11,
+      "y": 11,
+      "z": 10,
+      "w": 3,
+      "d": 3,
+      "h": 3,
+      "color": "iron"
+    },
+    {
+      "name": "lower-leg-4-5-5",
+      "x": 5,
+      "y": 5,
+      "z": 13,
+      "w": 3,
+      "d": 3,
+      "h": 3,
+      "color": "iron"
+    },
+    {
+      "name": "lower-leg-4-5-10",
+      "x": 5,
+      "y": 10,
+      "z": 13,
+      "w": 3,
+      "d": 3,
+      "h": 3,
+      "color": "iron"
+    },
+    {
+      "name": "lower-leg-4-10-5",
+      "x": 10,
+      "y": 5,
+      "z": 13,
+      "w": 3,
+      "d": 3,
+      "h": 3,
+      "color": "iron"
+    },
+    {
+      "name": "lower-leg-4-10-10",
+      "x": 10,
+      "y": 10,
+      "z": 13,
+      "w": 3,
+      "d": 3,
+      "h": 3,
+      "color": "iron"
+    },
+    {
+      "name": "first-deck",
+      "x": 4,
+      "y": 4,
+      "z": 16,
+      "w": 10,
+      "d": 10,
+      "h": 1,
+      "color": "deck",
+      "protected": true
+    },
+    {
+      "name": "upper-leg-0-5-5",
+      "x": 5,
+      "y": 5,
+      "z": 17,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "iron"
+    },
+    {
+      "name": "upper-leg-0-5-11",
+      "x": 5,
+      "y": 11,
+      "z": 17,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "iron"
+    },
+    {
+      "name": "upper-leg-0-11-5",
+      "x": 11,
+      "y": 5,
+      "z": 17,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "iron"
+    },
+    {
+      "name": "upper-leg-0-11-11",
+      "x": 11,
+      "y": 11,
+      "z": 17,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "iron"
+    },
+    {
+      "name": "upper-leg-1-6-6",
+      "x": 6,
+      "y": 6,
+      "z": 21,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "iron"
+    },
+    {
+      "name": "upper-leg-1-6-10",
+      "x": 6,
+      "y": 10,
+      "z": 21,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "iron"
+    },
+    {
+      "name": "upper-leg-1-10-6",
+      "x": 10,
+      "y": 6,
+      "z": 21,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "iron"
+    },
+    {
+      "name": "upper-leg-1-10-10",
+      "x": 10,
+      "y": 10,
+      "z": 21,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "iron"
+    },
+    {
+      "name": "upper-leg-2-7-7",
+      "x": 7,
+      "y": 7,
+      "z": 25,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "iron"
+    },
+    {
+      "name": "upper-leg-2-7-9",
+      "x": 7,
+      "y": 9,
+      "z": 25,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "iron"
+    },
+    {
+      "name": "upper-leg-2-9-7",
+      "x": 9,
+      "y": 7,
+      "z": 25,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "iron"
+    },
+    {
+      "name": "upper-leg-2-9-9",
+      "x": 9,
+      "y": 9,
+      "z": 25,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "iron"
+    },
+    {
+      "name": "second-deck",
+      "x": 6,
+      "y": 6,
+      "z": 29,
+      "w": 6,
+      "d": 6,
+      "h": 1,
+      "color": "deck",
+      "protected": true
+    },
+    {
+      "name": "upper-lattice-7-7",
+      "x": 7,
+      "y": 7,
+      "z": 30,
+      "w": 1,
+      "d": 1,
+      "h": 6,
+      "color": "iron"
+    },
+    {
+      "name": "upper-lattice-7-10",
+      "x": 7,
+      "y": 10,
+      "z": 30,
+      "w": 1,
+      "d": 1,
+      "h": 6,
+      "color": "iron"
+    },
+    {
+      "name": "upper-lattice-10-7",
+      "x": 10,
+      "y": 7,
+      "z": 30,
+      "w": 1,
+      "d": 1,
+      "h": 6,
+      "color": "iron"
+    },
+    {
+      "name": "upper-lattice-10-10",
+      "x": 10,
+      "y": 10,
+      "z": 30,
+      "w": 1,
+      "d": 1,
+      "h": 6,
+      "color": "iron"
+    },
+    {
+      "name": "lattice-crossbar",
+      "x": 7,
+      "y": 7,
+      "z": 33,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "iron",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "lattice-crown",
+      "x": 7,
+      "y": 7,
+      "z": 36,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "iron",
+      "protected": true
+    },
+    {
+      "name": "spire",
+      "x": 8,
+      "y": 8,
+      "z": 37,
+      "w": 2,
+      "d": 2,
+      "h": 13,
+      "color": "iron"
+    },
+    {
+      "name": "summit-gallery",
+      "x": 7,
+      "y": 7,
+      "z": 48,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "deck",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "antenna",
+      "x": 8,
+      "y": 8,
+      "z": 50,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "iron"
+    }
+  ]
+}

@@ -4,7 +4,7 @@ export const collections = [
     { id: 'starter', name: 'Starter Collection' },
     { id: 'farm', name: 'Farm Collection' },
     { id: 'fruit', name: 'Fruit Collection' },
-    { id: 'land-animal', name: 'Land Animal Collection' },
+    { id: 'land-animal', name: 'Safari Collection' },
     { id: 'bird', name: 'Bird Collection' },
     { id: 'car', name: 'Car Collection' },
     { id: 'landmarks', name: 'Landmarks Collection' },
@@ -14,7 +14,7 @@ export const collections = [
 
 export type CollectionId = typeof collections[number]['id'];
 
-export const availableCollections: ReadonlySet<CollectionId> = new Set(['starter', 'farm', 'fruit', 'bird']);
+export const availableCollections: ReadonlySet<CollectionId> = new Set(['starter', 'farm', 'fruit', 'land-animal', 'bird', 'car', 'landmarks', 'ocean']);
 
 export function collectionLevels(levels: Iterable<SnapLevel>, collection: CollectionId): SnapLevel[] {
     return [...levels].filter(level => level.collection === collection)

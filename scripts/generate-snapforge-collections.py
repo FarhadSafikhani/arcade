@@ -97,31 +97,7 @@ class Model:
         path.write_text(json.dumps(data, indent=2) + '\n', encoding='utf-8')
         print(f'{self.collection:12} {self.title:16} {len(data["bricks"]):3} bricks')
 
-def animal(id, title, order, main, accent, feature):
-    m = Model(id, title, 'land-animal', order, f'Build a brick-built {title.lower()}.',
-              dict(main=main, accent=accent, dark='#27334D', light='#FFF9E7'))
-    m.box(2, 8, 1, 5, 2, 5, 'main')
-    for x in (2, 6):
-        for y in (1, 4): m.box(x, x+2, y, y+1, 0, 3, 'main')
-    m.box(7, 10, 1, 5, 3, 7, 'main').box(9, 10, 2, 4, 4, 5, 'accent')
-    m.box(8, 9, 1, 2, 5, 6, 'dark').box(8, 9, 4, 5, 5, 6, 'dark')
-    if feature == 'rabbit':
-        m.box(7, 8, 1, 2, 6, 9, 'main').box(8, 9, 4, 5, 6, 10, 'main')
-        m.box(1, 3, 2, 4, 3, 5, 'light')
-    elif feature == 'fox':
-        m.box(7, 9, 1, 2, 6, 8, 'main').box(7, 9, 4, 5, 6, 8, 'main')
-        m.box(0, 3, 2, 4, 3, 5, 'main').box(0, 1, 2, 4, 3, 5, 'light')
-        m.box(3, 7, 1, 2, 2, 3, 'light')
-    else:
-        m.box(8, 11, 2, 4, 3, 5, 'main').box(10, 11, 2, 4, 0, 4, 'main')
-        m.box(7, 9, 0, 1, 4, 6, 'accent').box(7, 9, 5, 6, 4, 6, 'accent')
-        m.box(7, 8, 1, 2, 5, 6, 'light').box(7, 8, 4, 5, 5, 6, 'light')
-        m.box(4, 7, 0, 1, 3, 6, 'main').box(4, 7, 5, 6, 3, 6, 'main')
-    return m
-
-animal('rabbit', 'Rabbit', 1, '#E8D6C1', '#F2A7A7', 'rabbit').save()
-animal('fox', 'Fox', 2, '#D97535', '#E9AE67', 'fox').save()
-animal('elephant', 'Elephant', 3, '#91A5AF', '#BAC5C9', 'elephant').save()
+# Safari Collection is authored entirely by recipes. Retired animals are not regenerated.
 
 m = Model('cherry', 'Cherry', 'fruit', 1, 'Build a pair of bright red cherries.',
           dict(red='#D94050', shine='#F7777F', green='#428D5A', dark='#69472F'))
@@ -148,55 +124,9 @@ m.save()
 
 # Bird Collection is authored entirely through recipes.
 
-def car(id, title, order, body, roof, kind):
-    m = Model(id, title, 'car', order, f'Build a brick-built {title.lower()}.',
-              dict(body=body, roof=roof, glass='#91D5E0', tire='#30384B', hub='#C9D2D5', light='#FFECA1'))
-    length = {'compact': 9, 'pickup': 11, 'race': 12}[kind]
-    m.box(0, length, 2, 7, 1, 4, 'body')
-    for x in (1, length-3):
-        for y in (1, 7):
-            m.box(x, x+2, y, y+2, 0, 3, 'tire').box(x, x+2, y, y+2, 1, 2, 'hub')
-    if kind == 'compact':
-        m.box(2, 7, 3, 6, 4, 6, 'roof').box(3, 6, 2, 3, 4, 5, 'glass')
-    elif kind == 'pickup':
-        m.box(5, 10, 3, 6, 4, 7, 'roof').box(6, 9, 2, 3, 4, 6, 'glass')
-        m.box(0, 5, 2, 7, 4, 5, 'body').box(0, 1, 2, 7, 5, 6, 'body')
-    else:
-        m.box(3, 9, 3, 6, 4, 5, 'roof').box(5, 8, 2, 3, 4, 5, 'glass')
-        m.box(3, 10, 2, 3, 3, 4, 'roof').box(3, 10, 6, 7, 3, 4, 'roof')
-        m.box(0, 2, 1, 8, 3, 4, 'roof').box(10, 12, 1, 8, 3, 4, 'roof')
-        m.box(0, 2, 0, 9, 4, 6, 'roof')
-    m.box(length-1, length, 3, 6, 2, 3, 'light')
-    return m
+# Car Collection is authored entirely through recipes.
 
-car('compact-car', 'Compact Car', 1, '#68B9D7', '#4D8FAA', 'compact').save()
-car('pickup-truck', 'Pickup Truck', 2, '#E08057', '#B65B47', 'pickup').save()
-car('race-car', 'Race Car', 3, '#DE4E57', '#F1B954', 'race').save()
-
-m = Model('fish', 'Fish', 'ocean', 1, 'Build a bright tropical fish.',
-          dict(body='#F5B94D', fin='#EE7653', stripe='#FFF2C3', eye='#243248'))
-m.box(2, 8, 2, 6, 1, 5, 'body').box(0, 3, 2, 6, 0, 6, 'fin')
-m.box(4, 6, 2, 6, 1, 5, 'stripe').box(5, 7, 3, 5, 5, 7, 'fin')
-m.box(7, 8, 2, 3, 3, 4, 'eye').box(7, 8, 5, 6, 3, 4, 'eye')
-m.save()
-
-m = Model('sea-turtle', 'Sea Turtle', 'ocean', 2, 'Build a sea turtle with a patterned shell.',
-          dict(shell='#4D936E', pattern='#8BC777', skin='#77B9A4', eye='#27334D'))
-m.box(2, 9, 2, 8, 1, 4, 'shell').box(3, 8, 3, 7, 4, 6, 'pattern')
-m.box(8, 11, 3, 7, 0, 4, 'skin').box(10, 11, 3, 4, 2, 3, 'eye')
-for x in (2, 7):
-    m.box(x, x+2, 0, 3, 0, 2, 'skin').box(x, x+2, 7, 10, 0, 2, 'skin')
-m.box(0, 3, 4, 6, 0, 2, 'skin')
-m.save()
-
-m = Model('shark', 'Shark', 'ocean', 3, 'Build a shark with a tall dorsal fin.',
-          dict(body='#718FA2', belly='#DDE7E6', fin='#526D84', eye='#27334D', mouth='#3E5260'))
-m.box(3, 12, 2, 7, 1, 5, 'body').box(4, 11, 2, 7, 1, 2, 'belly')
-m.box(0, 4, 3, 6, 0, 6, 'fin').box(7, 10, 3, 6, 5, 8, 'fin')
-m.box(6, 9, 0, 3, 1, 3, 'fin').box(6, 9, 6, 9, 1, 3, 'fin')
-m.box(11, 13, 3, 6, 1, 4, 'body').box(11, 12, 2, 3, 3, 4, 'eye')
-m.box(11, 13, 3, 6, 1, 2, 'mouth')
-m.save()
+# Ocean models are recipe-authored; retired Fish, Sea Turtle, and Shark stay removed.
 
 def dino(id, title, order, body, accent, kind):
     m = Model(id, title, 'dinosaur', order, f'Build a {title.lower()} from colorful bricks.',

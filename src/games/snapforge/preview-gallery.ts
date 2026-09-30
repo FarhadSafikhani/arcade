@@ -4,6 +4,8 @@ export interface PreviewScene {
     scene: THREE.Scene;
     camera: THREE.PerspectiveCamera;
     model: THREE.Group;
+    /** Re-frame the camera once the card's real aspect ratio is known. */
+    fit?: (camera: THREE.PerspectiveCamera) => void;
     dispose: () => void;
 }
 interface Target {
@@ -80,9 +82,10 @@ export class PreviewGallery {
                 target.canvas.width = width; target.canvas.height = height; target.dirty = true;
             }
             if (this.reducedMotion.matches && !target.dirty) continue;
-            const { scene, camera, model } = target.preview;
+            const { scene, camera, model, fit } = target.preview;
             model.rotation.y = this.reducedMotion.matches ? 0 : now * 0.00006;
             camera.aspect = width / height; camera.updateProjectionMatrix();
+            fit?.(camera);
             if (this.renderer.domElement.width !== width || this.renderer.domElement.height !== height)
                 this.renderer.setSize(width, height, false);
             this.renderer.setViewport(0, 0, width, height);

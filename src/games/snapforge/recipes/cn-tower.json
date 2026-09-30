@@ -1,0 +1,323 @@
+{
+  "id": "cn-tower",
+  "title": "CN Tower",
+  "description": "Toronto’s slender concrete tower with three tapered supports, a broad observation pod, a high SkyPod, and a needle antenna.",
+  "collection": "landmarks",
+  "order": 5,
+  "version": 1,
+  "targetParts": 85,
+  "palette": {
+    "concrete": "#C9C6BA",
+    "glass": "#394F5B",
+    "rim": "#E7E5DD",
+    "plaza": "#858B8B"
+  },
+  "symmetry": {
+    "axis": "x",
+    "plane": 6
+  },
+  "volumes": [
+    {
+      "name": "plaza",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "w": 12,
+      "d": 12,
+      "h": 1,
+      "color": "plaza"
+    },
+    {
+      "name": "concrete-core",
+      "x": 5,
+      "y": 5,
+      "z": 1,
+      "w": 2,
+      "d": 2,
+      "h": 39,
+      "color": "concrete"
+    },
+    {
+      "name": "front-foot",
+      "x": 5,
+      "y": 2,
+      "z": 1,
+      "w": 2,
+      "d": 3,
+      "h": 8,
+      "color": "concrete"
+    },
+    {
+      "name": "left-foot",
+      "x": 2,
+      "y": 6,
+      "z": 1,
+      "w": 3,
+      "d": 2,
+      "h": 8,
+      "color": "concrete"
+    },
+    {
+      "name": "right-foot",
+      "x": 7,
+      "y": 6,
+      "z": 1,
+      "w": 3,
+      "d": 2,
+      "h": 8,
+      "color": "concrete"
+    },
+    {
+      "name": "front-middle",
+      "x": 5,
+      "y": 3,
+      "z": 9,
+      "w": 2,
+      "d": 2,
+      "h": 10,
+      "color": "concrete"
+    },
+    {
+      "name": "left-middle",
+      "x": 3,
+      "y": 6,
+      "z": 9,
+      "w": 2,
+      "d": 2,
+      "h": 10,
+      "color": "concrete"
+    },
+    {
+      "name": "right-middle",
+      "x": 7,
+      "y": 6,
+      "z": 9,
+      "w": 2,
+      "d": 2,
+      "h": 10,
+      "color": "concrete"
+    },
+    {
+      "name": "front-upper",
+      "x": 5,
+      "y": 4,
+      "z": 19,
+      "w": 2,
+      "d": 1,
+      "h": 12,
+      "color": "concrete"
+    },
+    {
+      "name": "left-upper",
+      "x": 4,
+      "y": 6,
+      "z": 19,
+      "w": 1,
+      "d": 2,
+      "h": 12,
+      "color": "concrete"
+    },
+    {
+      "name": "right-upper",
+      "x": 7,
+      "y": 6,
+      "z": 19,
+      "w": 1,
+      "d": 2,
+      "h": 12,
+      "color": "concrete"
+    },
+    {
+      "name": "pod-collar",
+      "x": 4,
+      "y": 4,
+      "z": 40,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "concrete"
+    },
+    {
+      "name": "radome-flare",
+      "x": 2,
+      "y": 2,
+      "z": 41,
+      "w": 8,
+      "d": 8,
+      "h": 1,
+      "color": "rim",
+      "protected": true
+    },
+    {
+      "name": "radome-north",
+      "x": 3,
+      "y": 1,
+      "z": 42,
+      "w": 6,
+      "d": 2,
+      "h": 1,
+      "color": "rim"
+    },
+    {
+      "name": "radome-middle",
+      "x": 1,
+      "y": 3,
+      "z": 42,
+      "w": 10,
+      "d": 6,
+      "h": 1,
+      "color": "rim"
+    },
+    {
+      "name": "radome-south",
+      "x": 3,
+      "y": 9,
+      "z": 42,
+      "w": 6,
+      "d": 2,
+      "h": 1,
+      "color": "rim"
+    },
+    {
+      "name": "observation-windows-north",
+      "x": 3,
+      "y": 1,
+      "z": 43,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "glass"
+    },
+    {
+      "name": "observation-windows-middle",
+      "x": 1,
+      "y": 3,
+      "z": 43,
+      "w": 10,
+      "d": 6,
+      "h": 2,
+      "color": "glass"
+    },
+    {
+      "name": "observation-windows-south",
+      "x": 3,
+      "y": 9,
+      "z": 43,
+      "w": 6,
+      "d": 2,
+      "h": 2,
+      "color": "glass"
+    },
+    {
+      "name": "roof-rim-north",
+      "x": 3,
+      "y": 1,
+      "z": 45,
+      "w": 6,
+      "d": 2,
+      "h": 1,
+      "color": "rim"
+    },
+    {
+      "name": "roof-rim-middle",
+      "x": 1,
+      "y": 3,
+      "z": 45,
+      "w": 10,
+      "d": 6,
+      "h": 1,
+      "color": "rim"
+    },
+    {
+      "name": "roof-rim-south",
+      "x": 3,
+      "y": 9,
+      "z": 45,
+      "w": 6,
+      "d": 2,
+      "h": 1,
+      "color": "rim"
+    },
+    {
+      "name": "pod-roof",
+      "x": 2,
+      "y": 2,
+      "z": 46,
+      "w": 8,
+      "d": 8,
+      "h": 1,
+      "color": "rim"
+    },
+    {
+      "name": "pod-roof-crown",
+      "x": 4,
+      "y": 4,
+      "z": 47,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "rim"
+    },
+    {
+      "name": "upper-shaft",
+      "x": 5,
+      "y": 5,
+      "z": 48,
+      "w": 2,
+      "d": 2,
+      "h": 10,
+      "color": "concrete"
+    },
+    {
+      "name": "skypod-base",
+      "x": 4,
+      "y": 4,
+      "z": 58,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "rim",
+      "protected": true
+    },
+    {
+      "name": "skypod-windows",
+      "x": 4,
+      "y": 4,
+      "z": 59,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "glass"
+    },
+    {
+      "name": "skypod-roof",
+      "x": 4,
+      "y": 4,
+      "z": 60,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "rim"
+    },
+    {
+      "name": "antenna-lower",
+      "x": 5,
+      "y": 5,
+      "z": 61,
+      "w": 2,
+      "d": 2,
+      "h": 6,
+      "color": "rim"
+    },
+    {
+      "name": "antenna-tip",
+      "x": 5,
+      "y": 5,
+      "z": 67,
+      "w": 2,
+      "d": 1,
+      "h": 6,
+      "color": "rim"
+    }
+  ]
+}

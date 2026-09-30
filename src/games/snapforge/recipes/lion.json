@@ -1,0 +1,306 @@
+{
+  "id": "lion",
+  "title": "Lion",
+  "description": "A proud golden lion with a rounded layered mane, raised face, chunky paws, and a tufted tail.",
+  "collection": "land-animal",
+  "order": 3,
+  "version": 2,
+  "targetParts": 40,
+  "palette": {
+    "body": "#DDA746",
+    "mane": "#824A2C",
+    "cream": "#F3D7A0",
+    "dark": "#29231F"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 4
+  },
+  "volumes": [
+    {
+      "name": "paw-2-left",
+      "x": 2,
+      "y": 1,
+      "z": 0,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "paw-2-right",
+      "x": 2,
+      "y": 5,
+      "z": 0,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "leg-2-left",
+      "x": 2,
+      "y": 1,
+      "z": 1,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "leg-2-right",
+      "x": 2,
+      "y": 5,
+      "z": 1,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "paw-7-left",
+      "x": 7,
+      "y": 1,
+      "z": 0,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "paw-7-right",
+      "x": 7,
+      "y": 5,
+      "z": 0,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "leg-7-left",
+      "x": 7,
+      "y": 1,
+      "z": 1,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "leg-7-right",
+      "x": 7,
+      "y": 5,
+      "z": 1,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "belly",
+      "x": 1,
+      "y": 1,
+      "z": 3,
+      "w": 9,
+      "d": 6,
+      "h": 2,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "back",
+      "x": 2,
+      "y": 2,
+      "z": 5,
+      "w": 6,
+      "d": 4,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "mane-lower",
+      "x": 7,
+      "y": 1,
+      "z": 5,
+      "w": 5,
+      "d": 6,
+      "h": 2,
+      "color": "mane",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "mane-full",
+      "x": 7,
+      "y": 0,
+      "z": 7,
+      "w": 5,
+      "d": 8,
+      "h": 4,
+      "color": "mane",
+      "protected": true
+    },
+    {
+      "name": "mane-crown",
+      "x": 8,
+      "y": 1,
+      "z": 11,
+      "w": 4,
+      "d": 6,
+      "h": 2,
+      "color": "mane"
+    },
+    {
+      "name": "face-foundation",
+      "x": 11,
+      "y": 2,
+      "z": 7,
+      "w": 3,
+      "d": 4,
+      "h": 1,
+      "color": "body",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "face",
+      "x": 11,
+      "y": 2,
+      "z": 8,
+      "w": 3,
+      "d": 4,
+      "h": 4,
+      "color": "body",
+      "overlay": true
+    },
+    {
+      "name": "muzzle-bridge",
+      "x": 12,
+      "y": 2,
+      "z": 8,
+      "w": 3,
+      "d": 4,
+      "h": 1,
+      "color": "cream",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "muzzle-cheek-left",
+      "x": 13,
+      "y": 2,
+      "z": 9,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "cream",
+      "overlay": true
+    },
+    {
+      "name": "muzzle-cheek-right",
+      "x": 13,
+      "y": 4,
+      "z": 9,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "cream",
+      "overlay": true
+    },
+    {
+      "name": "nose",
+      "x": 14,
+      "y": 3,
+      "z": 10,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "dark"
+    },
+    {
+      "name": "eye-left",
+      "x": 13,
+      "y": 2,
+      "z": 11,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "eye-right",
+      "x": 13,
+      "y": 5,
+      "z": 11,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "ear-left",
+      "x": 10,
+      "y": 1,
+      "z": 13,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "body",
+      "protected": true,
+      "overlay": true
+    },
+    {
+      "name": "ear-right",
+      "x": 10,
+      "y": 5,
+      "z": 13,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "body",
+      "protected": true,
+      "overlay": true
+    },
+    {
+      "name": "tail-root",
+      "x": 0,
+      "y": 3,
+      "z": 5,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "body",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "tail-stem",
+      "x": 0,
+      "y": 3,
+      "z": 2,
+      "w": 1,
+      "d": 2,
+      "h": 3,
+      "color": "body",
+      "attachment": "underside"
+    },
+    {
+      "name": "tail-tuft",
+      "x": 0,
+      "y": 3,
+      "z": 1,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "mane",
+      "attachment": "underside"
+    }
+  ]
+}

@@ -247,3 +247,20 @@ test('redesigned duck preserves recipe cells, mirrored seams, and its supported 
     for (const b of level.bricks) assert.ok(level.bricks.some(o => o.x === b.x && o.y === 8 - b.y - b.d &&
         o.z === b.z && o.w === b.w && o.d === b.d && o.h === b.h && o.color === b.color));
 });
+
+
+test('explicit h3 pillars stay atomic in either orientation and support upper bricks', () => {
+    for (const [w, d] of [[1, 2], [2, 1]]) {
+        const input = recipe([box('pillar', 0, 0, 0, w, d, 3, { pillar: true }),
+            box('cap', 0, 0, 3, w, d, 1)], { targetParts: 2 });
+        const { level } = compileRecipe(input);
+        assert.equal(level.bricks.length, 2);
+        assert.equal(buildOrder(level)[0].h, 3);
+        assert.doesNotThrow(() => validateLevel(level));
+        assert.throws(() => expandRecipe(recipe([...input.volumes,
+            box('paint', 0, 0, 1, 1, 1, 1, { overlay: true })])), /cannot overlap/);
+    }
+    assert.throws(() => expandRecipe(recipe([box('bad', 0, 0, 0, 2, 2, 3, { pillar: true })])), /pillar must/);
+    const { level } = compileRecipe(recipe([box('regular', 0, 0, 0, 1, 2, 3)]));
+    assert.ok(level.bricks.every(b => b.h <= 2), 'ordinary recipes retain h1/h2 packing');
+});

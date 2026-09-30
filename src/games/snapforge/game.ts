@@ -79,6 +79,7 @@ class SnapforgeGame {
     private devMusic: HTMLButtonElement | null = null;
     private devPop: HTMLButtonElement | null = null;
     private devPanel: HTMLDetailsElement | null = null;
+    private viewAll: HTMLDialogElement | null = null;
     private devWindow: Window | null = null;
     private devPopGeneration = 0;
     private musicDisabled = false;
@@ -267,11 +268,15 @@ class SnapforgeGame {
             if (!this.progress.muted) this.playEffect('click');
         });
         this.updateDevMusic();
+        const viewAll = document.createElement('button');
+        viewAll.type = 'button';
+        viewAll.textContent = 'View All';
+        viewAll.addEventListener('click', () => this.openViewAll());
         this.devPop = document.createElement('button');
         this.devPop.type = 'button';
         this.devPop.addEventListener('click', () => this.popDevPanel());
         this.updateDevPopLabel();
-        actions.append(this.devSnap, this.devFinish, unlockAll, reset, this.devMusic, this.devPop);
+        actions.append(this.devSnap, this.devFinish, unlockAll, reset, this.devMusic, viewAll, this.devPop);
         panel.append(toggle, actions);
         this.devPanel = panel;
         this.root.appendChild(panel);
@@ -280,6 +285,69 @@ class SnapforgeGame {
         if (!this.devMusic) return;
         this.devMusic.textContent = this.musicDisabled ? 'Enable music' : 'Disable music';
         this.devMusic.setAttribute('aria-pressed', String(this.musicDisabled));
+    }
+    /** Every model, one labeled row per collection. A cell opens the model viewer. */
+    private openViewAll(): void {
+        if (this.viewAll?.open) {
+            window.focus();
+            return;
+        }
+        const dialog = document.createElement('dialog');
+        dialog.className = 'view-all';
+        dialog.setAttribute('aria-label', 'All models');
+        const close = document.createElement('button');
+        close.type = 'button';
+        close.className = 'view-all-close';
+        close.textContent = 'Close';
+        const grid = document.createElement('div');
+        grid.className = 'view-all-grid';
+        for (const collection of collections) {
+            const models = catalog.get(collection.id);
+            if (!models?.length) continue;
+            const group = document.createElement('section');
+            group.className = 'view-all-group';
+            const name = document.createElement('h2');
+            name.className = 'view-all-name';
+            name.textContent = collection.name;
+            const row = document.createElement('div');
+            row.className = 'view-all-row';
+            for (const level of models) {
+                const count = level.bricks.length;
+                const cell = document.createElement('button');
+                cell.type = 'button';
+                cell.className = 'view-all-cell';
+                if (!level.vetted) cell.classList.add('is-unvetted');
+                const title = document.createElement('span');
+                title.className = 'view-all-title';
+                title.textContent = level.title;
+                const parts = document.createElement('span');
+                parts.className = 'view-all-count';
+                parts.textContent = String(count);
+                cell.setAttribute('aria-label', `${level.title}, ${count} ${count === 1 ? 'part' : 'parts'}${level.vetted ? '' : ', not vetted'}`);
+                cell.append(title, parts);
+                if (!level.vetted) {
+                    const mark = document.createElement('span');
+                    mark.className = 'view-all-mark';
+                    mark.setAttribute('aria-hidden', 'true');
+                    cell.appendChild(mark);
+                }
+                cell.addEventListener('click', () => openModelViewer(level));
+                row.appendChild(cell);
+            }
+            group.append(name, row);
+            grid.appendChild(group);
+        }
+        dialog.append(close, grid);
+        close.addEventListener('click', () => dialog.close());
+        dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+        dialog.addEventListener('close', () => {
+            dialog.remove();
+            if (this.viewAll === dialog) this.viewAll = null;
+        }, { once: true });
+        document.body.appendChild(dialog);
+        this.viewAll = dialog;
+        window.focus();
+        dialog.showModal();
     }
     private updateDevPopLabel(): void {
         if (!this.devPop) return;
@@ -300,7 +368,7 @@ class SnapforgeGame {
             return;
         }
         const generation = ++this.devPopGeneration;
-        const popup = window.open('', `snapforge-dev-${generation}`, 'popup=yes,width=280,height=460');
+        const popup = window.open('', `snapforge-dev-${generation}`, 'popup=yes,width=280,height=510');
         let doc: Document | null = null;
         try { doc = popup?.document ?? null; } catch { doc = null; }
         if (!popup || !doc?.body || !this.devPanel) {

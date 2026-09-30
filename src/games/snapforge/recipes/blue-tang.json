@@ -1,0 +1,328 @@
+{
+  "id": "blue-tang",
+  "title": "Blue Tang",
+  "description": "A deep blue oval fish with a dark sweeping side pattern and yellow tail.",
+  "collection": "ocean",
+  "order": 3,
+  "version": 1,
+  "targetParts": 50,
+  "palette": {
+    "body": "#1764D4",
+    "dark": "#15283F",
+    "fin": "#FFD342"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 4
+  },
+  "volumes": [
+    {
+      "name": "lower-belly",
+      "x": 5,
+      "y": 3,
+      "z": 0,
+      "w": 7,
+      "d": 2,
+      "h": 2,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "body-foundation",
+      "x": 3,
+      "y": 2,
+      "z": 2,
+      "w": 11,
+      "d": 4,
+      "h": 2,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "body-middle-base",
+      "x": 3,
+      "y": 2,
+      "z": 4,
+      "w": 12,
+      "d": 4,
+      "h": 1,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "body-middle",
+      "x": 3,
+      "y": 2,
+      "z": 5,
+      "w": 12,
+      "d": 4,
+      "h": 3,
+      "color": "body"
+    },
+    {
+      "name": "upper-shoulder",
+      "x": 4,
+      "y": 2,
+      "z": 8,
+      "w": 9,
+      "d": 4,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "back-crown",
+      "x": 5,
+      "y": 3,
+      "z": 10,
+      "w": 6,
+      "d": 2,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "nose",
+      "x": 14,
+      "y": 3,
+      "z": 5,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "body",
+      "overlay": true
+    },
+    {
+      "name": "tail-neck",
+      "x": 0,
+      "y": 3,
+      "z": 4,
+      "w": 4,
+      "d": 2,
+      "h": 2,
+      "color": "fin",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "tail-fan",
+      "x": 0,
+      "y": 3,
+      "z": 2,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "fin",
+      "attachment": "underside",
+      "protected": true
+    },
+    {
+      "name": "tail-upper-fan",
+      "x": 0,
+      "y": 3,
+      "z": 6,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "fin",
+      "protected": true
+    },
+    {
+      "name": "tail-upper-tip",
+      "x": 0,
+      "y": 3,
+      "z": 8,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "fin"
+    },
+    {
+      "name": "tail-lower-tip",
+      "x": 0,
+      "y": 3,
+      "z": 1,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "fin",
+      "attachment": "underside"
+    },
+    {
+      "name": "dorsal-edge",
+      "x": 5,
+      "y": 3,
+      "z": 11,
+      "w": 6,
+      "d": 2,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "dorsal-crest",
+      "x": 6,
+      "y": 3,
+      "z": 12,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "fin"
+    },
+    {
+      "name": "pectoral-fin-left",
+      "x": 9,
+      "y": 1,
+      "z": 4,
+      "w": 3,
+      "d": 1,
+      "h": 2,
+      "color": "fin",
+      "attachment": "underside",
+      "protected": true
+    },
+    {
+      "name": "pectoral-fin-right",
+      "x": 9,
+      "y": 6,
+      "z": 4,
+      "w": 3,
+      "d": 1,
+      "h": 2,
+      "color": "fin",
+      "attachment": "underside",
+      "protected": true
+    },
+    {
+      "name": "pectoral-root-left",
+      "x": 10,
+      "y": 1,
+      "z": 6,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "fin",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "pectoral-root-right",
+      "x": 10,
+      "y": 5,
+      "z": 6,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "fin",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "eye-left",
+      "x": 13,
+      "y": 2,
+      "z": 6,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "eye-right",
+      "x": 13,
+      "y": 5,
+      "z": 6,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "dark-back-sweep-left",
+      "x": 5,
+      "y": 2,
+      "z": 8,
+      "w": 7,
+      "d": 1,
+      "h": 1,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "dark-back-sweep-right",
+      "x": 5,
+      "y": 5,
+      "z": 8,
+      "w": 7,
+      "d": 1,
+      "h": 1,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "dark-tail-sweep-left",
+      "x": 3,
+      "y": 2,
+      "z": 4,
+      "w": 2,
+      "d": 1,
+      "h": 5,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "dark-tail-sweep-right",
+      "x": 3,
+      "y": 5,
+      "z": 4,
+      "w": 2,
+      "d": 1,
+      "h": 5,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "dark-lower-sweep-left",
+      "x": 5,
+      "y": 2,
+      "z": 4,
+      "w": 4,
+      "d": 1,
+      "h": 1,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "dark-lower-sweep-right",
+      "x": 5,
+      "y": 5,
+      "z": 4,
+      "w": 4,
+      "d": 1,
+      "h": 1,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "dark-loop-end-left",
+      "x": 8,
+      "y": 2,
+      "z": 5,
+      "w": 1,
+      "d": 1,
+      "h": 3,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "dark-loop-end-right",
+      "x": 8,
+      "y": 5,
+      "z": 5,
+      "w": 1,
+      "d": 1,
+      "h": 3,
+      "color": "dark",
+      "overlay": true
+    }
+  ]
+}

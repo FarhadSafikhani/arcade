@@ -1,0 +1,380 @@
+{
+  "id": "ambulance",
+  "title": "Ambulance",
+  "description": "A white emergency ambulance with a tall medical compartment, red side crosses, rear doors and roof beacons.",
+  "collection": "car",
+  "order": 4,
+  "version": 1,
+  "targetParts": 64,
+  "palette": {
+    "body": "#F1F3F5",
+    "black": "#232733",
+    "glass": "#64B8DC",
+    "white": "#F1F3F5",
+    "lamp": "#FFE6A0",
+    "silver": "#9DA7B5",
+    "red": "#E83E35",
+    "amber": "#FF9E32"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 4
+  },
+  "volumes": [
+    {
+      "name": "chassis",
+      "x": 1,
+      "y": 1,
+      "z": 0,
+      "w": 16,
+      "d": 6,
+      "h": 2,
+      "color": "black"
+    },
+    {
+      "name": "wheel-2-left",
+      "x": 2,
+      "y": 0,
+      "z": 0,
+      "w": 3,
+      "d": 1,
+      "h": 3,
+      "color": "black",
+      "kind": "wheel"
+    },
+    {
+      "name": "wheel-2-right",
+      "x": 2,
+      "y": 7,
+      "z": 0,
+      "w": 3,
+      "d": 1,
+      "h": 3,
+      "color": "black",
+      "kind": "wheel"
+    },
+    {
+      "name": "wheel-13-left",
+      "x": 13,
+      "y": 0,
+      "z": 0,
+      "w": 3,
+      "d": 1,
+      "h": 3,
+      "color": "black",
+      "kind": "wheel"
+    },
+    {
+      "name": "wheel-13-right",
+      "x": 13,
+      "y": 7,
+      "z": 0,
+      "w": 3,
+      "d": 1,
+      "h": 3,
+      "color": "black",
+      "kind": "wheel"
+    },
+    {
+      "name": "body-floor",
+      "x": 1,
+      "y": 1,
+      "z": 2,
+      "w": 16,
+      "d": 6,
+      "h": 1,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "body",
+      "x": 1,
+      "y": 1,
+      "z": 3,
+      "w": 16,
+      "d": 6,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "cabin-glass",
+      "x": 3,
+      "y": 1,
+      "z": 5,
+      "w": 5,
+      "d": 6,
+      "h": 2,
+      "color": "glass"
+    },
+    {
+      "name": "rear-pillar-left",
+      "x": 7,
+      "y": 1,
+      "z": 5,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "body",
+      "overlay": true
+    },
+    {
+      "name": "rear-pillar-right",
+      "x": 7,
+      "y": 6,
+      "z": 5,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "body",
+      "overlay": true
+    },
+    {
+      "name": "cabin-roof",
+      "x": 4,
+      "y": 1,
+      "z": 7,
+      "w": 4,
+      "d": 6,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "mirror-left",
+      "x": 3,
+      "y": 0,
+      "z": 5,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "black",
+      "overlay": true
+    },
+    {
+      "name": "mirror-right",
+      "x": 3,
+      "y": 6,
+      "z": 5,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "black",
+      "overlay": true
+    },
+    {
+      "name": "medical-box",
+      "x": 8,
+      "y": 1,
+      "z": 5,
+      "w": 9,
+      "d": 6,
+      "h": 5,
+      "color": "white"
+    },
+    {
+      "name": "red-stripe-left",
+      "x": 7,
+      "y": 1,
+      "z": 4,
+      "w": 10,
+      "d": 1,
+      "h": 1,
+      "color": "red",
+      "overlay": true
+    },
+    {
+      "name": "red-stripe-right",
+      "x": 7,
+      "y": 6,
+      "z": 4,
+      "w": 10,
+      "d": 1,
+      "h": 1,
+      "color": "red",
+      "overlay": true
+    },
+    {
+      "name": "cross-vertical-1",
+      "x": 12,
+      "y": 1,
+      "z": 6,
+      "w": 1,
+      "d": 1,
+      "h": 3,
+      "color": "red",
+      "overlay": true
+    },
+    {
+      "name": "cross-horizontal-1",
+      "x": 11,
+      "y": 1,
+      "z": 7,
+      "w": 3,
+      "d": 1,
+      "h": 1,
+      "color": "red",
+      "overlay": true
+    },
+    {
+      "name": "cross-vertical-6",
+      "x": 12,
+      "y": 6,
+      "z": 6,
+      "w": 1,
+      "d": 1,
+      "h": 3,
+      "color": "red",
+      "overlay": true
+    },
+    {
+      "name": "cross-horizontal-6",
+      "x": 11,
+      "y": 6,
+      "z": 7,
+      "w": 3,
+      "d": 1,
+      "h": 1,
+      "color": "red",
+      "overlay": true
+    },
+    {
+      "name": "back-window-left",
+      "x": 16,
+      "y": 2,
+      "z": 7,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "glass",
+      "overlay": true
+    },
+    {
+      "name": "back-window-right",
+      "x": 16,
+      "y": 5,
+      "z": 7,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "glass",
+      "overlay": true
+    },
+    {
+      "name": "rear-door-seam",
+      "x": 16,
+      "y": 3,
+      "z": 5,
+      "w": 1,
+      "d": 2,
+      "h": 5,
+      "color": "silver",
+      "overlay": true
+    },
+    {
+      "name": "roof-beacon-left",
+      "x": 4,
+      "y": 1,
+      "z": 8,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "red"
+    },
+    {
+      "name": "roof-beacon-right",
+      "x": 4,
+      "y": 5,
+      "z": 8,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "red"
+    },
+    {
+      "name": "roof-light-center",
+      "x": 4,
+      "y": 3,
+      "z": 8,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "white"
+    },
+    {
+      "name": "headlight-left",
+      "x": 1,
+      "y": 1,
+      "z": 4,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "lamp",
+      "overlay": true
+    },
+    {
+      "name": "headlight-right",
+      "x": 1,
+      "y": 5,
+      "z": 4,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "lamp",
+      "overlay": true
+    },
+    {
+      "name": "taillight-left",
+      "x": 16,
+      "y": 1,
+      "z": 4,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "red",
+      "overlay": true
+    },
+    {
+      "name": "taillight-right",
+      "x": 16,
+      "y": 6,
+      "z": 4,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "red",
+      "overlay": true
+    },
+    {
+      "name": "grille",
+      "x": 1,
+      "y": 3,
+      "z": 4,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "black",
+      "overlay": true
+    },
+    {
+      "name": "front-bumper",
+      "x": 0,
+      "y": 1,
+      "z": 2,
+      "w": 2,
+      "d": 6,
+      "h": 1,
+      "color": "silver",
+      "overlay": true
+    },
+    {
+      "name": "rear-bumper",
+      "x": 16,
+      "y": 1,
+      "z": 2,
+      "w": 2,
+      "d": 6,
+      "h": 1,
+      "color": "silver",
+      "overlay": true
+    }
+  ]
+}

@@ -1,0 +1,397 @@
+{
+  "id": "giraffe",
+  "title": "Giraffe",
+  "description": "A tall spotted giraffe with a long neck, slender legs, and two little ossicones.",
+  "collection": "land-animal",
+  "order": 5,
+  "version": 1,
+  "targetParts": 58,
+  "palette": {
+    "body": "#E1B952",
+    "spot": "#91552C",
+    "dark": "#352C25",
+    "muzzle": "#EAD599"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 4
+  },
+  "volumes": [
+    {
+      "name": "hoof-2-left",
+      "x": 2,
+      "y": 1,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "dark"
+    },
+    {
+      "name": "hoof-2-right",
+      "x": 2,
+      "y": 5,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "dark"
+    },
+    {
+      "name": "leg-2-left",
+      "x": 2,
+      "y": 1,
+      "z": 1,
+      "w": 2,
+      "d": 2,
+      "h": 5,
+      "color": "body"
+    },
+    {
+      "name": "leg-2-right",
+      "x": 2,
+      "y": 5,
+      "z": 1,
+      "w": 2,
+      "d": 2,
+      "h": 5,
+      "color": "body"
+    },
+    {
+      "name": "hoof-8-left",
+      "x": 8,
+      "y": 1,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "dark"
+    },
+    {
+      "name": "hoof-8-right",
+      "x": 8,
+      "y": 5,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "dark"
+    },
+    {
+      "name": "leg-8-left",
+      "x": 8,
+      "y": 1,
+      "z": 1,
+      "w": 2,
+      "d": 2,
+      "h": 5,
+      "color": "body"
+    },
+    {
+      "name": "leg-8-right",
+      "x": 8,
+      "y": 5,
+      "z": 1,
+      "w": 2,
+      "d": 2,
+      "h": 5,
+      "color": "body"
+    },
+    {
+      "name": "belly",
+      "x": 1,
+      "y": 1,
+      "z": 6,
+      "w": 10,
+      "d": 6,
+      "h": 2,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "back",
+      "x": 2,
+      "y": 1,
+      "z": 8,
+      "w": 8,
+      "d": 6,
+      "h": 2,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "withers",
+      "x": 7,
+      "y": 2,
+      "z": 10,
+      "w": 4,
+      "d": 4,
+      "h": 2,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "neck-lower",
+      "x": 8,
+      "y": 2,
+      "z": 12,
+      "w": 3,
+      "d": 4,
+      "h": 4,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "neck-upper",
+      "x": 9,
+      "y": 2,
+      "z": 16,
+      "w": 3,
+      "d": 4,
+      "h": 4,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "head-bridge",
+      "x": 9,
+      "y": 2,
+      "z": 20,
+      "w": 6,
+      "d": 4,
+      "h": 1,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "head",
+      "x": 9,
+      "y": 2,
+      "z": 21,
+      "w": 4,
+      "d": 4,
+      "h": 2,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "muzzle",
+      "x": 13,
+      "y": 2,
+      "z": 21,
+      "w": 3,
+      "d": 4,
+      "h": 1,
+      "color": "muzzle",
+      "protected": true
+    },
+    {
+      "name": "eye-left",
+      "x": 12,
+      "y": 2,
+      "z": 22,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "eye-right",
+      "x": 12,
+      "y": 5,
+      "z": 22,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "ear-left",
+      "x": 9,
+      "y": 1,
+      "z": 22,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "body",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "ear-right",
+      "x": 9,
+      "y": 5,
+      "z": 22,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "body",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "ossicone-left",
+      "x": 10,
+      "y": 2,
+      "z": 23,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "spot"
+    },
+    {
+      "name": "ossicone-right",
+      "x": 10,
+      "y": 5,
+      "z": 23,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "spot"
+    },
+    {
+      "name": "ossicone-tip-left",
+      "x": 10,
+      "y": 2,
+      "z": 25,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark"
+    },
+    {
+      "name": "ossicone-tip-right",
+      "x": 10,
+      "y": 5,
+      "z": 25,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark"
+    },
+    {
+      "name": "spot-3-10-left",
+      "x": 3,
+      "y": 1,
+      "z": 8,
+      "w": 2,
+      "d": 1,
+      "h": 2,
+      "color": "spot",
+      "overlay": true
+    },
+    {
+      "name": "spot-3-10-right",
+      "x": 3,
+      "y": 6,
+      "z": 8,
+      "w": 2,
+      "d": 1,
+      "h": 2,
+      "color": "spot",
+      "overlay": true
+    },
+    {
+      "name": "spot-7-10-left",
+      "x": 7,
+      "y": 1,
+      "z": 8,
+      "w": 2,
+      "d": 1,
+      "h": 2,
+      "color": "spot",
+      "overlay": true
+    },
+    {
+      "name": "spot-7-10-right",
+      "x": 7,
+      "y": 6,
+      "z": 8,
+      "w": 2,
+      "d": 1,
+      "h": 2,
+      "color": "spot",
+      "overlay": true
+    },
+    {
+      "name": "spot-8-14-left",
+      "x": 8,
+      "y": 2,
+      "z": 12,
+      "w": 2,
+      "d": 1,
+      "h": 2,
+      "color": "spot",
+      "overlay": true
+    },
+    {
+      "name": "spot-8-14-right",
+      "x": 8,
+      "y": 5,
+      "z": 12,
+      "w": 2,
+      "d": 1,
+      "h": 2,
+      "color": "spot",
+      "overlay": true
+    },
+    {
+      "name": "spot-9-18-left",
+      "x": 10,
+      "y": 2,
+      "z": 16,
+      "w": 2,
+      "d": 1,
+      "h": 2,
+      "color": "spot",
+      "overlay": true
+    },
+    {
+      "name": "spot-9-18-right",
+      "x": 10,
+      "y": 5,
+      "z": 16,
+      "w": 2,
+      "d": 1,
+      "h": 2,
+      "color": "spot",
+      "overlay": true
+    },
+    {
+      "name": "tail-root",
+      "x": 0,
+      "y": 3,
+      "z": 8,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "body",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "tail",
+      "x": 0,
+      "y": 3,
+      "z": 4,
+      "w": 1,
+      "d": 2,
+      "h": 4,
+      "color": "body",
+      "attachment": "underside"
+    },
+    {
+      "name": "tail-tuft",
+      "x": 0,
+      "y": 3,
+      "z": 3,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "dark",
+      "attachment": "underside"
+    }
+  ]
+}

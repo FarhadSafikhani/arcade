@@ -6,7 +6,7 @@
   "order": 5,
   "version": 1,
   "targetParts": 50,
-  "vetted": 0,
+  "vetted": 1,
   "palette": {
     "black": "#202A35",
     "white": "#F7F3E8",

@@ -1,722 +1,457 @@
 {
   "id": "sports-car",
   "title": "Sports Car",
-  "description": "A low red sports car with dark windows and a rear wing.",
+  "description": "A low red sports coupe with round wheels, blue glazing and its signature raised rear wing.",
   "collection": "car",
   "order": 2,
-  "version": 1,
+  "version": 2,
+  "targetParts": 40,
+  "vetted": 1,
   "palette": {
-    "red": "#e83e35",
+    "body": "#E83E35",
     "black": "#232733",
-    "blue": "#345c79",
-    "white": "#fff2d5",
-    "orange": "#ff8c32",
-    "silver": "#9da7b5"
+    "glass": "#64B8DC",
+    "white": "#F1F3F5",
+    "lamp": "#FFE6A0",
+    "silver": "#9DA7B5",
+    "red": "#E83E35",
+    "amber": "#FF9E32"
   },
   "bricks": [
     {
-      "id": "floor-1",
-      "x": 2,
-      "y": 2,
-      "z": 0,
-      "w": 6,
-      "d": 4,
-      "color": "black"
-    },
-    {
-      "id": "floor-2",
-      "x": 8,
-      "y": 2,
-      "z": 0,
-      "w": 6,
-      "d": 4,
-      "color": "black"
-    },
-    {
-      "id": "tire-bottom-3",
+      "id": "brick-001",
       "x": 2,
       "y": 0,
       "z": 0,
       "w": 3,
-      "d": 2,
-      "color": "black"
-    },
-    {
-      "id": "tire-front-4",
-      "x": 2,
-      "y": 0,
-      "z": 1,
-      "w": 1,
-      "d": 2,
-      "color": "black"
-    },
-    {
-      "id": "wheel-hub-5",
-      "x": 3,
-      "y": 0,
-      "z": 1,
-      "w": 1,
-      "d": 2,
-      "color": "silver"
-    },
-    {
-      "id": "tire-back-6",
-      "x": 4,
-      "y": 0,
-      "z": 1,
-      "w": 1,
-      "d": 2,
-      "color": "black"
-    },
-    {
-      "id": "tire-top-7",
-      "x": 3,
-      "y": 0,
-      "z": 2,
-      "w": 1,
-      "d": 2,
-      "color": "black"
-    },
-    {
-      "id": "tire-bottom-8",
-      "x": 2,
-      "y": 6,
-      "z": 0,
-      "w": 3,
-      "d": 2,
-      "color": "black"
-    },
-    {
-      "id": "tire-front-9",
-      "x": 2,
-      "y": 6,
-      "z": 1,
-      "w": 1,
-      "d": 2,
-      "color": "black"
-    },
-    {
-      "id": "wheel-hub-10",
-      "x": 3,
-      "y": 6,
-      "z": 1,
-      "w": 1,
-      "d": 2,
-      "color": "silver"
-    },
-    {
-      "id": "tire-back-11",
-      "x": 4,
-      "y": 6,
-      "z": 1,
-      "w": 1,
-      "d": 2,
-      "color": "black"
-    },
-    {
-      "id": "tire-top-12",
-      "x": 3,
-      "y": 6,
-      "z": 2,
-      "w": 1,
-      "d": 2,
-      "color": "black"
-    },
-    {
-      "id": "tire-bottom-13",
-      "x": 11,
-      "y": 0,
-      "z": 0,
-      "w": 3,
-      "d": 2,
-      "color": "black"
-    },
-    {
-      "id": "tire-front-14",
-      "x": 11,
-      "y": 0,
-      "z": 1,
-      "w": 1,
-      "d": 2,
-      "color": "black"
-    },
-    {
-      "id": "wheel-hub-15",
-      "x": 12,
-      "y": 0,
-      "z": 1,
-      "w": 1,
-      "d": 2,
-      "color": "silver"
-    },
-    {
-      "id": "tire-back-16",
-      "x": 13,
-      "y": 0,
-      "z": 1,
-      "w": 1,
-      "d": 2,
-      "color": "black"
-    },
-    {
-      "id": "tire-top-17",
-      "x": 12,
-      "y": 0,
-      "z": 2,
-      "w": 1,
-      "d": 2,
-      "color": "black"
-    },
-    {
-      "id": "tire-bottom-18",
-      "x": 11,
-      "y": 6,
-      "z": 0,
-      "w": 3,
-      "d": 2,
-      "color": "black"
-    },
-    {
-      "id": "tire-front-19",
-      "x": 11,
-      "y": 6,
-      "z": 1,
-      "w": 1,
-      "d": 2,
-      "color": "black"
-    },
-    {
-      "id": "wheel-hub-20",
-      "x": 12,
-      "y": 6,
-      "z": 1,
-      "w": 1,
-      "d": 2,
-      "color": "silver"
-    },
-    {
-      "id": "tire-back-21",
-      "x": 13,
-      "y": 6,
-      "z": 1,
-      "w": 1,
-      "d": 2,
-      "color": "black"
-    },
-    {
-      "id": "tire-top-22",
-      "x": 12,
-      "y": 6,
-      "z": 2,
-      "w": 1,
-      "d": 2,
-      "color": "black"
-    },
-    {
-      "id": "chassis-23",
-      "x": 1,
-      "y": 2,
-      "z": 1,
-      "w": 4,
-      "d": 2,
-      "color": "black"
-    },
-    {
-      "id": "chassis-24",
-      "x": 5,
-      "y": 2,
-      "z": 1,
-      "w": 4,
-      "d": 2,
-      "color": "black"
-    },
-    {
-      "id": "chassis-25",
-      "x": 9,
-      "y": 2,
-      "z": 1,
-      "w": 4,
-      "d": 2,
-      "color": "black"
-    },
-    {
-      "id": "chassis-26",
-      "x": 13,
-      "y": 2,
-      "z": 1,
-      "w": 2,
-      "d": 2,
-      "color": "black"
-    },
-    {
-      "id": "chassis-27",
-      "x": 1,
-      "y": 4,
-      "z": 1,
-      "w": 4,
-      "d": 2,
-      "color": "black"
-    },
-    {
-      "id": "chassis-28",
-      "x": 5,
-      "y": 4,
-      "z": 1,
-      "w": 4,
-      "d": 2,
-      "color": "black"
-    },
-    {
-      "id": "chassis-29",
-      "x": 9,
-      "y": 4,
-      "z": 1,
-      "w": 4,
-      "d": 2,
-      "color": "black"
-    },
-    {
-      "id": "chassis-30",
-      "x": 13,
-      "y": 4,
-      "z": 1,
-      "w": 2,
-      "d": 2,
-      "color": "black"
-    },
-    {
-      "id": "body-31",
-      "x": 0,
-      "y": 2,
-      "z": 2,
-      "w": 4,
-      "d": 2,
-      "color": "red"
-    },
-    {
-      "id": "body-32",
-      "x": 4,
-      "y": 2,
-      "z": 2,
-      "w": 4,
-      "d": 2,
-      "color": "red"
-    },
-    {
-      "id": "body-33",
-      "x": 8,
-      "y": 2,
-      "z": 2,
-      "w": 4,
-      "d": 2,
-      "color": "red"
-    },
-    {
-      "id": "body-34",
-      "x": 12,
-      "y": 2,
-      "z": 2,
-      "w": 4,
-      "d": 2,
-      "color": "red"
-    },
-    {
-      "id": "body-35",
-      "x": 0,
-      "y": 4,
-      "z": 2,
-      "w": 4,
-      "d": 2,
-      "color": "red"
-    },
-    {
-      "id": "body-36",
-      "x": 4,
-      "y": 4,
-      "z": 2,
-      "w": 4,
-      "d": 2,
-      "color": "red"
-    },
-    {
-      "id": "body-37",
-      "x": 8,
-      "y": 4,
-      "z": 2,
-      "w": 4,
-      "d": 2,
-      "color": "red"
-    },
-    {
-      "id": "body-38",
-      "x": 12,
-      "y": 4,
-      "z": 2,
-      "w": 4,
-      "d": 2,
-      "color": "red"
-    },
-    {
-      "id": "body-39",
-      "x": 4,
-      "y": 1,
-      "z": 3,
-      "w": 4,
-      "d": 2,
-      "color": "red"
-    },
-    {
-      "id": "body-40",
-      "x": 8,
-      "y": 1,
-      "z": 3,
-      "w": 4,
-      "d": 2,
-      "color": "red"
-    },
-    {
-      "id": "body-41",
-      "x": 12,
-      "y": 1,
-      "z": 3,
-      "w": 4,
-      "d": 2,
-      "color": "red"
-    },
-    {
-      "id": "headlight-42",
-      "x": 0,
-      "y": 1,
-      "z": 3,
-      "w": 1,
-      "d": 2,
-      "color": "white"
-    },
-    {
-      "id": "nose-43",
-      "x": 1,
-      "y": 1,
-      "z": 3,
-      "w": 3,
-      "d": 2,
-      "color": "red"
-    },
-    {
-      "id": "body-44",
-      "x": 4,
-      "y": 3,
-      "z": 3,
-      "w": 4,
-      "d": 2,
-      "color": "red"
-    },
-    {
-      "id": "body-45",
-      "x": 8,
-      "y": 3,
-      "z": 3,
-      "w": 4,
-      "d": 2,
-      "color": "red"
-    },
-    {
-      "id": "body-46",
-      "x": 12,
-      "y": 3,
-      "z": 3,
-      "w": 4,
-      "d": 2,
-      "color": "red"
-    },
-    {
-      "id": "grille-47",
-      "x": 0,
-      "y": 3,
-      "z": 3,
-      "w": 2,
-      "d": 2,
-      "color": "black"
-    },
-    {
-      "id": "nose-48",
-      "x": 2,
-      "y": 3,
-      "z": 3,
-      "w": 2,
-      "d": 2,
-      "color": "red"
-    },
-    {
-      "id": "body-49",
-      "x": 4,
-      "y": 5,
-      "z": 3,
-      "w": 4,
-      "d": 2,
-      "color": "red"
-    },
-    {
-      "id": "body-50",
-      "x": 8,
-      "y": 5,
-      "z": 3,
-      "w": 4,
-      "d": 2,
-      "color": "red"
-    },
-    {
-      "id": "body-51",
-      "x": 12,
-      "y": 5,
-      "z": 3,
-      "w": 4,
-      "d": 2,
-      "color": "red"
-    },
-    {
-      "id": "headlight-52",
-      "x": 0,
-      "y": 5,
-      "z": 3,
-      "w": 1,
-      "d": 2,
-      "color": "white"
-    },
-    {
-      "id": "nose-53",
-      "x": 1,
-      "y": 5,
-      "z": 3,
-      "w": 3,
-      "d": 2,
-      "color": "red"
-    },
-    {
-      "id": "hood-54",
-      "x": 1,
-      "y": 2,
-      "z": 4,
-      "w": 4,
-      "d": 2,
-      "color": "red"
-    },
-    {
-      "id": "cockpit-55",
-      "x": 6,
-      "y": 2,
-      "z": 4,
-      "w": 2,
-      "d": 2,
-      "color": "blue"
-    },
-    {
-      "id": "cockpit-56",
-      "x": 8,
-      "y": 2,
-      "z": 4,
-      "w": 3,
-      "d": 2,
-      "color": "blue"
-    },
-    {
-      "id": "rear-deck-57",
-      "x": 11,
-      "y": 2,
-      "z": 4,
-      "w": 4,
-      "d": 2,
-      "color": "red"
-    },
-    {
-      "id": "hood-58",
-      "x": 1,
-      "y": 4,
-      "z": 4,
-      "w": 4,
-      "d": 2,
-      "color": "red"
-    },
-    {
-      "id": "cockpit-59",
-      "x": 6,
-      "y": 4,
-      "z": 4,
-      "w": 2,
-      "d": 2,
-      "color": "blue"
-    },
-    {
-      "id": "cockpit-60",
-      "x": 8,
-      "y": 4,
-      "z": 4,
-      "w": 3,
-      "d": 2,
-      "color": "blue"
-    },
-    {
-      "id": "rear-deck-61",
-      "x": 11,
-      "y": 4,
-      "z": 4,
-      "w": 4,
-      "d": 2,
-      "color": "red"
-    },
-    {
-      "id": "sill-62",
-      "x": 5,
-      "y": 1,
-      "z": 4,
-      "w": 7,
       "d": 1,
-      "color": "red"
+      "h": 3,
+      "color": "black",
+      "kind": "wheel"
     },
     {
-      "id": "sill-63",
-      "x": 5,
-      "y": 6,
-      "z": 4,
-      "w": 7,
+      "id": "brick-002",
+      "x": 11,
+      "y": 0,
+      "z": 0,
+      "w": 3,
       "d": 1,
-      "color": "red"
+      "h": 3,
+      "color": "black",
+      "kind": "wheel"
     },
     {
-      "id": "nose-top-64",
+      "id": "brick-003",
+      "x": 1,
+      "y": 1,
+      "z": 0,
+      "w": 14,
+      "d": 6,
+      "h": 2,
+      "color": "black"
+    },
+    {
+      "id": "brick-004",
+      "x": 2,
+      "y": 7,
+      "z": 0,
+      "w": 3,
+      "d": 1,
+      "h": 3,
+      "color": "black",
+      "kind": "wheel"
+    },
+    {
+      "id": "brick-005",
+      "x": 11,
+      "y": 7,
+      "z": 0,
+      "w": 3,
+      "d": 1,
+      "h": 3,
+      "color": "black",
+      "kind": "wheel"
+    },
+    {
+      "id": "brick-006",
       "x": 0,
-      "y": 2,
-      "z": 4,
+      "y": 1,
+      "z": 2,
+      "w": 2,
+      "d": 6,
+      "h": 1,
+      "color": "silver"
+    },
+    {
+      "id": "brick-007",
+      "x": 2,
+      "y": 1,
+      "z": 2,
+      "w": 12,
+      "d": 6,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "id": "brick-008",
+      "x": 14,
+      "y": 1,
+      "z": 2,
+      "w": 2,
+      "d": 6,
+      "h": 1,
+      "color": "silver"
+    },
+    {
+      "id": "brick-009",
+      "x": 0,
+      "y": 1,
+      "z": 3,
       "w": 1,
-      "d": 4,
+      "d": 6,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "id": "brick-010",
+      "x": 1,
+      "y": 1,
+      "z": 3,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "lamp"
+    },
+    {
+      "id": "brick-011",
+      "x": 14,
+      "y": 1,
+      "z": 3,
+      "w": 1,
+      "d": 1,
+      "h": 1,
       "color": "red"
     },
     {
-      "id": "tail-light-65",
+      "id": "brick-012",
       "x": 15,
       "y": 1,
-      "z": 4,
+      "z": 3,
       "w": 1,
-      "d": 2,
-      "color": "orange"
+      "d": 6,
+      "h": 1,
+      "color": "body"
     },
     {
-      "id": "tail-light-66",
-      "x": 15,
-      "y": 5,
-      "z": 4,
-      "w": 1,
-      "d": 2,
-      "color": "orange"
-    },
-    {
-      "id": "windshield-67",
-      "x": 6,
+      "id": "brick-013",
+      "x": 14,
       "y": 2,
-      "z": 5,
+      "z": 3,
       "w": 1,
       "d": 4,
-      "color": "blue"
+      "h": 2,
+      "color": "body"
     },
     {
-      "id": "side-window-68",
-      "x": 7,
-      "y": 2,
-      "z": 5,
-      "w": 3,
-      "d": 1,
-      "color": "blue"
-    },
-    {
-      "id": "side-window-69",
-      "x": 7,
-      "y": 5,
-      "z": 5,
-      "w": 3,
-      "d": 1,
-      "color": "blue"
-    },
-    {
-      "id": "roof-support-70",
-      "x": 7,
+      "id": "brick-014",
+      "x": 1,
       "y": 3,
-      "z": 5,
-      "w": 3,
+      "z": 3,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "black"
+    },
+    {
+      "id": "brick-015",
+      "x": 1,
+      "y": 5,
+      "z": 3,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "lamp"
+    },
+    {
+      "id": "brick-016",
+      "x": 14,
+      "y": 6,
+      "z": 3,
+      "w": 1,
       "d": 1,
+      "h": 1,
       "color": "red"
     },
     {
-      "id": "roof-support-71",
+      "id": "brick-017",
+      "x": 6,
+      "y": 0,
+      "z": 4,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "black"
+    },
+    {
+      "id": "brick-018",
+      "x": 5,
+      "y": 1,
+      "z": 4,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "id": "brick-019",
       "x": 7,
-      "y": 4,
-      "z": 5,
-      "w": 3,
+      "y": 1,
+      "z": 4,
+      "w": 2,
       "d": 1,
-      "color": "red"
+      "h": 1,
+      "color": "body"
     },
     {
-      "id": "rear-window-72",
+      "id": "brick-020",
+      "x": 9,
+      "y": 1,
+      "z": 4,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "silver"
+    },
+    {
+      "id": "brick-021",
       "x": 10,
-      "y": 2,
-      "z": 5,
-      "w": 1,
-      "d": 4,
-      "color": "blue"
+      "y": 1,
+      "z": 4,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "body"
     },
     {
-      "id": "spoiler-support-73",
+      "id": "brick-022",
       "x": 13,
       "y": 1,
-      "z": 5,
+      "z": 4,
       "w": 1,
       "d": 2,
+      "h": 2,
       "color": "black"
     },
     {
-      "id": "spoiler-support-74",
+      "id": "brick-023",
+      "x": 0,
+      "y": 2,
+      "z": 4,
+      "w": 5,
+      "d": 4,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "id": "brick-024",
+      "x": 6,
+      "y": 2,
+      "z": 4,
+      "w": 5,
+      "d": 4,
+      "h": 1,
+      "color": "glass"
+    },
+    {
+      "id": "brick-025",
+      "x": 11,
+      "y": 2,
+      "z": 4,
+      "w": 2,
+      "d": 4,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "id": "brick-026",
+      "x": 13,
+      "y": 3,
+      "z": 4,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "id": "brick-027",
       "x": 13,
       "y": 5,
-      "z": 5,
+      "z": 4,
       "w": 1,
       "d": 2,
+      "h": 2,
       "color": "black"
     },
     {
-      "id": "roof-75",
+      "id": "brick-028",
+      "x": 5,
+      "y": 6,
+      "z": 4,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "id": "brick-029",
+      "x": 6,
+      "y": 6,
+      "z": 4,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "black"
+    },
+    {
+      "id": "brick-030",
       "x": 7,
+      "y": 6,
+      "z": 4,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "id": "brick-031",
+      "x": 9,
+      "y": 6,
+      "z": 4,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "silver"
+    },
+    {
+      "id": "brick-032",
+      "x": 10,
+      "y": 6,
+      "z": 4,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "id": "brick-033",
+      "x": 6,
       "y": 2,
-      "z": 6,
-      "w": 3,
-      "d": 2,
-      "color": "red"
+      "z": 5,
+      "w": 5,
+      "d": 1,
+      "h": 1,
+      "color": "glass"
     },
     {
-      "id": "roof-76",
+      "id": "brick-034",
+      "x": 6,
+      "y": 3,
+      "z": 5,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "glass"
+    },
+    {
+      "id": "brick-035",
       "x": 7,
-      "y": 4,
-      "z": 6,
+      "y": 3,
+      "z": 5,
       "w": 3,
       "d": 2,
-      "color": "red"
+      "h": 1,
+      "color": "body"
     },
     {
-      "id": "spoiler-77",
+      "id": "brick-036",
+      "x": 10,
+      "y": 3,
+      "z": 5,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "glass"
+    },
+    {
+      "id": "brick-037",
+      "x": 6,
+      "y": 5,
+      "z": 5,
+      "w": 5,
+      "d": 1,
+      "h": 1,
+      "color": "glass"
+    },
+    {
+      "id": "brick-038",
       "x": 13,
       "y": 0,
       "z": 6,
       "w": 2,
-      "d": 4,
-      "color": "red"
+      "d": 8,
+      "h": 1,
+      "color": "body"
     },
     {
-      "id": "spoiler-78",
-      "x": 13,
-      "y": 4,
+      "id": "brick-039",
+      "x": 7,
+      "y": 2,
       "z": 6,
-      "w": 2,
+      "w": 3,
       "d": 4,
-      "color": "red"
+      "h": 1,
+      "color": "body"
     }
   ],
-  "targetParts": 78,
-  "vetted": 0
+  "buildSequence": [
+    "brick-003",
+    "brick-001",
+    "brick-002",
+    "brick-004",
+    "brick-005",
+    "brick-007",
+    "brick-006",
+    "brick-008",
+    "brick-009",
+    "brick-012",
+    "brick-013",
+    "brick-010",
+    "brick-014",
+    "brick-015",
+    "brick-011",
+    "brick-016",
+    "brick-023",
+    "brick-024",
+    "brick-025",
+    "brick-017",
+    "brick-019",
+    "brick-021",
+    "brick-022",
+    "brick-026",
+    "brick-027",
+    "brick-029",
+    "brick-030",
+    "brick-032",
+    "brick-018",
+    "brick-020",
+    "brick-028",
+    "brick-031",
+    "brick-035",
+    "brick-033",
+    "brick-037",
+    "brick-034",
+    "brick-036",
+    "brick-038",
+    "brick-039"
+  ]
 }

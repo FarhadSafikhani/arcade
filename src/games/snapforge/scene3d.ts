@@ -6,6 +6,7 @@ import { mysteryModel, disposeMystery } from './mystery3d';
 import { brickMesh, brickPosition, BRICK_HEIGHT, WHEEL_RADIUS, WHEEL_CENTER_Y, disposeBrick } from './brick3d';
 import { buildOrder, pieceMatches, pileAdditions, SnapBrick, SnapLevel } from './level';
 import { configureOverlayCamera, fitOverlayDepth, overlayRotation, overlayToScreen, screenToOverlay } from './overlay3d';
+import { Box, FrameSphere, boxSphere, easeFrame, fitDistance, fitSpinningBox, modelBox, viewDirection, workingBox } from './camera-fit';
 
 interface LooseBrick { brick: SnapBrick; mesh: THREE.Group; body: RAPIER.RigidBody; }
 interface Flight { brick: SnapBrick; mesh: THREE.Group; from: THREE.Vector2; to: THREE.Vector2;
@@ -23,6 +24,7 @@ const SHIMMER_PAUSE_DURATION = 5000;
 const REJECTION_FLASH_DURATION = 420;
 const SHOWCASE_FAST_SPIN = Math.PI * 0.8;
 const SHOWCASE_SLOW_SPIN = Math.PI * 0.12;
+const VIEW_EASE_SECONDS = 0.17;
 const GRAVITY = 19;
 /** Tuned by ear: the pour feels in sync when it starts this long before the first physical impact. */
 const POUR_LEAD = 800;
@@ -89,8 +91,11 @@ export class SnapScene3D {
     private yaw = Math.PI / 4;
     private restingYaw = Math.PI / 4;
     private orbiting = false;
-    private targetHeight = 2;
-    private modelRadius = 18;
+    /** Whole finished model, shown while the intro plays. */
+    private viewFullBox: Box | null = null;
+    /** Grow-only region around what has been built, so the camera only ever zooms out mid-build. */
+    private viewBox: Box | null = null;
+    private view: FrameSphere = { x: 0, y: 2, z: 0, radius: 8 };
     private showcasing = false;
     private revealRemaining = 0;
     private showcaseAutoSpin = false;
@@ -258,14 +263,24 @@ export class SnapScene3D {
                 model.add(mesh);
             }
             scene.add(model);
-            const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
-            const maxWidth = Math.max(...data.bricks.map(brick => brick.x + brick.w));
-            const maxDepth = Math.max(...data.bricks.map(brick => brick.y + brick.d));
-            const maxHeight = Math.max(...data.bricks.map(brick => brick.z + (brick.h ?? 1))) * BRICK_HEIGHT;
-            const radius = Math.max(maxWidth, maxDepth, maxHeight * 1.6) * 1.8;
-            camera.position.set(radius * 0.65, radius * 0.62, radius * 0.85);
-            camera.lookAt(0, maxHeight / 2, 0);
-            return { element: entry.element, scene, camera, model, dispose: () => {
+            const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 300);
+            const box = modelBox(data);
+            const frame = boxSphere(box);
+            // The locked silhouette's glow outline is drawn a little larger than the model.
+            const margin = 1.1 * (entry.completed ? 1 : 1.08);
+            const direction = viewDirection(Math.atan2(0.65, 0.85));
+            let fittedAspect = 0, distance = 0;
+            const fit = (fitted: THREE.PerspectiveCamera) => {
+                if (fitted.aspect !== fittedAspect) {
+                    fittedAspect = fitted.aspect;
+                    distance = fitSpinningBox(box, frame, direction, fitted.fov, fitted.aspect, margin);
+                }
+                fitted.position.set(frame.x + direction.x * distance, frame.y + direction.y * distance,
+                    frame.z + direction.z * distance);
+                fitted.lookAt(frame.x, frame.y, frame.z);
+            };
+            fit(camera);
+            return { element: entry.element, scene, camera, model, fit, dispose: () => {
                 if (!entry.completed) disposeMystery(model);
                 else for (const child of [...model.children]) disposeBrick(child as THREE.Group);
                 scene.traverse(child => {
@@ -286,11 +301,8 @@ export class SnapScene3D {
         this.resize();
         this.interactive = !intro;
         this.introDone = onIntroDone;
-        const maxWidth = Math.max(...level.bricks.map(brick => brick.x + brick.w));
-        const maxDepth = Math.max(...level.bricks.map(brick => brick.y + brick.d));
-        const maxHeight = Math.max(...level.bricks.map(brick => brick.z + (brick.h ?? 1))) * BRICK_HEIGHT;
-        this.targetHeight = maxHeight / 2;
-        this.modelRadius = Math.max(maxWidth, maxDepth, maxHeight * 1.7) * 1.9;
+        this.viewFullBox = modelBox(level);
+        this.viewBox = workingBox(level, this.order, placedIds.length);
         const placed = new Set(placedIds);
         const remaining = this.order.filter(brick => !placed.has(brick.id));
         const initialPile = pileAdditions([], remaining, this.order.slice(placedIds.length));
@@ -314,6 +326,12 @@ export class SnapScene3D {
             this.updateTarget();
             onIntroDone();
         }
+        this.view = this.desiredView();
+    }
+
+    /** The intro shows the whole model; play frames only what has been built plus the next piece. */
+    private desiredView(): FrameSphere {
+        return boxSphere(this.interactive ? this.viewBox! : this.viewFullBox!);
     }
 
     private clearMystery(): void {
@@ -482,7 +500,9 @@ export class SnapScene3D {
 
     updateTarget(): void {
         this.clearTarget();
-        if (!this.level || this.placedIds.length >= this.order.length) return;
+        if (!this.level) return;
+        this.viewBox = workingBox(this.level, this.order, this.placedIds.length, this.viewBox);
+        if (this.placedIds.length >= this.order.length) return;
         const target = this.order[this.placedIds.length];
         const color = this.level.palette[target.color];
         this.ghostBaseColor = new THREE.Color(color);
@@ -788,22 +808,17 @@ export class SnapScene3D {
                 const difference = Math.atan2(Math.sin(this.restingYaw - this.yaw), Math.cos(this.restingYaw - this.yaw));
                 this.yaw += difference * Math.min(1, delta * 4.5);
             }
-            const angle = this.yaw;
-            const aspect = Math.max(0.45, this.modelCamera.aspect);
-            const radius = this.modelRadius * Math.max(1, 0.95 / aspect);
-            this.modelCamera.position.set(Math.sin(angle) * radius, this.targetHeight + radius * 0.62,
-                Math.cos(angle) * radius);
-            this.modelCamera.lookAt(0, this.targetHeight, 0);
-            if (this.showcasing) {
-                // Fit a bounding sphere so even a long model stays in frame at every angle.
-                const verticalFov = THREE.MathUtils.degToRad(this.modelCamera.fov / 2);
-                const limitingFov = Math.min(verticalFov, Math.atan(Math.tan(verticalFov) * this.modelCamera.aspect));
-                const distance = this.showcaseBounds.radius / Math.sin(limitingFov) * 1.12;
-                const center = this.showcaseBounds.center;
-                this.modelCamera.position.set(Math.sin(angle), 0.5, Math.cos(angle))
-                    .normalize().multiplyScalar(distance).add(center);
-                this.modelCamera.lookAt(center);
-            }
+            // A held piece is projected against this camera, so the frame stays put until it is released.
+            if (!this.drag) this.view = easeFrame(this.view, this.desiredView(), delta,
+                REDUCED_MOTION.matches ? 0 : VIEW_EASE_SECONDS);
+            const { center, radius } = this.showcaseBounds;
+            const frame = this.showcasing ? { x: center.x, y: center.y, z: center.z, radius } : this.view;
+            // Fit a bounding sphere so even a long model stays in frame at every angle.
+            const direction = viewDirection(this.yaw);
+            const distance = fitDistance(frame.radius, this.modelCamera.fov, this.modelCamera.aspect);
+            this.modelCamera.position.set(frame.x + direction.x * distance, frame.y + direction.y * distance,
+                frame.z + direction.z * distance);
+            this.modelCamera.lookAt(frame.x, frame.y, frame.z);
             if (this.drag) {
                 const turn = REDUCED_MOTION.matches ? 1 :
                     Math.min(1, (now - this.drag.rotationStart) / HELD_ROTATION_DURATION);

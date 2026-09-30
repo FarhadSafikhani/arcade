@@ -1,0 +1,433 @@
+{
+  "id": "red-crab",
+  "title": "Red Crab",
+  "description": "A low red shell with eight splayed legs, raised pincers, and dark stalk eyes.",
+  "collection": "ocean",
+  "order": 4,
+  "version": 3,
+  "targetParts": 50,
+  "palette": {
+    "body": "#D83C31",
+    "shell": "#F0593B",
+    "dark": "#202B36"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 10
+  },
+  "volumes": [
+    {
+      "name": "raised-foot-3-right",
+      "x": 10,
+      "y": 17,
+      "z": 0,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "raised-foot-3-left",
+      "x": 10,
+      "y": 2,
+      "z": 0,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "raised-foot-2-right",
+      "x": 8,
+      "y": 17,
+      "z": 0,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "raised-foot-2-left",
+      "x": 8,
+      "y": 2,
+      "z": 0,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "raised-foot-1-right",
+      "x": 6,
+      "y": 17,
+      "z": 0,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "raised-foot-1-left",
+      "x": 6,
+      "y": 2,
+      "z": 0,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "raised-foot-0-right",
+      "x": 4,
+      "y": 17,
+      "z": 0,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "raised-foot-0-left",
+      "x": 4,
+      "y": 2,
+      "z": 0,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "shell-foundation",
+      "x": 4,
+      "y": 7,
+      "z": 2,
+      "w": 7,
+      "d": 6,
+      "h": 2,
+      "color": "body",
+      "protected": true,
+      "attachment": "underside"
+    },
+    {
+      "name": "leg-0-left",
+      "x": 4,
+      "y": 4,
+      "z": 3,
+      "w": 1,
+      "d": 4,
+      "h": 1,
+      "color": "body",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "leg-0-right",
+      "x": 4,
+      "y": 12,
+      "z": 3,
+      "w": 1,
+      "d": 4,
+      "h": 1,
+      "color": "body",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "leg-tip-0-left",
+      "x": 4,
+      "y": 2,
+      "z": 2,
+      "w": 1,
+      "d": 3,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "leg-tip-0-right",
+      "x": 4,
+      "y": 15,
+      "z": 2,
+      "w": 1,
+      "d": 3,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "leg-1-left",
+      "x": 6,
+      "y": 4,
+      "z": 3,
+      "w": 1,
+      "d": 4,
+      "h": 1,
+      "color": "body",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "leg-1-right",
+      "x": 6,
+      "y": 12,
+      "z": 3,
+      "w": 1,
+      "d": 4,
+      "h": 1,
+      "color": "body",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "leg-tip-1-left",
+      "x": 6,
+      "y": 2,
+      "z": 2,
+      "w": 1,
+      "d": 3,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "leg-tip-1-right",
+      "x": 6,
+      "y": 15,
+      "z": 2,
+      "w": 1,
+      "d": 3,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "leg-2-left",
+      "x": 8,
+      "y": 4,
+      "z": 3,
+      "w": 1,
+      "d": 4,
+      "h": 1,
+      "color": "body",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "leg-2-right",
+      "x": 8,
+      "y": 12,
+      "z": 3,
+      "w": 1,
+      "d": 4,
+      "h": 1,
+      "color": "body",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "leg-tip-2-left",
+      "x": 8,
+      "y": 2,
+      "z": 2,
+      "w": 1,
+      "d": 3,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "leg-tip-2-right",
+      "x": 8,
+      "y": 15,
+      "z": 2,
+      "w": 1,
+      "d": 3,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "leg-3-left",
+      "x": 10,
+      "y": 4,
+      "z": 3,
+      "w": 1,
+      "d": 4,
+      "h": 1,
+      "color": "body",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "leg-3-right",
+      "x": 10,
+      "y": 12,
+      "z": 3,
+      "w": 1,
+      "d": 4,
+      "h": 1,
+      "color": "body",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "leg-tip-3-left",
+      "x": 10,
+      "y": 2,
+      "z": 2,
+      "w": 1,
+      "d": 3,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "leg-tip-3-right",
+      "x": 10,
+      "y": 15,
+      "z": 2,
+      "w": 1,
+      "d": 3,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "rounded-shell",
+      "x": 3,
+      "y": 6,
+      "z": 4,
+      "w": 9,
+      "d": 8,
+      "h": 2,
+      "color": "shell",
+      "protected": true
+    },
+    {
+      "name": "shell-crown",
+      "x": 5,
+      "y": 7,
+      "z": 6,
+      "w": 5,
+      "d": 6,
+      "h": 1,
+      "color": "shell"
+    },
+    {
+      "name": "claw-arm-left",
+      "x": 10,
+      "y": 3,
+      "z": 5,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "body",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "claw-arm-right",
+      "x": 10,
+      "y": 13,
+      "z": 5,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "body",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "claw-palm-left",
+      "x": 12,
+      "y": 2,
+      "z": 6,
+      "w": 3,
+      "d": 4,
+      "h": 2,
+      "color": "shell"
+    },
+    {
+      "name": "claw-palm-right",
+      "x": 12,
+      "y": 14,
+      "z": 6,
+      "w": 3,
+      "d": 4,
+      "h": 2,
+      "color": "shell"
+    },
+    {
+      "name": "outer-pincer-left",
+      "x": 14,
+      "y": 2,
+      "z": 8,
+      "w": 3,
+      "d": 1,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "outer-pincer-right",
+      "x": 14,
+      "y": 17,
+      "z": 8,
+      "w": 3,
+      "d": 1,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "inner-pincer-left",
+      "x": 14,
+      "y": 5,
+      "z": 8,
+      "w": 2,
+      "d": 1,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "inner-pincer-right",
+      "x": 14,
+      "y": 14,
+      "z": 8,
+      "w": 2,
+      "d": 1,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "eye-stalk-left",
+      "x": 10,
+      "y": 7,
+      "z": 6,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "eye-stalk-right",
+      "x": 10,
+      "y": 12,
+      "z": 6,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "eye-left",
+      "x": 10,
+      "y": 7,
+      "z": 8,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark"
+    },
+    {
+      "name": "eye-right",
+      "x": 10,
+      "y": 12,
+      "z": 8,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark"
+    }
+  ]
+}

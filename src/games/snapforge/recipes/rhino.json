@@ -1,0 +1,270 @@
+{
+  "id": "rhino",
+  "title": "Rhino",
+  "description": "A heavy rhinoceros with armored shoulders, two ivory horns, and pointed ears.",
+  "collection": "land-animal",
+  "order": 2,
+  "version": 1,
+  "targetParts": 34,
+  "palette": {
+    "body": "#92999B",
+    "horn": "#EFE3C7",
+    "dark": "#30363B"
+  },
+  "symmetry": {
+    "axis": "y",
+    "plane": 4
+  },
+  "volumes": [
+    {
+      "name": "leg-2-left",
+      "x": 2,
+      "y": 1,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "body"
+    },
+    {
+      "name": "leg-2-right",
+      "x": 2,
+      "y": 5,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "body"
+    },
+    {
+      "name": "leg-9-left",
+      "x": 9,
+      "y": 1,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "body"
+    },
+    {
+      "name": "leg-9-right",
+      "x": 9,
+      "y": 5,
+      "z": 0,
+      "w": 2,
+      "d": 2,
+      "h": 4,
+      "color": "body"
+    },
+    {
+      "name": "belly",
+      "x": 1,
+      "y": 1,
+      "z": 4,
+      "w": 11,
+      "d": 6,
+      "h": 2,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "barrel",
+      "x": 2,
+      "y": 0,
+      "z": 6,
+      "w": 8,
+      "d": 8,
+      "h": 2,
+      "color": "body",
+      "protected": true
+    },
+    {
+      "name": "shoulder",
+      "x": 8,
+      "y": 1,
+      "z": 8,
+      "w": 4,
+      "d": 6,
+      "h": 2,
+      "color": "body"
+    },
+    {
+      "name": "back",
+      "x": 3,
+      "y": 1,
+      "z": 8,
+      "w": 5,
+      "d": 6,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "head-bridge",
+      "x": 10,
+      "y": 2,
+      "z": 6,
+      "w": 5,
+      "d": 4,
+      "h": 2,
+      "color": "body",
+      "overlay": true
+    },
+    {
+      "name": "lowered-muzzle",
+      "x": 13,
+      "y": 2,
+      "z": 5,
+      "w": 4,
+      "d": 4,
+      "h": 1,
+      "color": "body",
+      "attachment": "underside"
+    },
+    {
+      "name": "snout",
+      "x": 14,
+      "y": 2,
+      "z": 6,
+      "w": 3,
+      "d": 4,
+      "h": 2,
+      "color": "body",
+      "overlay": true
+    },
+    {
+      "name": "large-horn-base",
+      "x": 15,
+      "y": 3,
+      "z": 8,
+      "w": 2,
+      "d": 2,
+      "h": 2,
+      "color": "horn"
+    },
+    {
+      "name": "large-horn-tip",
+      "x": 16,
+      "y": 3,
+      "z": 10,
+      "w": 1,
+      "d": 2,
+      "h": 2,
+      "color": "horn"
+    },
+    {
+      "name": "small-horn",
+      "x": 13,
+      "y": 3,
+      "z": 8,
+      "w": 1,
+      "d": 2,
+      "h": 2,
+      "color": "horn"
+    },
+    {
+      "name": "eye-left",
+      "x": 12,
+      "y": 2,
+      "z": 8,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark"
+    },
+    {
+      "name": "eye-right",
+      "x": 12,
+      "y": 5,
+      "z": 8,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark"
+    },
+    {
+      "name": "ear-base-left",
+      "x": 10,
+      "y": 1,
+      "z": 10,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "ear-base-right",
+      "x": 10,
+      "y": 5,
+      "z": 10,
+      "w": 2,
+      "d": 2,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "ear-tip-left",
+      "x": 10,
+      "y": 1,
+      "z": 11,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "ear-tip-right",
+      "x": 10,
+      "y": 6,
+      "z": 11,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "name": "nostril-left",
+      "x": 16,
+      "y": 2,
+      "z": 7,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "nostril-right",
+      "x": 16,
+      "y": 5,
+      "z": 7,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark",
+      "overlay": true
+    },
+    {
+      "name": "tail-root",
+      "x": 0,
+      "y": 3,
+      "z": 6,
+      "w": 3,
+      "d": 2,
+      "h": 1,
+      "color": "body",
+      "overlay": true,
+      "protected": true
+    },
+    {
+      "name": "tail",
+      "x": 0,
+      "y": 3,
+      "z": 3,
+      "w": 1,
+      "d": 2,
+      "h": 3,
+      "color": "body",
+      "attachment": "underside"
+    }
+  ]
+}
