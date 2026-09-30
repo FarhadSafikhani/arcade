@@ -4,8 +4,8 @@
   "description": "A tall ostrich with long bare legs and neck, a black feathered body, white wings, and a tiny head.",
   "collection": "bird",
   "order": 4,
-  "version": 1,
-  "targetParts": 44,
+  "version": 2,
+  "targetParts": 39,
   "palette": {
     "black": "#202A35",
     "white": "#F7F3E8",

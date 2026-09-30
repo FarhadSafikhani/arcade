@@ -4,8 +4,8 @@
   "description": "A black-and-white zebra with bold stripes, an upright mane, and a dark hanging tail.",
   "collection": "land-animal",
   "order": 6,
-  "version": 2,
-  "targetParts": 69,
+  "version": 3,
+  "targetParts": 63,
   "palette": {
     "body": "#F2EEE3",
     "dark": "#303139"

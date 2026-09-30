@@ -4,8 +4,8 @@
   "description": "A blue long-nose semi with a sleeper cab, twin chrome stacks, tandem wheels and a long white box trailer.",
   "collection": "car",
   "order": 5,
-  "version": 3,
-  "targetParts": 74,
+  "version": 4,
+  "targetParts": 73,
   "palette": {
     "body": "#3476BB",
     "black": "#232733",

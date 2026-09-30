@@ -16,7 +16,7 @@ Every new model and replay starts with **zero placed bricks**, showing `0 / tota
 
 For a pile larger than 30 pieces, expose at most three duplicates of each part (same color, footprint, and height, allowing quarter turns). Keep the rest in a hidden reserve, without meshes or physics bodies. Replenish a part when its available count falls below three, dropping replacements from above into the center of the pile. When the pile is below 30, drop any remaining reserved parts until it reaches 30 or the reserve is empty. Stagger these drops so they remain readable. Reserve parts still count toward the full model total and are never treated as placed. Holding or returning a part does not consume it.
 
-Height-2 bricks occupy two layers, have smooth sides and studs only on top, and count as one construction step. Heights default to 1 and are normally 1 or 2; explicit 1×2 h3 pillars are also supported. Matching requires equal height as well as color and footprint. Design height and footprint together: two layers do not need identical existing seams to be replaced by a larger height-2 brick.
+Height-2 and height-4 bricks occupy two or four layers, have smooth sides and studs only on top, and count as one construction step. Height-4 footprints are 1×1, 1×2, and 2×2. Heights default to 1 and are normally 1 or 2; explicit 1×2 or 3×3 h3 pillars are also supported. Matching requires equal height as well as color and footprint. Design height and footprint together: two layers do not need identical existing seams to be replaced by a larger height-2 brick.
 
 # Snapforge model design system
 
@@ -32,7 +32,7 @@ Height-2 bricks occupy two layers, have smooth sides and studs only on top, and 
 
 **Symmetry:** Models must be symmetric when the subject warrants it: shape, colors, paired features, and brick seams. Document intentional poses or asymmetric features as narrowly scoped exceptions with a reason.
 
-**Parts:** Prefer familiar rectangles, including quarter turns. Allow custom integer footprints when an odd width or long thin piece improves shape or construction. Ordinary brick heights remain 1 or 2, except explicit 1×2 h3 pillars. A wheel is one atomic 3×1 h3 part (or rotated), with a tire and hub, connected sideways at axle height. Its tire radius is 1.3 world units, and its center stays fixed relative to the part. Changing the packing must preserve occupied shape and colors; changing the shape is a separate design decision.
+**Parts:** Prefer familiar rectangles, including quarter turns. Allow custom integer footprints when an odd width or long thin piece improves shape or construction. Ordinary brick heights are 1 or 2, with stack consolidation into 1×1, 1×2, and 2×2 h4 bricks, except explicit 1×2 or 3×3 h3 pillars. A wheel is one atomic 3×1 h3 part (or rotated), with a tire and hub, connected sideways at axle height. Its tire radius is 1.3 world units, and its center stays fixed relative to the part. Changing the packing must preserve occupied shape and colors; changing the shape is a separate design decision.
 
 **Handoff:** Report actual/N pieces, defining features, justified custom parts or exceptions, checks performed, and any remaining visual limitations. Leave new or changed generated models at **`vetted: 0`**. Only an explicit user request may promote them to 1; unchanged regeneration preserves that decision. Vetting never affects unlocking or gallery visibility.
 

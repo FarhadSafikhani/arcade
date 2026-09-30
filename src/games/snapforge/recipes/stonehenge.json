@@ -4,8 +4,8 @@
   "description": "A ring of weathered standing stones, bridging lintels, and taller inner trilithons.",
   "collection": "landmarks",
   "order": 1,
-  "version": 1,
-  "targetParts": 50,
+  "version": 2,
+  "targetParts": 33,
   "palette": {
     "grass": "#6D8651",
     "stone": "#A29D8E"

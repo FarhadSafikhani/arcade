@@ -75,6 +75,23 @@ class Model:
                 result['h'] = 2
                 used.add(above)
             bricks.append(result)
+        # Collapse identical vertical stacks into the three supported h4 footprints.
+        for bottom in sorted(bricks[:], key=lambda brick: brick['z']):
+            if bottom not in bricks or bottom['w'] > 2 or bottom['d'] > 2 or bottom.get('h', 1) > 2:
+                continue
+            stack = [bottom]
+            height = bottom.get('h', 1)
+            while height < 4:
+                above = next((brick for brick in bricks if brick not in stack
+                              and all(brick[field] == bottom[field] for field in ('x', 'y', 'w', 'd', 'color'))
+                              and brick['z'] == bottom['z'] + height and brick.get('h', 1) <= 2), None)
+                if above is None: break
+                stack.append(above)
+                height += above.get('h', 1)
+            if height == 4 and len(stack) > 1:
+                bottom['h'] = 4
+                for brick in stack[1:]: bricks.remove(brick)
+        bricks.sort(key=lambda brick: (brick['z'], brick['y'], brick['x']))
         for i, b in enumerate(bricks, 1):
             b['id'] = f'brick-{i:03}'
         return bricks

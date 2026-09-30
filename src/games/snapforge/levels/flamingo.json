@@ -4,9 +4,9 @@
   "description": "A rose-pink flamingo with long slender legs, folded wings, an S-shaped neck, and a black-tipped downturned bill.",
   "collection": "bird",
   "order": 5,
-  "version": 1,
-  "targetParts": 50,
-  "vetted": 1,
+  "version": 2,
+  "targetParts": 43,
+  "vetted": 0,
   "palette": {
     "black": "#202A35",
     "white": "#F7F3E8",
@@ -41,7 +41,7 @@
       "z": 1,
       "w": 1,
       "d": 2,
-      "h": 2,
+      "h": 4,
       "color": "pink"
     },
     {
@@ -51,14 +51,14 @@
       "z": 1,
       "w": 1,
       "d": 2,
-      "h": 2,
+      "h": 4,
       "color": "pink"
     },
     {
       "id": "brick-005",
       "x": 5,
       "y": 1,
-      "z": 3,
+      "z": 5,
       "w": 1,
       "d": 2,
       "h": 2,
@@ -68,7 +68,7 @@
       "id": "brick-006",
       "x": 5,
       "y": 5,
-      "z": 3,
+      "z": 5,
       "w": 1,
       "d": 2,
       "h": 2,
@@ -78,104 +78,64 @@
       "id": "brick-007",
       "x": 5,
       "y": 1,
-      "z": 5,
-      "w": 1,
+      "z": 7,
+      "w": 2,
       "d": 2,
-      "h": 2,
+      "h": 1,
       "color": "pink"
     },
     {
       "id": "brick-008",
       "x": 5,
       "y": 5,
-      "z": 5,
-      "w": 1,
+      "z": 7,
+      "w": 2,
       "d": 2,
-      "h": 2,
+      "h": 1,
       "color": "pink"
     },
     {
       "id": "brick-009",
-      "x": 5,
+      "x": 6,
       "y": 1,
-      "z": 7,
-      "w": 2,
+      "z": 8,
+      "w": 1,
       "d": 2,
-      "h": 1,
+      "h": 4,
       "color": "pink"
     },
     {
       "id": "brick-010",
-      "x": 5,
+      "x": 6,
       "y": 5,
-      "z": 7,
-      "w": 2,
+      "z": 8,
+      "w": 1,
       "d": 2,
-      "h": 1,
+      "h": 4,
       "color": "pink"
     },
     {
       "id": "brick-011",
       "x": 6,
       "y": 1,
-      "z": 8,
+      "z": 12,
       "w": 1,
       "d": 2,
-      "h": 2,
+      "h": 1,
       "color": "pink"
     },
     {
       "id": "brick-012",
       "x": 6,
       "y": 5,
-      "z": 8,
+      "z": 12,
       "w": 1,
       "d": 2,
-      "h": 2,
+      "h": 1,
       "color": "pink"
     },
     {
       "id": "brick-013",
-      "x": 6,
-      "y": 1,
-      "z": 10,
-      "w": 1,
-      "d": 2,
-      "h": 2,
-      "color": "pink"
-    },
-    {
-      "id": "brick-014",
-      "x": 6,
-      "y": 5,
-      "z": 10,
-      "w": 1,
-      "d": 2,
-      "h": 2,
-      "color": "pink"
-    },
-    {
-      "id": "brick-015",
-      "x": 6,
-      "y": 1,
-      "z": 12,
-      "w": 1,
-      "d": 2,
-      "h": 1,
-      "color": "pink"
-    },
-    {
-      "id": "brick-016",
-      "x": 6,
-      "y": 5,
-      "z": 12,
-      "w": 1,
-      "d": 2,
-      "h": 1,
-      "color": "pink"
-    },
-    {
-      "id": "brick-017",
       "x": 3,
       "y": 1,
       "z": 13,
@@ -185,7 +145,7 @@
       "color": "pink"
     },
     {
-      "id": "brick-018",
+      "id": "brick-014",
       "x": 2,
       "y": 1,
       "z": 14,
@@ -195,7 +155,7 @@
       "color": "pink"
     },
     {
-      "id": "brick-019",
+      "id": "brick-015",
       "x": 0,
       "y": 2,
       "z": 14,
@@ -205,7 +165,7 @@
       "color": "pink"
     },
     {
-      "id": "brick-020",
+      "id": "brick-016",
       "x": 4,
       "y": 2,
       "z": 14,
@@ -215,7 +175,7 @@
       "color": "pink"
     },
     {
-      "id": "brick-021",
+      "id": "brick-017",
       "x": 2,
       "y": 6,
       "z": 14,
@@ -225,7 +185,7 @@
       "color": "pink"
     },
     {
-      "id": "brick-022",
+      "id": "brick-018",
       "x": 3,
       "y": 0,
       "z": 15,
@@ -235,7 +195,7 @@
       "color": "red"
     },
     {
-      "id": "brick-023",
+      "id": "brick-019",
       "x": 2,
       "y": 1,
       "z": 15,
@@ -245,7 +205,7 @@
       "color": "pink"
     },
     {
-      "id": "brick-024",
+      "id": "brick-020",
       "x": 8,
       "y": 1,
       "z": 15,
@@ -255,7 +215,7 @@
       "color": "pink"
     },
     {
-      "id": "brick-025",
+      "id": "brick-021",
       "x": 2,
       "y": 2,
       "z": 15,
@@ -265,7 +225,7 @@
       "color": "pink"
     },
     {
-      "id": "brick-026",
+      "id": "brick-022",
       "x": 0,
       "y": 3,
       "z": 15,
@@ -275,7 +235,7 @@
       "color": "black"
     },
     {
-      "id": "brick-027",
+      "id": "brick-023",
       "x": 2,
       "y": 6,
       "z": 15,
@@ -285,7 +245,7 @@
       "color": "pink"
     },
     {
-      "id": "brick-028",
+      "id": "brick-024",
       "x": 3,
       "y": 6,
       "z": 15,
@@ -295,7 +255,7 @@
       "color": "red"
     },
     {
-      "id": "brick-029",
+      "id": "brick-025",
       "x": 8,
       "y": 6,
       "z": 15,
@@ -305,7 +265,7 @@
       "color": "pink"
     },
     {
-      "id": "brick-030",
+      "id": "brick-026",
       "x": 3,
       "y": 0,
       "z": 16,
@@ -315,7 +275,7 @@
       "color": "pink"
     },
     {
-      "id": "brick-031",
+      "id": "brick-027",
       "x": 3,
       "y": 2,
       "z": 16,
@@ -325,7 +285,7 @@
       "color": "pink"
     },
     {
-      "id": "brick-032",
+      "id": "brick-028",
       "x": 8,
       "y": 2,
       "z": 16,
@@ -335,7 +295,7 @@
       "color": "pink"
     },
     {
-      "id": "brick-033",
+      "id": "brick-029",
       "x": 8,
       "y": 3,
       "z": 16,
@@ -345,7 +305,7 @@
       "color": "pink"
     },
     {
-      "id": "brick-034",
+      "id": "brick-030",
       "x": 8,
       "y": 5,
       "z": 16,
@@ -355,7 +315,7 @@
       "color": "pink"
     },
     {
-      "id": "brick-035",
+      "id": "brick-031",
       "x": 3,
       "y": 6,
       "z": 16,
@@ -365,7 +325,7 @@
       "color": "pink"
     },
     {
-      "id": "brick-036",
+      "id": "brick-032",
       "x": 4,
       "y": 1,
       "z": 17,
@@ -375,7 +335,7 @@
       "color": "pink"
     },
     {
-      "id": "brick-037",
+      "id": "brick-033",
       "x": 4,
       "y": 6,
       "z": 17,
@@ -385,27 +345,17 @@
       "color": "pink"
     },
     {
-      "id": "brick-038",
+      "id": "brick-034",
       "x": 10,
       "y": 3,
       "z": 18,
       "w": 2,
       "d": 2,
-      "h": 2,
+      "h": 4,
       "color": "pink"
     },
     {
-      "id": "brick-039",
-      "x": 10,
-      "y": 3,
-      "z": 20,
-      "w": 2,
-      "d": 2,
-      "h": 2,
-      "color": "pink"
-    },
-    {
-      "id": "brick-040",
+      "id": "brick-035",
       "x": 8,
       "y": 3,
       "z": 22,
@@ -415,27 +365,17 @@
       "color": "pink"
     },
     {
-      "id": "brick-041",
+      "id": "brick-036",
       "x": 8,
       "y": 3,
       "z": 24,
       "w": 2,
       "d": 2,
-      "h": 2,
+      "h": 4,
       "color": "pink"
     },
     {
-      "id": "brick-042",
-      "x": 8,
-      "y": 3,
-      "z": 26,
-      "w": 2,
-      "d": 2,
-      "h": 2,
-      "color": "pink"
-    },
-    {
-      "id": "brick-043",
+      "id": "brick-037",
       "x": 13,
       "y": 3,
       "z": 27,
@@ -446,7 +386,7 @@
       "attachment": "underside"
     },
     {
-      "id": "brick-044",
+      "id": "brick-038",
       "x": 8,
       "y": 2,
       "z": 28,
@@ -456,7 +396,7 @@
       "color": "pink"
     },
     {
-      "id": "brick-045",
+      "id": "brick-039",
       "x": 8,
       "y": 2,
       "z": 29,
@@ -466,7 +406,7 @@
       "color": "pink"
     },
     {
-      "id": "brick-046",
+      "id": "brick-040",
       "x": 11,
       "y": 2,
       "z": 29,
@@ -476,7 +416,7 @@
       "color": "black"
     },
     {
-      "id": "brick-047",
+      "id": "brick-041",
       "x": 11,
       "y": 3,
       "z": 29,
@@ -486,7 +426,7 @@
       "color": "white"
     },
     {
-      "id": "brick-048",
+      "id": "brick-042",
       "x": 11,
       "y": 5,
       "z": 29,
@@ -496,7 +436,7 @@
       "color": "black"
     },
     {
-      "id": "brick-049",
+      "id": "brick-043",
       "x": 9,
       "y": 2,
       "z": 30,
@@ -520,41 +460,35 @@
     "brick-011",
     "brick-012",
     "brick-013",
-    "brick-014",
-    "brick-015",
     "brick-016",
+    "brick-015",
+    "brick-014",
     "brick-017",
-    "brick-020",
-    "brick-019",
     "brick-018",
+    "brick-024",
     "brick-021",
     "brick-022",
-    "brick-028",
+    "brick-020",
     "brick-025",
-    "brick-026",
-    "brick-024",
-    "brick-029",
+    "brick-019",
     "brick-023",
     "brick-027",
+    "brick-026",
     "brick-031",
+    "brick-029",
+    "brick-028",
     "brick-030",
-    "brick-035",
-    "brick-033",
     "brick-032",
+    "brick-033",
     "brick-034",
+    "brick-035",
     "brick-036",
-    "brick-037",
     "brick-038",
     "brick-039",
-    "brick-040",
     "brick-041",
+    "brick-037",
+    "brick-040",
     "brick-042",
-    "brick-044",
-    "brick-045",
-    "brick-047",
-    "brick-043",
-    "brick-046",
-    "brick-048",
-    "brick-049"
+    "brick-043"
   ]
 }

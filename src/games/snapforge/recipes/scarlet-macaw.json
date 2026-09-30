@@ -4,8 +4,8 @@
   "description": "A scarlet macaw perched above its long red-and-blue tail, with yellow wing bands, blue flight feathers, and pale cheeks.",
   "collection": "bird",
   "order": 6,
-  "version": 1,
-  "targetParts": 60,
+  "version": 2,
+  "targetParts": 58,
   "palette": {
     "black": "#202A35",
     "white": "#F7F3E8",

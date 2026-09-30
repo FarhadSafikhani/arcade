@@ -249,8 +249,18 @@ test('redesigned duck preserves recipe cells, mirrored seams, and its supported 
 });
 
 
-test('explicit h3 pillars stay atomic in either orientation and support upper bricks', () => {
-    for (const [w, d] of [[1, 2], [2, 1]]) {
+test('matching vertical stacks become h4 parts without changing occupied cells', () => {
+    for (const [w, d] of [[1, 1], [1, 2], [2, 2], [1, 3], [3, 1]]) {
+        const input = recipe([box('column', 0, 0, 0, w, d, 4)]);
+        const { level } = compileRecipe(input);
+        assert.equal(level.bricks.length, 1);
+        assert.equal(level.bricks[0].h, 4);
+        assert.deepEqual(brickCells(level.bricks[0]).sort(), [...expandRecipe(input).keys()].sort());
+    }
+});
+
+test('explicit h3 pillars stay atomic in supported footprints and support upper bricks', () => {
+    for (const [w, d] of [[1, 2], [2, 1], [3, 3]]) {
         const input = recipe([box('pillar', 0, 0, 0, w, d, 3, { pillar: true }),
             box('cap', 0, 0, 3, w, d, 1)], { targetParts: 2 });
         const { level } = compileRecipe(input);

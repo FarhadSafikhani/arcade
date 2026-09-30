@@ -4,8 +4,8 @@
   "description": "A broad-eared elephant with a long curling trunk, ivory tusks, and pillar legs.",
   "collection": "land-animal",
   "order": 4,
-  "version": 4,
-  "targetParts": 56,
+  "version": 5,
+  "targetParts": 52,
   "palette": {
     "body": "#8E9EAA",
     "ear": "#B1BAC0",

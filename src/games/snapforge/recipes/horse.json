@@ -4,8 +4,8 @@
   "description": "A chestnut horse with a flowing dark mane and tail.",
   "collection": "farm",
   "order": 4,
-  "version": 3,
-  "targetParts": 55,
+  "version": 4,
+  "targetParts": 49,
   "palette": {
     "brown": "#995B36",
     "muzzle": "#C9986E",

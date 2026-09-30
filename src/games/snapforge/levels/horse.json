@@ -4,9 +4,9 @@
   "description": "A chestnut horse with a flowing dark mane and tail.",
   "collection": "farm",
   "order": 4,
-  "version": 3,
-  "targetParts": 55,
-  "vetted": 1,
+  "version": 4,
+  "targetParts": 49,
+  "vetted": 0,
   "palette": {
     "brown": "#995B36",
     "muzzle": "#C9986E",
@@ -61,7 +61,7 @@
       "z": 1,
       "w": 1,
       "d": 2,
-      "h": 2,
+      "h": 4,
       "color": "brown"
     },
     {
@@ -71,7 +71,7 @@
       "z": 1,
       "w": 1,
       "d": 2,
-      "h": 2,
+      "h": 4,
       "color": "brown"
     },
     {
@@ -81,7 +81,7 @@
       "z": 1,
       "w": 1,
       "d": 2,
-      "h": 2,
+      "h": 4,
       "color": "brown"
     },
     {
@@ -91,15 +91,15 @@
       "z": 1,
       "w": 1,
       "d": 2,
-      "h": 2,
+      "h": 4,
       "color": "brown"
     },
     {
       "id": "brick-009",
       "x": 2,
       "y": 1,
-      "z": 3,
-      "w": 1,
+      "z": 5,
+      "w": 2,
       "d": 2,
       "h": 2,
       "color": "brown"
@@ -108,54 +108,14 @@
       "id": "brick-010",
       "x": 9,
       "y": 1,
-      "z": 3,
-      "w": 1,
+      "z": 5,
+      "w": 2,
       "d": 2,
       "h": 2,
       "color": "brown"
     },
     {
       "id": "brick-011",
-      "x": 2,
-      "y": 5,
-      "z": 3,
-      "w": 1,
-      "d": 2,
-      "h": 2,
-      "color": "brown"
-    },
-    {
-      "id": "brick-012",
-      "x": 9,
-      "y": 5,
-      "z": 3,
-      "w": 1,
-      "d": 2,
-      "h": 2,
-      "color": "brown"
-    },
-    {
-      "id": "brick-013",
-      "x": 2,
-      "y": 1,
-      "z": 5,
-      "w": 2,
-      "d": 2,
-      "h": 2,
-      "color": "brown"
-    },
-    {
-      "id": "brick-014",
-      "x": 9,
-      "y": 1,
-      "z": 5,
-      "w": 2,
-      "d": 2,
-      "h": 2,
-      "color": "brown"
-    },
-    {
-      "id": "brick-015",
       "x": 0,
       "y": 3,
       "z": 5,
@@ -166,7 +126,7 @@
       "attachment": "underside"
     },
     {
-      "id": "brick-016",
+      "id": "brick-012",
       "x": 2,
       "y": 5,
       "z": 5,
@@ -176,7 +136,7 @@
       "color": "brown"
     },
     {
-      "id": "brick-017",
+      "id": "brick-013",
       "x": 9,
       "y": 5,
       "z": 5,
@@ -186,7 +146,7 @@
       "color": "brown"
     },
     {
-      "id": "brick-018",
+      "id": "brick-014",
       "x": 1,
       "y": 1,
       "z": 7,
@@ -196,7 +156,7 @@
       "color": "brown"
     },
     {
-      "id": "brick-019",
+      "id": "brick-015",
       "x": 0,
       "y": 3,
       "z": 7,
@@ -207,7 +167,7 @@
       "attachment": "underside"
     },
     {
-      "id": "brick-020",
+      "id": "brick-016",
       "x": 1,
       "y": 1,
       "z": 8,
@@ -217,7 +177,7 @@
       "color": "brown"
     },
     {
-      "id": "brick-021",
+      "id": "brick-017",
       "x": 2,
       "y": 1,
       "z": 8,
@@ -227,7 +187,7 @@
       "color": "brown"
     },
     {
-      "id": "brick-022",
+      "id": "brick-018",
       "x": 11,
       "y": 1,
       "z": 8,
@@ -237,7 +197,7 @@
       "color": "brown"
     },
     {
-      "id": "brick-023",
+      "id": "brick-019",
       "x": 1,
       "y": 1,
       "z": 9,
@@ -247,7 +207,7 @@
       "color": "brown"
     },
     {
-      "id": "brick-024",
+      "id": "brick-020",
       "x": 0,
       "y": 3,
       "z": 9,
@@ -257,7 +217,7 @@
       "color": "dark"
     },
     {
-      "id": "brick-025",
+      "id": "brick-021",
       "x": 1,
       "y": 5,
       "z": 9,
@@ -267,7 +227,7 @@
       "color": "brown"
     },
     {
-      "id": "brick-026",
+      "id": "brick-022",
       "x": 2,
       "y": 1,
       "z": 10,
@@ -277,7 +237,7 @@
       "color": "brown"
     },
     {
-      "id": "brick-027",
+      "id": "brick-023",
       "x": 3,
       "y": 2,
       "z": 11,
@@ -287,7 +247,7 @@
       "color": "brown"
     },
     {
-      "id": "brick-028",
+      "id": "brick-024",
       "x": 9,
       "y": 2,
       "z": 11,
@@ -297,7 +257,7 @@
       "color": "brown"
     },
     {
-      "id": "brick-029",
+      "id": "brick-025",
       "x": 10,
       "y": 2,
       "z": 11,
@@ -307,7 +267,7 @@
       "color": "brown"
     },
     {
-      "id": "brick-030",
+      "id": "brick-026",
       "x": 9,
       "y": 3,
       "z": 11,
@@ -317,7 +277,7 @@
       "color": "dark"
     },
     {
-      "id": "brick-031",
+      "id": "brick-027",
       "x": 9,
       "y": 5,
       "z": 11,
@@ -327,7 +287,7 @@
       "color": "brown"
     },
     {
-      "id": "brick-032",
+      "id": "brick-028",
       "x": 10,
       "y": 2,
       "z": 13,
@@ -337,7 +297,7 @@
       "color": "brown"
     },
     {
-      "id": "brick-033",
+      "id": "brick-029",
       "x": 11,
       "y": 2,
       "z": 13,
@@ -347,7 +307,7 @@
       "color": "brown"
     },
     {
-      "id": "brick-034",
+      "id": "brick-030",
       "x": 10,
       "y": 3,
       "z": 13,
@@ -357,7 +317,7 @@
       "color": "dark"
     },
     {
-      "id": "brick-035",
+      "id": "brick-031",
       "x": 10,
       "y": 5,
       "z": 13,
@@ -367,7 +327,7 @@
       "color": "brown"
     },
     {
-      "id": "brick-036",
+      "id": "brick-032",
       "x": 11,
       "y": 2,
       "z": 14,
@@ -377,7 +337,7 @@
       "color": "brown"
     },
     {
-      "id": "brick-037",
+      "id": "brick-033",
       "x": 12,
       "y": 2,
       "z": 14,
@@ -387,17 +347,17 @@
       "color": "muzzle"
     },
     {
-      "id": "brick-038",
+      "id": "brick-034",
       "x": 11,
       "y": 2,
       "z": 15,
       "w": 1,
       "d": 1,
-      "h": 2,
+      "h": 4,
       "color": "brown"
     },
     {
-      "id": "brick-039",
+      "id": "brick-035",
       "x": 12,
       "y": 2,
       "z": 15,
@@ -407,7 +367,7 @@
       "color": "brown"
     },
     {
-      "id": "brick-040",
+      "id": "brick-036",
       "x": 14,
       "y": 2,
       "z": 15,
@@ -417,9 +377,49 @@
       "color": "muzzle"
     },
     {
-      "id": "brick-041",
+      "id": "brick-037",
       "x": 16,
       "y": 2,
+      "z": 15,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark"
+    },
+    {
+      "id": "brick-038",
+      "x": 11,
+      "y": 3,
+      "z": 15,
+      "w": 1,
+      "d": 2,
+      "h": 2,
+      "color": "dark"
+    },
+    {
+      "id": "brick-039",
+      "x": 16,
+      "y": 3,
+      "z": 15,
+      "w": 1,
+      "d": 2,
+      "h": 1,
+      "color": "muzzle"
+    },
+    {
+      "id": "brick-040",
+      "x": 11,
+      "y": 5,
+      "z": 15,
+      "w": 1,
+      "d": 1,
+      "h": 4,
+      "color": "brown"
+    },
+    {
+      "id": "brick-041",
+      "x": 16,
+      "y": 5,
       "z": 15,
       "w": 1,
       "d": 1,
@@ -428,46 +428,6 @@
     },
     {
       "id": "brick-042",
-      "x": 11,
-      "y": 3,
-      "z": 15,
-      "w": 1,
-      "d": 2,
-      "h": 2,
-      "color": "dark"
-    },
-    {
-      "id": "brick-043",
-      "x": 16,
-      "y": 3,
-      "z": 15,
-      "w": 1,
-      "d": 2,
-      "h": 1,
-      "color": "muzzle"
-    },
-    {
-      "id": "brick-044",
-      "x": 11,
-      "y": 5,
-      "z": 15,
-      "w": 1,
-      "d": 1,
-      "h": 2,
-      "color": "brown"
-    },
-    {
-      "id": "brick-045",
-      "x": 16,
-      "y": 5,
-      "z": 15,
-      "w": 1,
-      "d": 1,
-      "h": 1,
-      "color": "dark"
-    },
-    {
-      "id": "brick-046",
       "x": 12,
       "y": 2,
       "z": 16,
@@ -477,7 +437,7 @@
       "color": "brown"
     },
     {
-      "id": "brick-047",
+      "id": "brick-043",
       "x": 13,
       "y": 2,
       "z": 16,
@@ -487,7 +447,7 @@
       "color": "dark"
     },
     {
-      "id": "brick-048",
+      "id": "brick-044",
       "x": 14,
       "y": 2,
       "z": 16,
@@ -497,7 +457,7 @@
       "color": "brown"
     },
     {
-      "id": "brick-049",
+      "id": "brick-045",
       "x": 13,
       "y": 3,
       "z": 16,
@@ -507,7 +467,7 @@
       "color": "brown"
     },
     {
-      "id": "brick-050",
+      "id": "brick-046",
       "x": 14,
       "y": 3,
       "z": 16,
@@ -517,7 +477,7 @@
       "color": "cream"
     },
     {
-      "id": "brick-051",
+      "id": "brick-047",
       "x": 13,
       "y": 5,
       "z": 16,
@@ -527,7 +487,7 @@
       "color": "dark"
     },
     {
-      "id": "brick-052",
+      "id": "brick-048",
       "x": 14,
       "y": 5,
       "z": 16,
@@ -537,17 +497,7 @@
       "color": "brown"
     },
     {
-      "id": "brick-053",
-      "x": 11,
-      "y": 2,
-      "z": 17,
-      "w": 1,
-      "d": 1,
-      "h": 2,
-      "color": "brown"
-    },
-    {
-      "id": "brick-054",
+      "id": "brick-049",
       "x": 11,
       "y": 3,
       "z": 17,
@@ -555,16 +505,6 @@
       "d": 2,
       "h": 1,
       "color": "dark"
-    },
-    {
-      "id": "brick-055",
-      "x": 11,
-      "y": 5,
-      "z": 17,
-      "w": 1,
-      "d": 1,
-      "h": 2,
-      "color": "brown"
     }
   ],
   "buildSequence": [
@@ -578,50 +518,44 @@
     "brick-008",
     "brick-009",
     "brick-010",
-    "brick-011",
     "brick-012",
     "brick-013",
     "brick-014",
-    "brick-016",
     "brick-017",
+    "brick-016",
     "brick-018",
-    "brick-021",
     "brick-020",
-    "brick-022",
-    "brick-024",
-    "brick-019",
     "brick-015",
+    "brick-011",
+    "brick-019",
+    "brick-021",
+    "brick-022",
     "brick-023",
     "brick-025",
     "brick-026",
+    "brick-024",
     "brick-027",
     "brick-029",
     "brick-030",
     "brick-028",
     "brick-031",
     "brick-033",
-    "brick-034",
     "brick-032",
     "brick-035",
-    "brick-037",
     "brick-036",
-    "brick-039",
-    "brick-040",
-    "brick-042",
-    "brick-043",
     "brick-038",
+    "brick-039",
+    "brick-034",
+    "brick-037",
+    "brick-040",
     "brick-041",
-    "brick-044",
+    "brick-042",
     "brick-045",
     "brick-046",
-    "brick-049",
-    "brick-050",
+    "brick-043",
+    "brick-044",
     "brick-047",
     "brick-048",
-    "brick-051",
-    "brick-052",
-    "brick-054",
-    "brick-053",
-    "brick-055"
+    "brick-049"
   ]
 }

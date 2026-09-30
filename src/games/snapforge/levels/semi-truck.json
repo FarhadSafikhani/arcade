@@ -4,9 +4,9 @@
   "description": "A blue long-nose semi with a sleeper cab, twin chrome stacks, tandem wheels and a long white box trailer.",
   "collection": "car",
   "order": 5,
-  "version": 3,
-  "targetParts": 74,
-  "vetted": 1,
+  "version": 4,
+  "targetParts": 73,
+  "vetted": 0,
   "palette": {
     "body": "#3476BB",
     "black": "#232733",
@@ -335,7 +335,7 @@
       "z": 4,
       "w": 1,
       "d": 2,
-      "h": 2,
+      "h": 4,
       "color": "silver"
     },
     {
@@ -385,7 +385,7 @@
       "z": 4,
       "w": 1,
       "d": 2,
-      "h": 2,
+      "h": 4,
       "color": "silver"
     },
     {
@@ -445,7 +445,7 @@
       "z": 5,
       "w": 1,
       "d": 2,
-      "h": 2,
+      "h": 4,
       "color": "silver"
     },
     {
@@ -480,16 +480,6 @@
     },
     {
       "id": "brick-046",
-      "x": 11,
-      "y": 0,
-      "z": 6,
-      "w": 1,
-      "d": 2,
-      "h": 2,
-      "color": "silver"
-    },
-    {
-      "id": "brick-047",
       "x": 6,
       "y": 1,
       "z": 6,
@@ -499,7 +489,7 @@
       "color": "glass"
     },
     {
-      "id": "brick-048",
+      "id": "brick-047",
       "x": 9,
       "y": 1,
       "z": 6,
@@ -509,7 +499,7 @@
       "color": "body"
     },
     {
-      "id": "brick-049",
+      "id": "brick-048",
       "x": 5,
       "y": 2,
       "z": 6,
@@ -519,7 +509,7 @@
       "color": "glass"
     },
     {
-      "id": "brick-050",
+      "id": "brick-049",
       "x": 11,
       "y": 2,
       "z": 6,
@@ -529,7 +519,7 @@
       "color": "body"
     },
     {
-      "id": "brick-051",
+      "id": "brick-050",
       "x": 5,
       "y": 6,
       "z": 6,
@@ -539,17 +529,7 @@
       "color": "black"
     },
     {
-      "id": "brick-052",
-      "x": 11,
-      "y": 6,
-      "z": 6,
-      "w": 1,
-      "d": 2,
-      "h": 2,
-      "color": "silver"
-    },
-    {
-      "id": "brick-053",
+      "id": "brick-051",
       "x": 5,
       "y": 1,
       "z": 7,
@@ -559,7 +539,7 @@
       "color": "glass"
     },
     {
-      "id": "brick-054",
+      "id": "brick-052",
       "x": 13,
       "y": 1,
       "z": 7,
@@ -569,7 +549,7 @@
       "color": "white"
     },
     {
-      "id": "brick-055",
+      "id": "brick-053",
       "x": 13,
       "y": 2,
       "z": 7,
@@ -579,7 +559,7 @@
       "color": "white"
     },
     {
-      "id": "brick-056",
+      "id": "brick-054",
       "x": 30,
       "y": 2,
       "z": 7,
@@ -589,17 +569,7 @@
       "color": "black"
     },
     {
-      "id": "brick-057",
-      "x": 30,
-      "y": 3,
-      "z": 7,
-      "w": 1,
-      "d": 2,
-      "h": 2,
-      "color": "silver"
-    },
-    {
-      "id": "brick-058",
+      "id": "brick-055",
       "x": 30,
       "y": 5,
       "z": 7,
@@ -609,7 +579,7 @@
       "color": "black"
     },
     {
-      "id": "brick-059",
+      "id": "brick-056",
       "x": 5,
       "y": 6,
       "z": 7,
@@ -619,7 +589,7 @@
       "color": "glass"
     },
     {
-      "id": "brick-060",
+      "id": "brick-057",
       "x": 13,
       "y": 6,
       "z": 7,
@@ -629,9 +599,39 @@
       "color": "white"
     },
     {
-      "id": "brick-061",
+      "id": "brick-058",
       "x": 11,
       "y": 0,
+      "z": 8,
+      "w": 1,
+      "d": 2,
+      "h": 2,
+      "color": "silver"
+    },
+    {
+      "id": "brick-059",
+      "x": 6,
+      "y": 1,
+      "z": 8,
+      "w": 5,
+      "d": 6,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "id": "brick-060",
+      "x": 11,
+      "y": 2,
+      "z": 8,
+      "w": 1,
+      "d": 4,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "id": "brick-061",
+      "x": 11,
+      "y": 6,
       "z": 8,
       "w": 1,
       "d": 2,
@@ -642,36 +642,6 @@
       "id": "brick-062",
       "x": 6,
       "y": 1,
-      "z": 8,
-      "w": 5,
-      "d": 6,
-      "h": 1,
-      "color": "body"
-    },
-    {
-      "id": "brick-063",
-      "x": 11,
-      "y": 2,
-      "z": 8,
-      "w": 1,
-      "d": 4,
-      "h": 1,
-      "color": "body"
-    },
-    {
-      "id": "brick-064",
-      "x": 11,
-      "y": 6,
-      "z": 8,
-      "w": 1,
-      "d": 2,
-      "h": 2,
-      "color": "silver"
-    },
-    {
-      "id": "brick-065",
-      "x": 6,
-      "y": 1,
       "z": 9,
       "w": 1,
       "d": 1,
@@ -679,7 +649,7 @@
       "color": "amber"
     },
     {
-      "id": "brick-066",
+      "id": "brick-063",
       "x": 13,
       "y": 1,
       "z": 9,
@@ -689,7 +659,7 @@
       "color": "white"
     },
     {
-      "id": "brick-067",
+      "id": "brick-064",
       "x": 13,
       "y": 2,
       "z": 9,
@@ -699,7 +669,7 @@
       "color": "white"
     },
     {
-      "id": "brick-068",
+      "id": "brick-065",
       "x": 30,
       "y": 2,
       "z": 9,
@@ -709,7 +679,7 @@
       "color": "white"
     },
     {
-      "id": "brick-069",
+      "id": "brick-066",
       "x": 30,
       "y": 3,
       "z": 9,
@@ -719,7 +689,7 @@
       "color": "silver"
     },
     {
-      "id": "brick-070",
+      "id": "brick-067",
       "x": 30,
       "y": 5,
       "z": 9,
@@ -729,7 +699,7 @@
       "color": "white"
     },
     {
-      "id": "brick-071",
+      "id": "brick-068",
       "x": 6,
       "y": 6,
       "z": 9,
@@ -739,7 +709,7 @@
       "color": "amber"
     },
     {
-      "id": "brick-072",
+      "id": "brick-069",
       "x": 13,
       "y": 6,
       "z": 9,
@@ -749,7 +719,7 @@
       "color": "white"
     },
     {
-      "id": "brick-073",
+      "id": "brick-070",
       "x": 30,
       "y": 3,
       "z": 10,
@@ -759,7 +729,7 @@
       "color": "silver"
     },
     {
-      "id": "brick-074",
+      "id": "brick-071",
       "x": 13,
       "y": 1,
       "z": 11,
@@ -769,7 +739,7 @@
       "color": "white"
     },
     {
-      "id": "brick-075",
+      "id": "brick-072",
       "x": 30,
       "y": 1,
       "z": 11,
@@ -779,7 +749,7 @@
       "color": "white"
     },
     {
-      "id": "brick-076",
+      "id": "brick-073",
       "x": 30,
       "y": 5,
       "z": 11,
@@ -834,37 +804,34 @@
     "brick-042",
     "brick-041",
     "brick-043",
+    "brick-046",
     "brick-047",
     "brick-048",
     "brick-049",
-    "brick-050",
     "brick-045",
-    "brick-046",
-    "brick-051",
+    "brick-050",
     "brick-052",
-    "brick-054",
-    "brick-060",
-    "brick-055",
     "brick-057",
     "brick-053",
+    "brick-051",
+    "brick-054",
+    "brick-055",
     "brick-056",
-    "brick-058",
     "brick-059",
-    "brick-062",
-    "brick-063",
+    "brick-060",
+    "brick-058",
     "brick-061",
+    "brick-063",
+    "brick-069",
     "brick-064",
     "brick-066",
-    "brick-072",
-    "brick-067",
-    "brick-069",
+    "brick-062",
     "brick-065",
+    "brick-067",
     "brick-068",
     "brick-070",
     "brick-071",
-    "brick-073",
-    "brick-074",
-    "brick-075",
-    "brick-076"
+    "brick-072",
+    "brick-073"
   ]
 }

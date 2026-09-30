@@ -9,7 +9,7 @@ const { validateLevel, supportIds } = await import(`data:text/javascript;base64,
 const key = (x, y, z) => `${x},${y},${z}`;
 const shapeKey = b => [b.x, b.y, b.z, b.w, b.d, b.h ?? 1, b.color, b.kind ?? 'brick'].join(':') + (b.attachment ? `:${b.attachment}` : '');
 const size = b => b.w * b.d * (b.h ?? 1);
-const common = new Set(['1:1', '1:2', '1:3', '1:4', '1:6', '1:8', '2:2', '2:3', '2:4', '2:6', '2:8', '4:4', '4:6', '4:8']);
+const common = new Set(['1:1', '1:2', '1:3', '1:4', '1:6', '1:8', '2:2', '2:3', '2:4', '2:6', '2:8', '3:3', '4:4', '4:6', '4:8']);
 export const standardSize = b => common.has(`${Math.min(b.w, b.d)}:${Math.max(b.w, b.d)}`);
 export function brickCells(b) {
     const result = [];
@@ -49,8 +49,9 @@ export function expandRecipe(recipe) {
         if (volume.kind === 'wheel' && (volume.h !== 3 || Math.min(volume.w, volume.d) !== 1 || Math.max(volume.w, volume.d) !== 3))
             throw new Error(`${volume.name}: wheel must be 3Ã—1 h3 (or rotated)`);
         if (volume.pillar !== undefined && (volume.pillar !== true || volume.kind === 'wheel' || volume.h !== 3 ||
-            Math.min(volume.w, volume.d) !== 1 || Math.max(volume.w, volume.d) !== 2))
-            throw new Error(`${volume.name}: pillar must be 1×2 h3 (or rotated)`);
+            !((Math.min(volume.w, volume.d) === 1 && Math.max(volume.w, volume.d) === 2) ||
+                (volume.w === 3 && volume.d === 3))))
+            throw new Error(`${volume.name}: pillar must be 1×2 h3 (or rotated) or 3×3 h3`);
         for (const cell of brickCells(volume)) {
             if (cells.get(cell)?.part || ((volume.kind === 'wheel' || volume.pillar) && cells.has(cell)))
                 throw new Error(`${volume.name}: atomic parts cannot overlap or be overlaid`);
@@ -157,6 +158,9 @@ function better(a, b) {
     return false;
 }
 function repack(groups, alternatives) {
+    // Many candidate rectangles select the same neighborhood. Its search depends
+    // only on these immutable groups, so an unchanged result stays unchanged.
+    const unchanged = new Set();
     // Repack small overlapping neighborhoods, including their mirrored partners.
     // Strictly decreasing cost and bounded passes keep authoring repeatable and finite.
     for (let pass = 0; pass < 3; pass++) {
@@ -165,6 +169,8 @@ function repack(groups, alternatives) {
             const wanted = new Set(candidate.keys);
             const local = groups.filter(g => g.keys.some(k => wanted.has(k)));
             if (local.length < 2 || local.flatMap(g => g.bricks).length > 8) continue;
+            const neighborhood = local.map(g => g.id).join('\n');
+            if (unchanged.has(neighborhood)) continue;
             const region = new Set(local.flatMap(g => g.keys));
             let replacement = local;
             for (const ordered of alternatives) {
@@ -174,7 +180,7 @@ function repack(groups, alternatives) {
             if (replacement !== local) {
                 groups = [...groups.filter(g => !local.includes(g)), ...replacement];
                 improved = true;
-            }
+            } else unchanged.add(neighborhood);
         }
         if (!improved) break;
     }
@@ -220,7 +226,8 @@ export function compileRecipe(recipe, previous) {
         }
     }
     if (!best) throw new Error(failure);
-    const bricks = numbered(best);
+    const bricks = mergeHeightFourStacks(numbered(best));
+    bestSequence = assembly(bricks);
     const level = { id: recipe.id, title: recipe.title, description: recipe.description,
         collection: recipe.collection, order: recipe.order, version: recipe.version,
         targetParts: recipe.targetParts, vetted: 0, palette: recipe.palette, bricks, buildSequence: bestSequence };
@@ -247,7 +254,7 @@ export function mergeHeightFourStacks(bricks) {
     const result = bricks.map(b => ({ ...b }));
     for (const bottom of [...result].sort((a, b) => a.z - b.z)) {
         if (!result.includes(bottom) || bottom.kind === 'wheel' || bottom.attachment ||
-            bottom.w > 2 || bottom.d > 2 || bottom.h > 2) continue;
+            !((bottom.w <= 2 && bottom.d <= 2) || (Math.min(bottom.w, bottom.d) === 1 && Math.max(bottom.w, bottom.d) === 3)) || bottom.h > 2) continue;
         const stack = [bottom];
         let height = bottom.h;
         while (height < 4) {

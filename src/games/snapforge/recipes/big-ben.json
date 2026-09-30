@@ -4,8 +4,8 @@
   "description": "A slender sandstone clock tower with four cream clock faces, Gothic pinnacles, and a dark stepped spire.",
   "collection": "landmarks",
   "order": 7,
-  "version": 2,
-  "targetParts": 93,
+  "version": 3,
+  "targetParts": 74,
   "palette": {
     "stone": "#C5A16A",
     "trim": "#E9D4A6",

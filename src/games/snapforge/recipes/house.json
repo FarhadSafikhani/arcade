@@ -4,8 +4,8 @@
   "description": "A cozy cottage with a sloping red roof, blue front windows, and a little chimney.",
   "collection": "starter",
   "order": 4,
-  "version": 2,
-  "targetParts": 40,
+  "version": 3,
+  "targetParts": 39,
   "palette": {
     "wall": "#FFF1D6",
     "roof": "#B94F32",

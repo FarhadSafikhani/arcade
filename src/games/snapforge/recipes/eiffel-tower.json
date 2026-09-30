@@ -4,8 +4,8 @@
   "description": "Four open splayed legs meet broad viewing decks beneath a tall tapering iron spire.",
   "collection": "landmarks",
   "order": 4,
-  "version": 1,
-  "targetParts": 85,
+  "version": 2,
+  "targetParts": 74,
   "palette": {
     "iron": "#8E6C4F",
     "deck": "#594C42",

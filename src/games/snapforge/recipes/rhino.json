@@ -4,8 +4,8 @@
   "description": "A heavy rhinoceros with armored shoulders, two ivory horns, and pointed ears.",
   "collection": "land-animal",
   "order": 2,
-  "version": 1,
-  "targetParts": 34,
+  "version": 2,
+  "targetParts": 29,
   "palette": {
     "body": "#92999B",
     "horn": "#EFE3C7",

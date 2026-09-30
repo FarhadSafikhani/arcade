@@ -4,8 +4,8 @@
   "description": "A royal-blue peacock with a tall crest and a wide emerald fan patterned with golden and blue feather eyes.",
   "collection": "bird",
   "order": 7,
-  "version": 1,
-  "targetParts": 94,
+  "version": 2,
+  "targetParts": 91,
   "palette": {
     "black": "#202A35",
     "green": "#16845B",

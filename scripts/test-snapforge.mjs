@@ -44,12 +44,15 @@ test('wheel identity survives rotated matching, reserve grouping and saved progr
     assert.ok(validPlacedIds(level, ['rotated']));
 });
 
-test('height defaults to one and accepts h3 only for 1×2 pillars', () => {
+test('height defaults to one and accepts compact h4 bricks', () => {
     for (const b of [unit, { ...unit, h: 1 }, { ...unit, h: 2 }, { ...unit, h: 3 }, { ...unit, w: 1, d: 2, h: 3 }]) {
         assert.doesNotThrow(() => validateLevel(heightLevel([b])));
     }
     assert.throws(() => validateLevel(heightLevel([{ ...unit, w: 2, d: 2, h: 3 }])), /h must/);
-    for (const h of [0, -1, 4, 1.5, '2', null, false]) {
+    for (const [w, d] of [[1, 1], [1, 2], [2, 1], [2, 2]])
+        assert.doesNotThrow(() => validateLevel(heightLevel([{ ...unit, w, d, h: 4 }])));
+    assert.throws(() => validateLevel(heightLevel([{ ...unit, w: 3, d: 1, h: 4 }])), /h must/);
+    for (const h of [0, -1, 5, 1.5, '2', null, false]) {
         assert.throws(() => validateLevel(heightLevel([{ ...unit, h }])), /h must be 1 or 2/);
     }
 });

@@ -4,8 +4,8 @@
   "description": "A tall spotted giraffe with a long neck, slender legs, and two little ossicones.",
   "collection": "land-animal",
   "order": 5,
-  "version": 1,
-  "targetParts": 58,
+  "version": 2,
+  "targetParts": 55,
   "palette": {
     "body": "#E1B952",
     "spot": "#91552C",

@@ -4,9 +4,9 @@
   "description": "A broad-eared elephant with a long curling trunk, ivory tusks, and pillar legs.",
   "collection": "land-animal",
   "order": 4,
-  "version": 4,
-  "targetParts": 56,
-  "vetted": 1,
+  "version": 5,
+  "targetParts": 52,
+  "vetted": 0,
   "palette": {
     "body": "#8E9EAA",
     "ear": "#B1BAC0",
@@ -21,7 +21,7 @@
       "z": 0,
       "w": 2,
       "d": 2,
-      "h": 2,
+      "h": 4,
       "color": "body"
     },
     {
@@ -31,7 +31,7 @@
       "z": 0,
       "w": 2,
       "d": 2,
-      "h": 2,
+      "h": 4,
       "color": "body"
     },
     {
@@ -41,7 +41,7 @@
       "z": 0,
       "w": 2,
       "d": 2,
-      "h": 2,
+      "h": 4,
       "color": "body"
     },
     {
@@ -51,31 +51,11 @@
       "z": 0,
       "w": 2,
       "d": 2,
-      "h": 2,
+      "h": 4,
       "color": "body"
     },
     {
       "id": "brick-005",
-      "x": 2,
-      "y": 1,
-      "z": 2,
-      "w": 2,
-      "d": 2,
-      "h": 2,
-      "color": "body"
-    },
-    {
-      "id": "brick-006",
-      "x": 9,
-      "y": 1,
-      "z": 2,
-      "w": 2,
-      "d": 2,
-      "h": 2,
-      "color": "body"
-    },
-    {
-      "id": "brick-007",
       "x": 15,
       "y": 3,
       "z": 2,
@@ -86,27 +66,7 @@
       "attachment": "underside"
     },
     {
-      "id": "brick-008",
-      "x": 2,
-      "y": 5,
-      "z": 2,
-      "w": 2,
-      "d": 2,
-      "h": 2,
-      "color": "body"
-    },
-    {
-      "id": "brick-009",
-      "x": 9,
-      "y": 5,
-      "z": 2,
-      "w": 2,
-      "d": 2,
-      "h": 2,
-      "color": "body"
-    },
-    {
-      "id": "brick-010",
+      "id": "brick-006",
       "x": 0,
       "y": 3,
       "z": 3,
@@ -117,7 +77,7 @@
       "attachment": "underside"
     },
     {
-      "id": "brick-011",
+      "id": "brick-007",
       "x": 15,
       "y": 3,
       "z": 3,
@@ -128,7 +88,7 @@
       "attachment": "underside"
     },
     {
-      "id": "brick-012",
+      "id": "brick-008",
       "x": 17,
       "y": 3,
       "z": 3,
@@ -138,7 +98,7 @@
       "color": "body"
     },
     {
-      "id": "brick-013",
+      "id": "brick-009",
       "x": 2,
       "y": 1,
       "z": 4,
@@ -148,7 +108,7 @@
       "color": "body"
     },
     {
-      "id": "brick-014",
+      "id": "brick-010",
       "x": 9,
       "y": 1,
       "z": 4,
@@ -158,7 +118,7 @@
       "color": "body"
     },
     {
-      "id": "brick-015",
+      "id": "brick-011",
       "x": 0,
       "y": 3,
       "z": 4,
@@ -169,7 +129,7 @@
       "attachment": "underside"
     },
     {
-      "id": "brick-016",
+      "id": "brick-012",
       "x": 2,
       "y": 5,
       "z": 4,
@@ -179,7 +139,7 @@
       "color": "body"
     },
     {
-      "id": "brick-017",
+      "id": "brick-013",
       "x": 9,
       "y": 5,
       "z": 4,
@@ -189,7 +149,7 @@
       "color": "body"
     },
     {
-      "id": "brick-018",
+      "id": "brick-014",
       "x": 15,
       "y": 3,
       "z": 5,
@@ -200,7 +160,7 @@
       "attachment": "underside"
     },
     {
-      "id": "brick-019",
+      "id": "brick-015",
       "x": 10,
       "y": 0,
       "z": 6,
@@ -211,7 +171,7 @@
       "attachment": "underside"
     },
     {
-      "id": "brick-020",
+      "id": "brick-016",
       "x": 1,
       "y": 1,
       "z": 6,
@@ -221,7 +181,7 @@
       "color": "body"
     },
     {
-      "id": "brick-021",
+      "id": "brick-017",
       "x": 0,
       "y": 3,
       "z": 6,
@@ -232,7 +192,7 @@
       "attachment": "underside"
     },
     {
-      "id": "brick-022",
+      "id": "brick-018",
       "x": 10,
       "y": 7,
       "z": 6,
@@ -243,7 +203,7 @@
       "attachment": "underside"
     },
     {
-      "id": "brick-023",
+      "id": "brick-019",
       "x": 15,
       "y": 3,
       "z": 7,
@@ -254,7 +214,7 @@
       "attachment": "underside"
     },
     {
-      "id": "brick-024",
+      "id": "brick-020",
       "x": 2,
       "y": 0,
       "z": 8,
@@ -264,7 +224,7 @@
       "color": "body"
     },
     {
-      "id": "brick-025",
+      "id": "brick-021",
       "x": 3,
       "y": 0,
       "z": 8,
@@ -274,7 +234,7 @@
       "color": "body"
     },
     {
-      "id": "brick-026",
+      "id": "brick-022",
       "x": 10,
       "y": 0,
       "z": 8,
@@ -285,7 +245,7 @@
       "attachment": "underside"
     },
     {
-      "id": "brick-027",
+      "id": "brick-023",
       "x": 10,
       "y": 1,
       "z": 8,
@@ -295,7 +255,7 @@
       "color": "body"
     },
     {
-      "id": "brick-028",
+      "id": "brick-024",
       "x": 0,
       "y": 3,
       "z": 8,
@@ -305,7 +265,7 @@
       "color": "body"
     },
     {
-      "id": "brick-029",
+      "id": "brick-025",
       "x": 2,
       "y": 5,
       "z": 8,
@@ -315,7 +275,7 @@
       "color": "body"
     },
     {
-      "id": "brick-030",
+      "id": "brick-026",
       "x": 10,
       "y": 7,
       "z": 8,
@@ -326,7 +286,7 @@
       "attachment": "underside"
     },
     {
-      "id": "brick-031",
+      "id": "brick-027",
       "x": 2,
       "y": 0,
       "z": 9,
@@ -336,7 +296,7 @@
       "color": "body"
     },
     {
-      "id": "brick-032",
+      "id": "brick-028",
       "x": 10,
       "y": 1,
       "z": 9,
@@ -346,7 +306,7 @@
       "color": "body"
     },
     {
-      "id": "brick-033",
+      "id": "brick-029",
       "x": 13,
       "y": 1,
       "z": 9,
@@ -356,7 +316,7 @@
       "color": "body"
     },
     {
-      "id": "brick-034",
+      "id": "brick-030",
       "x": 14,
       "y": 1,
       "z": 9,
@@ -367,7 +327,7 @@
       "attachment": "underside"
     },
     {
-      "id": "brick-035",
+      "id": "brick-031",
       "x": 13,
       "y": 3,
       "z": 9,
@@ -377,7 +337,7 @@
       "color": "body"
     },
     {
-      "id": "brick-036",
+      "id": "brick-032",
       "x": 13,
       "y": 5,
       "z": 9,
@@ -387,7 +347,7 @@
       "color": "body"
     },
     {
-      "id": "brick-037",
+      "id": "brick-033",
       "x": 14,
       "y": 6,
       "z": 9,
@@ -398,7 +358,7 @@
       "attachment": "underside"
     },
     {
-      "id": "brick-038",
+      "id": "brick-034",
       "x": 10,
       "y": 0,
       "z": 10,
@@ -408,7 +368,7 @@
       "color": "body"
     },
     {
-      "id": "brick-039",
+      "id": "brick-035",
       "x": 3,
       "y": 1,
       "z": 10,
@@ -418,7 +378,7 @@
       "color": "body"
     },
     {
-      "id": "brick-040",
+      "id": "brick-036",
       "x": 13,
       "y": 1,
       "z": 10,
@@ -428,7 +388,7 @@
       "color": "ivory"
     },
     {
-      "id": "brick-041",
+      "id": "brick-037",
       "x": 12,
       "y": 2,
       "z": 10,
@@ -438,7 +398,7 @@
       "color": "body"
     },
     {
-      "id": "brick-042",
+      "id": "brick-038",
       "x": 11,
       "y": 3,
       "z": 10,
@@ -448,7 +408,7 @@
       "color": "body"
     },
     {
-      "id": "brick-043",
+      "id": "brick-039",
       "x": 13,
       "y": 3,
       "z": 10,
@@ -458,7 +418,7 @@
       "color": "body"
     },
     {
-      "id": "brick-044",
+      "id": "brick-040",
       "x": 10,
       "y": 5,
       "z": 10,
@@ -468,7 +428,7 @@
       "color": "body"
     },
     {
-      "id": "brick-045",
+      "id": "brick-041",
       "x": 12,
       "y": 5,
       "z": 10,
@@ -478,7 +438,7 @@
       "color": "body"
     },
     {
-      "id": "brick-046",
+      "id": "brick-042",
       "x": 13,
       "y": 5,
       "z": 10,
@@ -488,7 +448,7 @@
       "color": "ivory"
     },
     {
-      "id": "brick-047",
+      "id": "brick-043",
       "x": 10,
       "y": 0,
       "z": 11,
@@ -498,7 +458,7 @@
       "color": "ear"
     },
     {
-      "id": "brick-048",
+      "id": "brick-044",
       "x": 11,
       "y": 2,
       "z": 11,
@@ -508,47 +468,47 @@
       "color": "body"
     },
     {
+      "id": "brick-045",
+      "x": 13,
+      "y": 2,
+      "z": 11,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark"
+    },
+    {
+      "id": "brick-046",
+      "x": 14,
+      "y": 2,
+      "z": 11,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "body"
+    },
+    {
+      "id": "brick-047",
+      "x": 13,
+      "y": 5,
+      "z": 11,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "dark"
+    },
+    {
+      "id": "brick-048",
+      "x": 14,
+      "y": 5,
+      "z": 11,
+      "w": 1,
+      "d": 1,
+      "h": 1,
+      "color": "body"
+    },
+    {
       "id": "brick-049",
-      "x": 13,
-      "y": 2,
-      "z": 11,
-      "w": 1,
-      "d": 1,
-      "h": 1,
-      "color": "dark"
-    },
-    {
-      "id": "brick-050",
-      "x": 14,
-      "y": 2,
-      "z": 11,
-      "w": 1,
-      "d": 1,
-      "h": 1,
-      "color": "body"
-    },
-    {
-      "id": "brick-051",
-      "x": 13,
-      "y": 5,
-      "z": 11,
-      "w": 1,
-      "d": 1,
-      "h": 1,
-      "color": "dark"
-    },
-    {
-      "id": "brick-052",
-      "x": 14,
-      "y": 5,
-      "z": 11,
-      "w": 1,
-      "d": 1,
-      "h": 1,
-      "color": "body"
-    },
-    {
-      "id": "brick-053",
       "x": 10,
       "y": 6,
       "z": 11,
@@ -558,7 +518,7 @@
       "color": "ear"
     },
     {
-      "id": "brick-054",
+      "id": "brick-050",
       "x": 13,
       "y": 2,
       "z": 12,
@@ -568,7 +528,7 @@
       "color": "body"
     },
     {
-      "id": "brick-055",
+      "id": "brick-051",
       "x": 4,
       "y": 3,
       "z": 12,
@@ -578,7 +538,7 @@
       "color": "body"
     },
     {
-      "id": "brick-056",
+      "id": "brick-052",
       "x": 12,
       "y": 3,
       "z": 13,
@@ -593,57 +553,53 @@
     "brick-002",
     "brick-003",
     "brick-004",
-    "brick-005",
-    "brick-006",
-    "brick-008",
     "brick-009",
+    "brick-010",
+    "brick-012",
     "brick-013",
-    "brick-014",
     "brick-016",
+    "brick-021",
+    "brick-023",
+    "brick-024",
     "brick-017",
+    "brick-011",
+    "brick-006",
     "brick-020",
     "brick-025",
-    "brick-027",
     "brick-028",
-    "brick-021",
-    "brick-015",
-    "brick-010",
-    "brick-024",
+    "brick-027",
+    "brick-031",
+    "brick-019",
+    "brick-014",
+    "brick-007",
+    "brick-005",
+    "brick-008",
     "brick-029",
     "brick-032",
-    "brick-031",
     "brick-035",
-    "brick-023",
-    "brick-018",
-    "brick-011",
-    "brick-007",
-    "brick-012",
-    "brick-033",
-    "brick-036",
-    "brick-039",
-    "brick-038",
-    "brick-026",
-    "brick-019",
-    "brick-043",
-    "brick-044",
-    "brick-030",
-    "brick-022",
-    "brick-040",
     "brick-034",
+    "brick-022",
+    "brick-015",
+    "brick-039",
+    "brick-040",
+    "brick-026",
+    "brick-018",
+    "brick-036",
+    "brick-030",
+    "brick-038",
     "brick-042",
-    "brick-046",
+    "brick-033",
     "brick-037",
     "brick-041",
-    "brick-045",
-    "brick-048",
-    "brick-047",
-    "brick-053",
+    "brick-044",
+    "brick-043",
     "brick-049",
-    "brick-050",
+    "brick-045",
+    "brick-046",
+    "brick-047",
+    "brick-048",
     "brick-051",
-    "brick-052",
-    "brick-055",
-    "brick-054",
-    "brick-056"
+    "brick-050",
+    "brick-052"
   ]
 }

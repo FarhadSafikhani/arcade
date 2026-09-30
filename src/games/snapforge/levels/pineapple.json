@@ -4,9 +4,9 @@
   "description": "A golden oval pineapple with a textured rind and tall spreading pointed green crown.",
   "collection": "fruit",
   "order": 6,
-  "version": 3,
-  "targetParts": 80,
-  "vetted": 1,
+  "version": 4,
+  "targetParts": 78,
+  "vetted": 0,
   "palette": {
     "gold": "#EFAF2C",
     "rind": "#B97427",
@@ -760,7 +760,7 @@
       "z": 20,
       "w": 2,
       "d": 2,
-      "h": 2,
+      "h": 4,
       "color": "green"
     },
     {
@@ -785,16 +785,6 @@
     },
     {
       "id": "brick-078",
-      "x": 4,
-      "y": 4,
-      "z": 22,
-      "w": 2,
-      "d": 2,
-      "h": 2,
-      "color": "green"
-    },
-    {
-      "id": "brick-079",
       "x": 4,
       "y": 4,
       "z": 24,
@@ -882,7 +872,6 @@
     "brick-075",
     "brick-076",
     "brick-077",
-    "brick-078",
-    "brick-079"
+    "brick-078"
   ]
 }

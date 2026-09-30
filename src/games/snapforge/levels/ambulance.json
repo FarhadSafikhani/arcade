@@ -4,9 +4,9 @@
   "description": "A white emergency ambulance with a tall medical compartment, red side crosses, rear doors and roof beacons.",
   "collection": "car",
   "order": 4,
-  "version": 1,
-  "targetParts": 64,
-  "vetted": 1,
+  "version": 2,
+  "targetParts": 63,
+  "vetted": 0,
   "palette": {
     "body": "#F1F3F5",
     "black": "#232733",
@@ -309,7 +309,7 @@
       "z": 5,
       "w": 1,
       "d": 2,
-      "h": 2,
+      "h": 4,
       "color": "silver"
     },
     {
@@ -485,16 +485,6 @@
     {
       "id": "brick-047",
       "x": 16,
-      "y": 3,
-      "z": 7,
-      "w": 1,
-      "d": 2,
-      "h": 2,
-      "color": "silver"
-    },
-    {
-      "id": "brick-048",
-      "x": 16,
       "y": 5,
       "z": 7,
       "w": 1,
@@ -503,7 +493,7 @@
       "color": "glass"
     },
     {
-      "id": "brick-049",
+      "id": "brick-048",
       "x": 8,
       "y": 6,
       "z": 7,
@@ -513,7 +503,7 @@
       "color": "white"
     },
     {
-      "id": "brick-050",
+      "id": "brick-049",
       "x": 11,
       "y": 6,
       "z": 7,
@@ -523,7 +513,7 @@
       "color": "red"
     },
     {
-      "id": "brick-051",
+      "id": "brick-050",
       "x": 14,
       "y": 6,
       "z": 7,
@@ -533,7 +523,7 @@
       "color": "white"
     },
     {
-      "id": "brick-052",
+      "id": "brick-051",
       "x": 4,
       "y": 1,
       "z": 8,
@@ -543,7 +533,7 @@
       "color": "red"
     },
     {
-      "id": "brick-053",
+      "id": "brick-052",
       "x": 11,
       "y": 1,
       "z": 8,
@@ -553,7 +543,7 @@
       "color": "white"
     },
     {
-      "id": "brick-054",
+      "id": "brick-053",
       "x": 12,
       "y": 1,
       "z": 8,
@@ -563,7 +553,7 @@
       "color": "red"
     },
     {
-      "id": "brick-055",
+      "id": "brick-054",
       "x": 13,
       "y": 1,
       "z": 8,
@@ -573,7 +563,7 @@
       "color": "white"
     },
     {
-      "id": "brick-056",
+      "id": "brick-055",
       "x": 4,
       "y": 3,
       "z": 8,
@@ -583,7 +573,7 @@
       "color": "white"
     },
     {
-      "id": "brick-057",
+      "id": "brick-056",
       "x": 4,
       "y": 5,
       "z": 8,
@@ -593,7 +583,7 @@
       "color": "red"
     },
     {
-      "id": "brick-058",
+      "id": "brick-057",
       "x": 11,
       "y": 6,
       "z": 8,
@@ -603,7 +593,7 @@
       "color": "white"
     },
     {
-      "id": "brick-059",
+      "id": "brick-058",
       "x": 12,
       "y": 6,
       "z": 8,
@@ -613,7 +603,7 @@
       "color": "red"
     },
     {
-      "id": "brick-060",
+      "id": "brick-059",
       "x": 13,
       "y": 6,
       "z": 8,
@@ -623,7 +613,7 @@
       "color": "white"
     },
     {
-      "id": "brick-061",
+      "id": "brick-060",
       "x": 8,
       "y": 1,
       "z": 9,
@@ -633,7 +623,7 @@
       "color": "white"
     },
     {
-      "id": "brick-062",
+      "id": "brick-061",
       "x": 16,
       "y": 1,
       "z": 9,
@@ -643,7 +633,7 @@
       "color": "white"
     },
     {
-      "id": "brick-063",
+      "id": "brick-062",
       "x": 16,
       "y": 3,
       "z": 9,
@@ -653,7 +643,7 @@
       "color": "silver"
     },
     {
-      "id": "brick-064",
+      "id": "brick-063",
       "x": 16,
       "y": 5,
       "z": 9,
@@ -709,24 +699,23 @@
     "brick-042",
     "brick-043",
     "brick-044",
+    "brick-048",
     "brick-049",
     "brick-050",
-    "brick-051",
-    "brick-047",
     "brick-046",
-    "brick-048",
-    "brick-052",
+    "brick-047",
+    "brick-051",
+    "brick-055",
     "brick-056",
-    "brick-057",
+    "brick-052",
     "brick-053",
     "brick-054",
-    "brick-055",
+    "brick-057",
     "brick-058",
     "brick-059",
     "brick-060",
     "brick-061",
     "brick-062",
-    "brick-063",
-    "brick-064"
+    "brick-063"
   ]
 }

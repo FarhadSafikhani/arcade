@@ -4,8 +4,8 @@
   "description": "A rose-pink flamingo with long slender legs, folded wings, an S-shaped neck, and a black-tipped downturned bill.",
   "collection": "bird",
   "order": 5,
-  "version": 1,
-  "targetParts": 50,
+  "version": 2,
+  "targetParts": 43,
   "palette": {
     "black": "#202A35",
     "white": "#F7F3E8",

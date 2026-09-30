@@ -54,7 +54,7 @@ function sceneHarness() {
     return scene;
 }
 
-test('height-2 meshes share the original bottom and top bounds with studs only on top', () => {
+test('height-2 and height-4 meshes have full-height bodies with studs only on top', () => {
     const short = brickMesh(unit, '#FFD233');
     const tallBrick = { ...unit, h: 2, z: 3 };
     const level = heightLevel([tallBrick]);
@@ -62,7 +62,8 @@ test('height-2 meshes share the original bottom and top bounds with studs only o
     assert.notEqual(short.children[0].geometry, tall.children[0].geometry);
     assert.equal(tall.children.length, 1 + unit.w * unit.d);
     assert.equal(brickPosition(tallBrick, level).y, 4 * BRICK_HEIGHT);
-    for (const [mesh, h] of [[short, 1], [tall, 2]]) {
+    const taller = brickMesh({ ...unit, h: 4, z: 3 }, '#FFD233');
+    for (const [mesh, h] of [[short, 1], [tall, 2], [taller, 4]]) {
         const body = mesh.children[0];
         body.geometry.computeBoundingBox();
         const size = body.geometry.boundingBox.getSize(new THREE.Vector3());
@@ -115,21 +116,21 @@ test('wheel meshes have round tires and hubs in both orientations, including gho
     } finally { world.free(); }
 });
 
-test('height-2 pile colliders match the tall body and rest above the floor', async () => {
+test('height-4 pile colliders match the tall body and rest above the floor', async () => {
     const { default: RAPIER } = await import('@dimforge/rapier3d-compat');
     await RAPIER.init();
     const world = new RAPIER.World({ x: 0, y: -19, z: 0 });
     try {
         world.createCollider(RAPIER.ColliderDesc.cuboid(10, 0.1, 10).setTranslation(0, -0.1, 0));
-        const brick = { ...unit, h: 2 };
+        const brick = { ...unit, h: 4 };
         const scene = Object.create(SnapScene3D.prototype);
         Object.assign(scene, { world, level: heightLevel([brick]), order: [brick],
             loose: new Map(), pileScene: new THREE.Scene() });
         scene.spawnLoose(brick, false, new THREE.Vector3(0, 3, 0));
         const body = scene.loose.get(brick.id).body;
-        assert.ok(Math.abs(body.collider(0).halfExtents().y - BRICK_HEIGHT) < 1e-6);
+        assert.ok(Math.abs(body.collider(0).halfExtents().y - 2 * BRICK_HEIGHT) < 1e-6);
         for (let i = 0; i < 240; i++) world.step();
-        assert.ok(Math.abs(body.translation().y - BRICK_HEIGHT) < 0.04);
+        assert.ok(Math.abs(body.translation().y - 2 * BRICK_HEIGHT) < 0.04);
     } finally {
         world.free();
     }

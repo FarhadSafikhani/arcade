@@ -4,8 +4,8 @@
   "description": "A white emergency ambulance with a tall medical compartment, red side crosses, rear doors and roof beacons.",
   "collection": "car",
   "order": 4,
-  "version": 1,
-  "targetParts": 64,
+  "version": 2,
+  "targetParts": 63,
   "palette": {
     "body": "#F1F3F5",
     "black": "#232733",

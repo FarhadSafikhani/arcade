@@ -4,8 +4,8 @@
   "description": "A proud golden lion with a rounded layered mane, raised face, chunky paws, and a tufted tail.",
   "collection": "land-animal",
   "order": 3,
-  "version": 2,
-  "targetParts": 40,
+  "version": 3,
+  "targetParts": 39,
   "palette": {
     "body": "#DDA746",
     "mane": "#824A2C",

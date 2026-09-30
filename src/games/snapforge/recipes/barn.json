@@ -4,8 +4,8 @@
   "description": "A long red gambrel-roof barn with white cross-braced hayloft doors.",
   "collection": "farm",
   "order": 5,
-  "version": 3,
-  "targetParts": 92,
+  "version": 4,
+  "targetParts": 87,
   "palette": {
     "red": "#B93934",
     "door": "#852E2A",

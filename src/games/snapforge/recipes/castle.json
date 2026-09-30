@@ -4,8 +4,8 @@
   "description": "A classic four-towered stone castle with an open gate, crenellated walls, and a raised central keep.",
   "collection": "landmarks",
   "order": 3,
-  "version": 3,
-  "targetParts": 83,
+  "version": 4,
+  "targetParts": 79,
   "palette": {
     "stone": "#A6AAB0",
     "roof": "#646E7B",

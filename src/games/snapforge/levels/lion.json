@@ -4,9 +4,9 @@
   "description": "A proud golden lion with a rounded layered mane, raised face, chunky paws, and a tufted tail.",
   "collection": "land-animal",
   "order": 3,
-  "version": 2,
-  "targetParts": 40,
-  "vetted": 1,
+  "version": 3,
+  "targetParts": 39,
+  "vetted": 0,
   "palette": {
     "body": "#DDA746",
     "mane": "#824A2C",
@@ -214,7 +214,7 @@
       "z": 7,
       "w": 1,
       "d": 2,
-      "h": 2,
+      "h": 4,
       "color": "mane"
     },
     {
@@ -234,7 +234,7 @@
       "z": 7,
       "w": 1,
       "d": 2,
-      "h": 2,
+      "h": 4,
       "color": "mane"
     },
     {
@@ -269,16 +269,6 @@
     },
     {
       "id": "brick-026",
-      "x": 11,
-      "y": 0,
-      "z": 9,
-      "w": 1,
-      "d": 2,
-      "h": 2,
-      "color": "mane"
-    },
-    {
-      "id": "brick-027",
       "x": 12,
       "y": 2,
       "z": 9,
@@ -288,7 +278,7 @@
       "color": "body"
     },
     {
-      "id": "brick-028",
+      "id": "brick-027",
       "x": 13,
       "y": 2,
       "z": 9,
@@ -298,17 +288,7 @@
       "color": "cream"
     },
     {
-      "id": "brick-029",
-      "x": 11,
-      "y": 6,
-      "z": 9,
-      "w": 1,
-      "d": 2,
-      "h": 2,
-      "color": "mane"
-    },
-    {
-      "id": "brick-030",
+      "id": "brick-028",
       "x": 11,
       "y": 2,
       "z": 10,
@@ -318,7 +298,7 @@
       "color": "body"
     },
     {
-      "id": "brick-031",
+      "id": "brick-029",
       "x": 13,
       "y": 2,
       "z": 10,
@@ -328,7 +308,7 @@
       "color": "body"
     },
     {
-      "id": "brick-032",
+      "id": "brick-030",
       "x": 14,
       "y": 3,
       "z": 10,
@@ -338,7 +318,7 @@
       "color": "dark"
     },
     {
-      "id": "brick-033",
+      "id": "brick-031",
       "x": 8,
       "y": 1,
       "z": 11,
@@ -348,7 +328,7 @@
       "color": "mane"
     },
     {
-      "id": "brick-034",
+      "id": "brick-032",
       "x": 11,
       "y": 1,
       "z": 11,
@@ -358,7 +338,7 @@
       "color": "mane"
     },
     {
-      "id": "brick-035",
+      "id": "brick-033",
       "x": 13,
       "y": 2,
       "z": 11,
@@ -368,7 +348,7 @@
       "color": "dark"
     },
     {
-      "id": "brick-036",
+      "id": "brick-034",
       "x": 13,
       "y": 3,
       "z": 11,
@@ -378,7 +358,7 @@
       "color": "body"
     },
     {
-      "id": "brick-037",
+      "id": "brick-035",
       "x": 13,
       "y": 5,
       "z": 11,
@@ -388,7 +368,7 @@
       "color": "dark"
     },
     {
-      "id": "brick-038",
+      "id": "brick-036",
       "x": 11,
       "y": 6,
       "z": 11,
@@ -398,7 +378,7 @@
       "color": "mane"
     },
     {
-      "id": "brick-039",
+      "id": "brick-037",
       "x": 11,
       "y": 1,
       "z": 12,
@@ -408,7 +388,7 @@
       "color": "mane"
     },
     {
-      "id": "brick-040",
+      "id": "brick-038",
       "x": 10,
       "y": 1,
       "z": 13,
@@ -418,7 +398,7 @@
       "color": "body"
     },
     {
-      "id": "brick-041",
+      "id": "brick-039",
       "x": 10,
       "y": 5,
       "z": 13,
@@ -454,21 +434,19 @@
     "brick-024",
     "brick-023",
     "brick-025",
-    "brick-028",
     "brick-027",
     "brick-026",
+    "brick-028",
     "brick-029",
     "brick-030",
     "brick-031",
+    "brick-034",
     "brick-032",
     "brick-033",
-    "brick-036",
-    "brick-034",
     "brick-035",
+    "brick-036",
     "brick-037",
     "brick-038",
-    "brick-039",
-    "brick-040",
-    "brick-041"
+    "brick-039"
   ]
 }
