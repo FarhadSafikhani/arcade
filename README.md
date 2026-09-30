@@ -13,6 +13,16 @@ npm run dev
 npm run build
 npm run preview
 
-#to deploy to GH Pages on https://farhadsafikhani.github.io/arcade/
+## Deploy to GitHub Pages
+
+`npm run deploy` bumps the patch version (or reuses an uncommitted version bump),
+builds the site, commits all pending changes, pushes the current branch to `origin`,
+and publishes `dist` to the `gh-pages` branch.
+
+Snapforge recipe compilation is skipped during builds when its recipes, generated
+levels, and compiler inputs have not changed. The site still needs a Vite build to
+include other source changes and the new version.
+
+https://farhadsafikhani.github.io/arcade/
 npm run deploy
 

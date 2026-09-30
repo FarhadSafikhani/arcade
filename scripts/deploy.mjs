@@ -2,7 +2,10 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
 function run(command, args, options = {}) {
-    const result = spawnSync(command, args, { stdio: 'inherit', shell: process.platform === 'win32' && command === 'npm', ...options });
+    const windowsNpm = process.platform === 'win32' && command === 'npm';
+    const result = windowsNpm
+        ? spawnSync(`npm ${args.join(' ')}`, { stdio: 'inherit', shell: true, ...options })
+        : spawnSync(command, args, { stdio: 'inherit', ...options });
     if (result.error) throw result.error;
     if (result.status !== 0) throw new Error(`${command} ${args.join(' ')} failed (${result.status})`);
 }
