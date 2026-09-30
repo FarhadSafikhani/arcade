@@ -4,7 +4,7 @@
   "description": "A round red apple with a little top dip, brown stem, and green leaf.",
   "collection": "starter",
   "order": 2,
-  "version": 3,
+  "version": 4,
   "targetParts": 30,
   "palette": {
     "red": "#E34239",

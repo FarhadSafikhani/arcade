@@ -139,8 +139,8 @@ test('redesigned apple reproduces its recipe, preserves the sculpt, and mirrors 
     assert.equal(report.withinBudget, true);
     assert.equal(level.targetParts, 30);
     assert.equal(level.order, 2);
-    assert.equal(level.version, 3);
-    assert.equal(level.vetted, 1);
+    assert.equal(level.version, 4);
+    assert.equal(level.vetted, 0);
     const expected = [...expandRecipe(recipe)].map(([key, c]) => `${key}:${c.color}`).sort();
     assert.deepEqual(level.bricks.flatMap(b => brickCells(b).map(key => `${key}:${b.color}`)).sort(), expected);
     for (const b of level.bricks) assert.ok(level.bricks.some(other => other.x === b.x && other.y === 8 - b.y - b.d &&
@@ -154,7 +154,7 @@ test('metadata and authored build sequences validate; legacy ordering remains un
     for (const sequence of [[], [turtle.bricks[0].id], turtle.bricks.map(() => turtle.bricks[0].id)])
         assert.throws(() => validateLevel({ ...turtle, buildSequence: sequence }), /buildSequence/);
     assert.throws(() => validateLevel({ ...turtle, buildSequence: [...turtle.buildSequence].reverse() }), /before its support/);
-    const legacy = JSON.parse(readFileSync(new URL('../src/games/snapforge/levels/chick.json', import.meta.url)));
+    const legacy = { ...turtle, buildSequence: undefined, bricks: [...turtle.bricks].reverse() };
     assert.deepEqual(buildOrder(legacy), [...legacy.bricks].sort((a, b) => a.z - b.z || a.x + a.y - b.x - b.y || a.y - b.y || a.id.localeCompare(b.id)));
 });
 
@@ -257,6 +257,41 @@ test('matching vertical stacks become h4 parts without changing occupied cells',
         assert.equal(level.bricks[0].h, 4);
         assert.deepEqual(brickCells(level.bricks[0]).sort(), [...expandRecipe(input).keys()].sort());
     }
+});
+
+test('h4 consolidation preserves protected volume boundaries', () => {
+    for (const topProtected of [true, false]) {
+        const input = recipe([box('bottom', 0, 0, 0, 2, 2, 2, { protected: true }),
+            box('top', 0, 0, 2, 2, 2, 2, { protected: topProtected })], { targetParts: 2 });
+        const { level } = compileRecipe(input);
+        assert.equal(level.bricks.length, 2);
+        assert.deepEqual(level.bricks.map(b => b.h), [2, 2]);
+        assert.deepEqual(level.bricks.flatMap(brickCells).sort(), [...expandRecipe(input).keys()].sort());
+    }
+});
+
+test('h4 consolidation preserves mirrored seams when protected partitions differ', () => {
+    const input = recipe([
+        box('base', 0, 0, 0, 2, 1, 1, { color: 'eye' }),
+        box('left', 0, 0, 1, 1, 1, 4, { protected: true }),
+        box('right-bottom', 1, 0, 1, 1, 1, 2, { protected: true }),
+        box('right-top', 1, 0, 3, 1, 1, 2, { protected: true })
+    ], { symmetry: { axis: 'x', plane: 1 }, targetParts: 5 });
+    const { level } = compileRecipe(input);
+    assert.equal(level.bricks.length, 5);
+    for (const b of level.bricks) assert.ok(level.bricks.some(other => other.x === 2 - b.x - b.w &&
+        other.y === b.y && other.z === b.z && other.w === b.w && other.d === b.d && other.h === b.h));
+});
+
+test('packing alternatives are scored after h4 consolidation', () => {
+    const heights = [6, 5, 4, 6, 1, 1, 2, 6, 2];
+    const input = recipe(heights.map((h, i) => box(`column-${i}`, i % 3, Math.floor(i / 3), 0, 1, 1, h)),
+        { targetParts: 6 });
+    const { level, report } = compileRecipe(input);
+    assert.equal(level.bricks.length, 8, 'do not discard the cheaper final packing');
+    assert.equal(report.withinBudget, true);
+    assert.deepEqual(level.bricks.flatMap(brickCells).sort(), [...expandRecipe(input).keys()].sort());
+    assert.deepEqual(compileRecipe(input, level).level, level);
 });
 
 test('explicit h3 pillars stay atomic in supported footprints and support upper bricks', () => {

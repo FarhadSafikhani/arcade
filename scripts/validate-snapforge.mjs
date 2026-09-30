@@ -37,9 +37,9 @@ for (const file of targets) {
 }
 if (!files.length) {
     const expected = new Map([['starter', 5], ['farm', 5], ['land-animal', 6], ['fruit', 6], ['bird', 7],
-        ['car', 6], ['landmarks', 7], ['ocean', 6], ['dinosaur', 3]]);
+        ['car', 6], ['landmarks', 7], ['ocean', 6], ['dinosaur', 0]]);
     for (const [collection, count] of expected)
-        if (collectionCounts.get(collection) !== count) {
+        if ((collectionCounts.get(collection) ?? 0) !== count) {
             failed = true;
             console.error(`✗ ${collection}: expected ${count} models, found ${collectionCounts.get(collection) ?? 0}`);
         }

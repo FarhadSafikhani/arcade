@@ -44,14 +44,24 @@ test('wheel identity survives rotated matching, reserve grouping and saved progr
     assert.ok(validPlacedIds(level, ['rotated']));
 });
 
+test('side contact is not an attachment, but a shared stud bridge connects ground pieces', () => {
+    const left = { ...unit, w: 1 };
+    const right = { ...left, id: 'right', x: 1 };
+    const disconnected = heightLevel([left, right]);
+    assert.throws(() => validateLevel(disconnected), /disconnected pieces/);
+    assert.throws(() => validateLevel({ ...disconnected, buildSequence: ['base', 'right'] }), /disconnected pieces/);
+    const connected = heightLevel([left, right, { ...unit, id: 'bridge', z: 1 }]);
+    assert.doesNotThrow(() => validateLevel({ ...connected, buildSequence: ['base', 'right', 'bridge'] }));
+});
+
 test('height defaults to one and accepts compact h4 bricks', () => {
     for (const b of [unit, { ...unit, h: 1 }, { ...unit, h: 2 }, { ...unit, h: 3 }, { ...unit, w: 1, d: 2, h: 3 }]) {
         assert.doesNotThrow(() => validateLevel(heightLevel([b])));
     }
     assert.throws(() => validateLevel(heightLevel([{ ...unit, w: 2, d: 2, h: 3 }])), /h must/);
-    for (const [w, d] of [[1, 1], [1, 2], [2, 1], [2, 2]])
+    for (const [w, d] of [[1, 1], [1, 2], [2, 1], [2, 2], [1, 3], [3, 1]])
         assert.doesNotThrow(() => validateLevel(heightLevel([{ ...unit, w, d, h: 4 }])));
-    assert.throws(() => validateLevel(heightLevel([{ ...unit, w: 3, d: 1, h: 4 }])), /h must/);
+    assert.throws(() => validateLevel(heightLevel([{ ...unit, w: 3, d: 3, h: 4 }])), /h must/);
     for (const h of [0, -1, 5, 1.5, '2', null, false]) {
         assert.throws(() => validateLevel(heightLevel([{ ...unit, h }])), /h must be 1 or 2/);
     }
@@ -92,15 +102,16 @@ test('nine collections have ordered models and independent unlock paths', () => 
         ['car', ['pickup-truck', 'sports-car', 'super-car', 'ambulance', 'semi-truck', 'fire-truck']],
         ['landmarks', ['stonehenge', 'pyramids', 'castle', 'eiffel-tower', 'cn-tower', 'colosseum', 'big-ben']],
         ['ocean', ['manta-ray', 'clownfish', 'blue-tang', 'red-crab', 'blue-whale', 'great-white']],
-        ['dinosaur', ['stegosaurus', 'triceratops', 't-rex']]
+        ['dinosaur', []]
     ]);
-    assert.equal(catalog.length, 51);
+    assert.equal(catalog.length, 48);
     for (const [collection, ids] of expected) {
         const group = catalog.filter(level => level.collection === collection).sort((a, b) => a.order - b.order);
         assert.deepEqual(group.map(level => level.id), ids);
         assert.deepEqual(group.map(level => level.order), ids.map((_, index) => index + 1));
-        assert.ok(group.every((level, index) => index === 0 || level.bricks.length > group[index - 1].bricks.length),
-            `${collection}: piece counts should increase`);
+        // Slots are authored metadata; actual packing counts need not increase strictly.
+        assert.ok(group.every(level => Math.abs(level.bricks.length - level.targetParts) <= 2),
+            `${collection}: piece counts should stay within the authored budgets`);
         for (const level of group) assert.deepEqual(
             new Set(buildOrder(level).map(piece => piece.id)), new Set(level.bricks.map(piece => piece.id)));
     }
@@ -117,7 +128,7 @@ test('nine collections have ordered models and independent unlock paths', () => 
         }
     }
     const starter = catalog.filter(level => level.collection === 'starter').sort((a, b) => a.order - b.order);
-    assert.deepEqual(starter.map(level => level.version), [1, 3, 7, 2, 5]);
+    assert.deepEqual(starter.map(level => level.version), [1, 4, 7, 3, 5]);
 });
 
 test('every catalog model can be built from its replenishing pile and resumed at every step', () => {

@@ -5,7 +5,7 @@ import ts from 'typescript';
 
 const source = readFileSync(new URL('../src/games/snapforge/level.ts', import.meta.url), 'utf8');
 const js = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext } }).outputText;
-const { validateLevel, supportIds } = await import(`data:text/javascript;base64,${Buffer.from(js).toString('base64')}`);
+const { validateLevel, supportIds, validateAttachments } = await import(`data:text/javascript;base64,${Buffer.from(js).toString('base64')}`);
 const key = (x, y, z) => `${x},${y},${z}`;
 const shapeKey = b => [b.x, b.y, b.z, b.w, b.d, b.h ?? 1, b.color, b.kind ?? 'brick'].join(':') + (b.attachment ? `:${b.attachment}` : '');
 const size = b => b.w * b.d * (b.h ?? 1);
@@ -51,7 +51,7 @@ export function expandRecipe(recipe) {
         if (volume.pillar !== undefined && (volume.pillar !== true || volume.kind === 'wheel' || volume.h !== 3 ||
             !((Math.min(volume.w, volume.d) === 1 && Math.max(volume.w, volume.d) === 2) ||
                 (volume.w === 3 && volume.d === 3))))
-            throw new Error(`${volume.name}: pillar must be 1�2 h3 (or rotated) or 3�3 h3`);
+            throw new Error(`${volume.name}: pillar must be 1×2 h3 (or rotated) or 3×3 h3`);
         for (const cell of brickCells(volume)) {
             if (cells.get(cell)?.part || ((volume.kind === 'wheel' || volume.pillar) && cells.has(cell)))
                 throw new Error(`${volume.name}: atomic parts cannot overlap or be overlaid`);
@@ -146,8 +146,7 @@ function pack(candidates, cells) {
     }
     return remaining.size ? null : result;
 }
-function cost(groups) {
-    const bricks = groups.flatMap(g => g.bricks);
+function cost(bricks) {
     return [bricks.length, bricks.reduce((n, b) => n + 2 * (b.w * b.d + b.w * b.h + b.d * b.h), 0),
         bricks.filter(b => !standardSize(b)).length];
 }
@@ -157,28 +156,40 @@ function better(a, b) {
     for (let i = 0; i < ca.length; i++) if (ca[i] !== cb[i]) return ca[i] < cb[i];
     return false;
 }
-function repack(groups, alternatives) {
-    // Many candidate rectangles select the same neighborhood. Its search depends
-    // only on these immutable groups, so an unchanged result stays unchanged.
-    const unchanged = new Set();
+function searchContext(alternatives) {
+    const byAnchor = new Map();
+    for (const candidate of alternatives[0]) {
+        const anchor = candidate.keys[0];
+        if (!byAnchor.has(anchor)) byAnchor.set(anchor, []);
+        byAnchor.get(anchor).push(candidate);
+    }
+    return { byAnchor, ranks: alternatives.map(ordered => new Map(ordered.map((c, i) => [c, i]))),
+        // Share immutable neighborhoods across attempts, never across recipes.
+        unchanged: new Set() };
+}
+function repack(groups, alternatives, { byAnchor, ranks, unchanged }) {
+    const owner = new Map(groups.flatMap(g => g.keys.map(k => [k, g])));
     // Repack small overlapping neighborhoods, including their mirrored partners.
     // Strictly decreasing cost and bounded passes keep authoring repeatable and finite.
     for (let pass = 0; pass < 3; pass++) {
         let improved = false;
         for (const candidate of alternatives[0]) {
-            const wanted = new Set(candidate.keys);
-            const local = groups.filter(g => g.keys.some(k => wanted.has(k)));
+            const local = [...new Set(candidate.keys.map(k => owner.get(k)))];
             if (local.length < 2 || local.flatMap(g => g.bricks).length > 8) continue;
-            const neighborhood = local.map(g => g.id).join('\n');
+            const neighborhood = local.map(g => g.id).sort().join('\n');
             if (unchanged.has(neighborhood)) continue;
             const region = new Set(local.flatMap(g => g.keys));
+            // A contained candidate must have its first cell in this region.
+            const allowed = [...region].flatMap(k => byAnchor.get(k) ?? [])
+                .filter(c => c.keys.every(k => region.has(k)));
             let replacement = local;
-            for (const ordered of alternatives) {
-                const packed = pack(ordered.filter(c => c.keys.every(k => region.has(k))), region);
-                if (packed && better(packed, replacement)) replacement = packed;
+            for (const rank of ranks) {
+                const packed = pack([...allowed].sort((a, b) => rank.get(a) - rank.get(b)), region);
+                if (packed && better(packed.flatMap(g => g.bricks), replacement.flatMap(g => g.bricks))) replacement = packed;
             }
             if (replacement !== local) {
                 groups = [...groups.filter(g => !local.includes(g)), ...replacement];
+                for (const group of replacement) for (const k of group.keys) owner.set(k, group);
                 improved = true;
             } else unchanged.add(neighborhood);
         }
@@ -191,12 +202,7 @@ function assembly(bricks) {
     const occupied = new Map(bricks.flatMap(b => brickCells(b).map(k => [k, b.id])));
     const byId = new Map(bricks.map(b => [b.id, b]));
     const below = b => supportIds(b, occupied, byId);
-    // Only studs or an explicit wheel axle count as connections.
-    const links = new Map(bricks.map(b => [b.id, new Set()]));
-    for (const b of bricks) for (const id of below(b)) { links.get(b.id).add(id); links.get(id).add(b.id); }
-    const seen = new Set(), queue = [bricks[0].id];
-    while (queue.length) { const id = queue.pop(); if (seen.has(id)) continue; seen.add(id); queue.push(...links.get(id)); }
-    if (seen.size !== bricks.length) throw new Error(`Support failure: model needs stud connections between all pieces, not just touching sides; separate pieces: ${bricks.filter(b => !seen.has(b.id)).map(b => `${b.id} (${b.x},${b.y},${b.z}; ${b.w}×${b.d}×${b.h})`).join(', ')}`);
+    validateAttachments(bricks, occupied, byId);
     const placed = new Set(), sequence = [], remaining = [...bricks];
     while (remaining.length) {
         const eligible = remaining.filter(b => (b.z === 0 && b.attachment !== 'underside') || [...below(b)].some(id => placed.has(id)));
@@ -212,22 +218,22 @@ export function compileRecipe(recipe, previous) {
     const cells = expandRecipe(recipe);
     const candidates = candidatesFor(cells, recipe.symmetry);
     const alternatives = [0, 1, 2, 3].map(mode => sortedCandidates(candidates, mode));
+    const context = searchContext(alternatives);
     let best, bestSequence, failure = 'Support failure: no complete supported, symmetric packing';
     for (const ordered of alternatives) {
         const packed = pack(ordered, cells.keys());
         if (!packed) continue;
-        const optimized = repack(packed, alternatives);
+        const optimized = repack(packed, alternatives, context);
         for (const option of [optimized, packed]) {
-            const bricks = numbered(option);
+            const bricks = mergeHeightFourStacks(numbered(option), cells, recipe.symmetry);
             try {
                 const sequence = assembly(bricks);
-                if (better(option, best)) { best = option; bestSequence = sequence; }
+                if (better(bricks, best)) { best = bricks; bestSequence = sequence; }
             } catch (error) { failure = error.message; }
         }
     }
     if (!best) throw new Error(failure);
-    const bricks = mergeHeightFourStacks(numbered(best));
-    bestSequence = assembly(bricks);
+    const bricks = best;
     const level = { id: recipe.id, title: recipe.title, description: recipe.description,
         collection: recipe.collection, order: recipe.order, version: recipe.version,
         targetParts: recipe.targetParts, vetted: 0, palette: recipe.palette, bricks, buildSequence: bestSequence };
@@ -250,23 +256,48 @@ function numbered(groups) {
     return groups.flatMap(g => g.bricks).sort((a, b) => a.z - b.z || a.y - b.y || a.x - b.x || shapeKey(a).localeCompare(shapeKey(b)))
         .map((b, index) => ({ id: `brick-${String(index + 1).padStart(3, '0')}`, ...b }));
 }
-export function mergeHeightFourStacks(bricks) {
+export function mergeHeightFourStacks(bricks, cells, symmetry) {
     const result = bricks.map(b => ({ ...b }));
-    for (const bottom of [...result].sort((a, b) => a.z - b.z)) {
-        if (!result.includes(bottom) || bottom.kind === 'wheel' || bottom.attachment ||
-            !((bottom.w <= 2 && bottom.d <= 2) || (Math.min(bottom.w, bottom.d) === 1 && Math.max(bottom.w, bottom.d) === 3)) || bottom.h > 2) continue;
+    const compatible = (a, b) => {
+        if (!cells) return true;
+        const first = cells.get(key(a.x, a.y, a.z));
+        return brickCells(b).every(k => {
+            const cell = cells.get(k);
+            return cell && !cell.part && cell.region === first.region && cell.exception === first.exception;
+        });
+    };
+    const stackAt = bottom => {
+        if (!bottom || bottom.kind === 'wheel' || bottom.attachment ||
+            !((bottom.w <= 2 && bottom.d <= 2) || (Math.min(bottom.w, bottom.d) === 1 && Math.max(bottom.w, bottom.d) === 3)) || bottom.h > 2) return null;
         const stack = [bottom];
         let height = bottom.h;
         while (height < 4) {
             const next = result.find(b => b !== bottom && !stack.includes(b) && b.kind !== 'wheel' && !b.attachment &&
                 b.x === bottom.x && b.y === bottom.y && b.w === bottom.w && b.d === bottom.d &&
-                b.color === bottom.color && b.z === bottom.z + height && b.h <= 2);
+                b.color === bottom.color && b.z === bottom.z + height && b.h <= 2 && compatible(bottom, b));
             if (!next) break;
             stack.push(next); height += next.h;
         }
-        if (height !== 4 || stack.length < 2) continue;
-        bottom.h = 4;
-        for (const part of stack.slice(1)) result.splice(result.indexOf(part), 1);
+        return height === 4 && stack.length >= 2 ? stack : null;
+    };
+    for (const bottom of [...result].sort((a, b) => a.z - b.z)) {
+        if (!result.includes(bottom)) continue;
+        const stack = stackAt(bottom);
+        if (!stack) continue;
+        const stacks = [stack];
+        if (symmetry && !cells.get(key(bottom.x, bottom.y, bottom.z)).exception) {
+            const reflected = shapeKey(mirror(bottom, symmetry));
+            if (reflected !== shapeKey(bottom)) {
+                const partner = stackAt(result.find(b => shapeKey(b) === reflected));
+                // Both sides must admit the same merge without crossing protected boundaries.
+                if (!partner) continue;
+                stacks.push(partner);
+            }
+        }
+        for (const parts of stacks) {
+            parts[0].h = 4;
+            for (const part of parts.slice(1)) result.splice(result.indexOf(part), 1);
+        }
     }
     return result.sort((a, b) => a.z - b.z || a.y - b.y || a.x - b.x)
         .map((b, index) => ({ ...b, id: `brick-${String(index + 1).padStart(3, '0')}` }));

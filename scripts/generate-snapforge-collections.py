@@ -145,36 +145,4 @@ m.save()
 
 # Ocean models are recipe-authored; retired Fish, Sea Turtle, and Shark stay removed.
 
-def dino(id, title, order, body, accent, kind):
-    m = Model(id, title, 'dinosaur', order, f'Build a {title.lower()} from colorful bricks.',
-              dict(body=body, accent=accent, dark='#26364A', belly='#D5D7A5', horn='#EFE3B5'))
-    if kind == 't-rex':
-        m.box(3, 13, 2, 7, 3, 7, 'body')
-        for x in (4, 9):
-            for y in (2, 6): m.box(x, x+2, y, y+1, 0, 4, 'body')
-        m.box(0, 4, 3, 6, 1, 5, 'body').box(0, 2, 3, 6, 0, 3, 'body')
-        m.box(10, 13, 3, 6, 5, 9, 'body').box(11, 14, 3, 6, 7, 10, 'body')
-        m.box(12, 14, 3, 6, 7, 8, 'belly').box(13, 15, 3, 6, 8, 9, 'body')
-        m.box(12, 13, 3, 4, 9, 10, 'dark').box(12, 13, 5, 6, 9, 10, 'dark')
-        m.box(9, 12, 1, 3, 4, 6, 'body').box(9, 12, 6, 8, 4, 6, 'body')
-        m.box(4, 9, 2, 3, 6, 7, 'accent').box(4, 9, 6, 7, 6, 7, 'accent')
-        return m
-    m.box(3, 10, 2, 7, 3, 7, 'body')
-    for x in (4, 8):
-        for y in (2, 6): m.box(x, x+2, y, y+1, 0, 4, 'body')
-    m.box(9, 12, 3, 6, 5, 9, 'body').box(11, 14, 3, 6, 7, 9, 'body')
-    m.box(12, 13, 2, 3, 8, 9, 'dark').box(12, 13, 6, 7, 8, 9, 'dark')
-    m.box(1, 4, 3, 6, 3, 6, 'body').box(0, 2, 3, 6, 2, 4, 'body')
-    if kind == 'stegosaurus':
-        for x, top in ((3, 9), (5, 10), (7, 11), (9, 10)):
-            m.box(x, x+2, 3, 6, 7, top, 'accent')
-        m.box(0, 2, 2, 3, 2, 4, 'accent')
-    elif kind == 'triceratops':
-        m.box(9, 12, 2, 7, 8, 10, 'accent')
-        m.box(11, 12, 2, 3, 9, 11, 'horn').box(11, 12, 6, 7, 9, 11, 'horn')
-        m.box(13, 14, 4, 5, 8, 10, 'horn')
-    return m
-
-dino('stegosaurus', 'Stegosaurus', 1, '#90B86D', '#E7A86D', 'stegosaurus').save()
-dino('triceratops', 'Triceratops', 2, '#A0A17C', '#C58D68', 'triceratops').save()
-dino('t-rex', 'T. rex', 3, '#739B64', '#B6B962', 't-rex').save()
+# Retired dinosaur models will be remade as recipes. Do not regenerate them.

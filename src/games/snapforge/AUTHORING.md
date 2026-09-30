@@ -28,7 +28,7 @@ Wheel volumes use `kind: "wheel"` and a 3Ã—1Ã—3 footprint, or 1Ã—3Ã—3 when rotat
 
 ## Compiler and generated levels
 
-The compiler preserves recipe cells, colors, protected boundaries, and declared symmetry while packing rectangles of height 1 or 2, then consolidating exact vertical stacks into 1×1, 1×2, or 2×2 h4 parts. It requires a connected stud graph and prefers fewer pieces, then less seam area, then fewer unusual sizes. Its search is deterministic but does not prove a global minimum. A merge suggestion may still be blocked by symmetry, a protected boundary, or construction order.
+The compiler preserves recipe cells, colors, protected boundaries, and declared symmetry while packing rectangles of height 1 or 2, then consolidating exact vertical stacks into 1×1, 1×2, or 2×2 h4 parts. Stack consolidation retains protected boundaries and mirrored seams. It requires a connected stud graph and compares the final consolidated packings by piece count, then seam area, then unusual sizes. Its search is deterministic but does not prove a global minimum. A merge suggestion may still be blocked by symmetry, a protected boundary, or construction order.
 
 Generated levels contain the recipe metadata, `vetted: 0 | 1`, `bricks`, and `buildSequence`. Each brick has an ID, position, dimensions, color, and optional `kind` or `attachment`. Ordinary brick height defaults to 1 and is 1 or 2, with h4 on 1×1, 1×2, and 2×2 stacks and h3 allowed for 1×2 pillars; wheels have height 3. A rotated rectangle of the same color, height, and kind is interchangeable during play. Occupied cells cannot overlap, and raised bricks need a valid attachment.
 

@@ -54,6 +54,24 @@ export function supportIds(brick: SnapBrick, occupied: Map<string, string>, byId
     return ids;
 }
 
+/** Connectivity uses studs and axles, never ordinary side contact. */
+export function validateAttachments(bricks: SnapBrick[], occupied: Map<string, string>, byId: Map<string, SnapBrick>): void {
+    const links = new Map(bricks.map(brick => [brick.id, new Set<string>()]));
+    for (const brick of bricks) for (const id of Array.from(supportIds(brick, occupied, byId))) {
+        links.get(brick.id)!.add(id);
+        links.get(id)!.add(brick.id);
+    }
+    const seen = new Set<string>(), queue = [bricks[0].id];
+    while (queue.length) {
+        const id = queue.pop()!;
+        if (seen.has(id)) continue;
+        seen.add(id);
+        queue.push(...Array.from(links.get(id)!));
+    }
+    if (seen.size !== bricks.length)
+        throw new Error(`Support failure: model has disconnected pieces; needs stud or axle connections, not just touching sides: ${bricks.filter(b => !seen.has(b.id)).map(b => b.id).join(', ')}`);
+}
+
 export function validateLevel(input: unknown): SnapLevel {
     if (!isRecord(input)) throw new Error('Level must be a JSON object');
     const { id, title, description, collection, order, version, palette, bricks } = input;
@@ -125,21 +143,7 @@ export function validateLevel(input: unknown): SnapLevel {
         if (!supported) throw new Error(`${id}/${brick.id}: floating brick has no ${brick.attachment === 'underside' ? 'attachment above' : 'studs beneath it'}`);
     }
 
-    const first = occupied.keys().next().value as string;
-    const visited = new Set([first]);
-    const queue = [first];
-    while (queue.length) {
-        const current = queue.pop()!;
-        const [x, y, z] = current.split(',').map(Number);
-        for (const [dx, dy, dz] of [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]]) {
-            const next = cellKey(x + dx, y + dy, z + dz);
-            if (occupied.has(next) && !visited.has(next)) {
-                visited.add(next);
-                queue.push(next);
-            }
-        }
-    }
-    if (visited.size !== occupied.size) throw new Error(`${id}: model has disconnected pieces`);
+    validateAttachments(bricks as SnapBrick[], occupied, byId);
     if (bricks.some(b => b.attachment === 'underside') && input.buildSequence === undefined)
         throw new Error(`${id}: underside attachments require a supported buildSequence`);
     if (input.buildSequence !== undefined) {
