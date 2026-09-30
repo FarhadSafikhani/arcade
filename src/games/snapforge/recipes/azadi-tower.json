@@ -1,0 +1,712 @@
+{
+  "id": "azadi-tower",
+  "title": "Azadi Tower",
+  "description": "Meydoon Azadi: four sweeping ivory legs frame pointed turquoise arches beneath a windowed crown.",
+  "collection": "landmarks",
+  "order": 8,
+  "version": 1,
+  "targetParts": 118,
+  "palette": {
+    "ivory": "#EDE5CE",
+    "turquoise": "#287F89",
+    "plaza": "#B7AD97"
+  },
+  "symmetry": {
+    "axis": "x",
+    "plane": 12
+  },
+  "volumes": [
+    {
+      "name": "square-plinth",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "w": 24,
+      "d": 16,
+      "h": 1,
+      "color": "plaza"
+    },
+    {
+      "name": "west-south-swept-foot-0",
+      "x": 1,
+      "y": 2,
+      "z": 1,
+      "w": 7,
+      "d": 4,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "west-north-swept-foot-0",
+      "x": 1,
+      "y": 10,
+      "z": 1,
+      "w": 7,
+      "d": 4,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "east-south-swept-foot-0",
+      "x": 16,
+      "y": 2,
+      "z": 1,
+      "w": 7,
+      "d": 4,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "east-north-swept-foot-0",
+      "x": 16,
+      "y": 10,
+      "z": 1,
+      "w": 7,
+      "d": 4,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "west-south-swept-foot-1",
+      "x": 2,
+      "y": 2,
+      "z": 3,
+      "w": 6,
+      "d": 4,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "west-north-swept-foot-1",
+      "x": 2,
+      "y": 10,
+      "z": 3,
+      "w": 6,
+      "d": 4,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "east-south-swept-foot-1",
+      "x": 16,
+      "y": 2,
+      "z": 3,
+      "w": 6,
+      "d": 4,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "east-north-swept-foot-1",
+      "x": 16,
+      "y": 10,
+      "z": 3,
+      "w": 6,
+      "d": 4,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "west-south-swept-foot-2",
+      "x": 3,
+      "y": 3,
+      "z": 5,
+      "w": 5,
+      "d": 3,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "west-north-swept-foot-2",
+      "x": 3,
+      "y": 10,
+      "z": 5,
+      "w": 5,
+      "d": 3,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "east-south-swept-foot-2",
+      "x": 16,
+      "y": 3,
+      "z": 5,
+      "w": 5,
+      "d": 3,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "east-north-swept-foot-2",
+      "x": 16,
+      "y": 10,
+      "z": 5,
+      "w": 5,
+      "d": 3,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "west-south-swept-foot-3",
+      "x": 4,
+      "y": 3,
+      "z": 7,
+      "w": 5,
+      "d": 4,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "west-north-swept-foot-3",
+      "x": 4,
+      "y": 9,
+      "z": 7,
+      "w": 5,
+      "d": 4,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "east-south-swept-foot-3",
+      "x": 15,
+      "y": 3,
+      "z": 7,
+      "w": 5,
+      "d": 4,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "east-north-swept-foot-3",
+      "x": 15,
+      "y": 9,
+      "z": 7,
+      "w": 5,
+      "d": 4,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "west-south-swept-foot-4",
+      "x": 5,
+      "y": 4,
+      "z": 9,
+      "w": 4,
+      "d": 3,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "west-north-swept-foot-4",
+      "x": 5,
+      "y": 9,
+      "z": 9,
+      "w": 4,
+      "d": 3,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "east-south-swept-foot-4",
+      "x": 15,
+      "y": 4,
+      "z": 9,
+      "w": 4,
+      "d": 3,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "east-north-swept-foot-4",
+      "x": 15,
+      "y": 9,
+      "z": 9,
+      "w": 4,
+      "d": 3,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "west-arch-course-5",
+      "x": 6,
+      "y": 4,
+      "z": 11,
+      "w": 4,
+      "d": 8,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "east-arch-course-5",
+      "x": 14,
+      "y": 4,
+      "z": 11,
+      "w": 4,
+      "d": 8,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "west-arch-course-6",
+      "x": 7,
+      "y": 4,
+      "z": 13,
+      "w": 3,
+      "d": 8,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "east-arch-course-6",
+      "x": 14,
+      "y": 4,
+      "z": 13,
+      "w": 3,
+      "d": 8,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "west-arch-course-7",
+      "x": 7,
+      "y": 4,
+      "z": 15,
+      "w": 4,
+      "d": 8,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "east-arch-course-7",
+      "x": 13,
+      "y": 4,
+      "z": 15,
+      "w": 4,
+      "d": 8,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "west-arch-course-8",
+      "x": 8,
+      "y": 4,
+      "z": 17,
+      "w": 3,
+      "d": 8,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "east-arch-course-8",
+      "x": 13,
+      "y": 4,
+      "z": 17,
+      "w": 3,
+      "d": 8,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "west-arch-course-9",
+      "x": 8,
+      "y": 4,
+      "z": 19,
+      "w": 4,
+      "d": 8,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "east-arch-course-9",
+      "x": 12,
+      "y": 4,
+      "z": 19,
+      "w": 4,
+      "d": 8,
+      "h": 2,
+      "color": "ivory"
+    },
+    {
+      "name": "upper-shaft",
+      "x": 8,
+      "y": 4,
+      "z": 21,
+      "w": 8,
+      "d": 8,
+      "h": 10,
+      "color": "ivory"
+    },
+    {
+      "name": "west-south-arch-tile-4",
+      "x": 7,
+      "y": 4,
+      "z": 9,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "west-north-arch-tile-4",
+      "x": 7,
+      "y": 11,
+      "z": 9,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "east-south-arch-tile-4",
+      "x": 15,
+      "y": 4,
+      "z": 9,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "east-north-arch-tile-4",
+      "x": 15,
+      "y": 11,
+      "z": 9,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "west-south-arch-tile-5",
+      "x": 8,
+      "y": 4,
+      "z": 11,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "west-north-arch-tile-5",
+      "x": 8,
+      "y": 11,
+      "z": 11,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "east-south-arch-tile-5",
+      "x": 14,
+      "y": 4,
+      "z": 11,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "east-north-arch-tile-5",
+      "x": 14,
+      "y": 11,
+      "z": 11,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "west-south-arch-tile-6",
+      "x": 8,
+      "y": 4,
+      "z": 13,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "west-north-arch-tile-6",
+      "x": 8,
+      "y": 11,
+      "z": 13,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "east-south-arch-tile-6",
+      "x": 14,
+      "y": 4,
+      "z": 13,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "east-north-arch-tile-6",
+      "x": 14,
+      "y": 11,
+      "z": 13,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "west-south-arch-tile-7",
+      "x": 9,
+      "y": 4,
+      "z": 15,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "west-north-arch-tile-7",
+      "x": 9,
+      "y": 11,
+      "z": 15,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "east-south-arch-tile-7",
+      "x": 13,
+      "y": 4,
+      "z": 15,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "east-north-arch-tile-7",
+      "x": 13,
+      "y": 11,
+      "z": 15,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "west-south-arch-tile-8",
+      "x": 9,
+      "y": 4,
+      "z": 17,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "west-north-arch-tile-8",
+      "x": 9,
+      "y": 11,
+      "z": 17,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "east-south-arch-tile-8",
+      "x": 13,
+      "y": 4,
+      "z": 17,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "east-north-arch-tile-8",
+      "x": 13,
+      "y": 11,
+      "z": 17,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "west-south-arch-tile-9",
+      "x": 10,
+      "y": 4,
+      "z": 19,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "west-north-arch-tile-9",
+      "x": 10,
+      "y": 11,
+      "z": 19,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "east-south-arch-tile-9",
+      "x": 12,
+      "y": 4,
+      "z": 19,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "east-north-arch-tile-9",
+      "x": 12,
+      "y": 11,
+      "z": 19,
+      "w": 2,
+      "d": 1,
+      "h": 1,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "south-crown-window-9",
+      "x": 9,
+      "y": 4,
+      "z": 28,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "north-crown-window-9",
+      "x": 9,
+      "y": 11,
+      "z": 28,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "south-crown-window-11",
+      "x": 11,
+      "y": 4,
+      "z": 28,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "north-crown-window-11",
+      "x": 11,
+      "y": 11,
+      "z": 28,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "south-crown-window-12",
+      "x": 12,
+      "y": 4,
+      "z": 28,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "north-crown-window-12",
+      "x": 12,
+      "y": 11,
+      "z": 28,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "south-crown-window-14",
+      "x": 14,
+      "y": 4,
+      "z": 28,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "north-crown-window-14",
+      "x": 14,
+      "y": 11,
+      "z": 28,
+      "w": 1,
+      "d": 1,
+      "h": 2,
+      "color": "turquoise",
+      "overlay": true
+    },
+    {
+      "name": "west-raised-parapet",
+      "x": 8,
+      "y": 4,
+      "z": 31,
+      "w": 1,
+      "d": 8,
+      "h": 1,
+      "color": "ivory"
+    },
+    {
+      "name": "east-raised-parapet",
+      "x": 15,
+      "y": 4,
+      "z": 31,
+      "w": 1,
+      "d": 8,
+      "h": 1,
+      "color": "ivory"
+    }
+  ]
+}

@@ -98,13 +98,13 @@ test('nine collections have ordered models and independent unlock paths', () => 
         ['farm', ['sheep', 'chicken', 'cow', 'horse', 'barn']],
         ['fruit', ['pear', 'orange', 'cherry', 'watermelon', 'strawberry', 'pineapple']],
         ['land-animal', ['hippo', 'rhino', 'lion', 'elephant', 'giraffe', 'zebra']],
-        ['bird', ['penguin', 'mallard', 'eagle', 'ostrich', 'flamingo', 'scarlet-macaw', 'peacock']],
         ['car', ['pickup-truck', 'sports-car', 'super-car', 'ambulance', 'semi-truck', 'fire-truck']],
-        ['landmarks', ['stonehenge', 'pyramids', 'castle', 'eiffel-tower', 'cn-tower', 'colosseum', 'big-ben']],
         ['ocean', ['manta-ray', 'clownfish', 'blue-tang', 'red-crab', 'blue-whale', 'great-white']],
+        ['bird', ['penguin', 'mallard', 'eagle', 'ostrich', 'flamingo', 'scarlet-macaw', 'peacock']],
+        ['landmarks', ['stonehenge', 'eiffel-tower', 'big-ben', 'castle', 'pyramids', 'colosseum', 'cn-tower', 'azadi-tower']],
         ['dinosaur', []]
     ]);
-    assert.equal(catalog.length, 48);
+    assert.equal(catalog.length, 49);
     for (const [collection, ids] of expected) {
         const group = catalog.filter(level => level.collection === collection).sort((a, b) => a.order - b.order);
         assert.deepEqual(group.map(level => level.id), ids);

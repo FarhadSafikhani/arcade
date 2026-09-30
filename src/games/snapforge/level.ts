@@ -78,7 +78,7 @@ export function validateLevel(input: unknown): SnapLevel {
     if (typeof id !== 'string' || !/^[a-z0-9-]+$/.test(id)) throw new Error('id must be a lowercase slug');
     if (typeof title !== 'string' || !title.trim()) throw new Error(`${id}: title is required`);
     if (typeof description !== 'string') throw new Error(`${id}: description is required`);
-    if (typeof collection !== 'string' || !['starter', 'farm', 'land-animal', 'fruit', 'bird', 'car', 'landmarks', 'ocean', 'dinosaur'].includes(collection))
+    if (typeof collection !== 'string' || !['starter', 'farm', 'fruit', 'land-animal', 'car', 'ocean', 'bird', 'landmarks', 'dinosaur'].includes(collection))
         throw new Error(`${id}: collection must name a known collection`);
     if (!isNatural(order) || !isNatural(version) || version < 1) throw new Error(`${id}: order and version must be non-negative integers (version ≥ 1)`);
     if (!isNatural(input.targetParts) || input.targetParts < 1) throw new Error(`${id}: targetParts must be a positive integer`);

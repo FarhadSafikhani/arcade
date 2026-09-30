@@ -14,7 +14,7 @@ Snapforge models are authored as recipes in `src/games/snapforge/recipes/` and c
 
 ## Recipe format
 
-Required fields are `id`, `title`, `description`, `collection`, `order`, `version`, `targetParts`, `palette`, and `volumes`. Use a unique lowercase slug ID, non-negative integer order, positive integer version and target, and named six-digit hex colors. Collection IDs are `starter`, `farm`, `fruit`, `land-animal` (Safari), `bird`, `car`, `landmarks`, `ocean`, and `dinosaur`.
+Required fields are `id`, `title`, `description`, `collection`, `order`, `version`, `targetParts`, `palette`, and `volumes`. Use a unique lowercase slug ID, non-negative integer order, positive integer version and target, and named six-digit hex colors. Collection IDs are `starter`, `farm`, `fruit`, `land-animal` (Safari), `car`, `ocean`, `bird`, `landmarks`, and `dinosaur`, listed from the smallest catalog to the largest. Dinosaur stays last while it is empty.
 
 Each volume has `{ name, x, y, z, w, d, h, color }`. Names are unique; coordinates are non-negative integers, with x/y horizontal and z vertical. Dimensions are positive integers. Volumes may be taller than runtime bricks. An overlapping volume needs `overlay: true`, which replaces earlier color and protection at its occupied cells. An overlay does not add hidden bricks.
 
