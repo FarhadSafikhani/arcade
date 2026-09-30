@@ -6,7 +6,7 @@
   "order": 1,
   "version": 2,
   "targetParts": 33,
-  "vetted": 0,
+  "vetted": 1,
   "palette": {
     "grass": "#6D8651",
     "stone": "#A29D8E"

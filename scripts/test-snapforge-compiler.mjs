@@ -140,7 +140,7 @@ test('redesigned apple reproduces its recipe, preserves the sculpt, and mirrors 
     assert.equal(level.targetParts, 30);
     assert.equal(level.order, 2);
     assert.equal(level.version, 4);
-    assert.equal(level.vetted, 0);
+    assert.equal(level.vetted, 1);
     const expected = [...expandRecipe(recipe)].map(([key, c]) => `${key}:${c.color}`).sort();
     assert.deepEqual(level.bricks.flatMap(b => brickCells(b).map(key => `${key}:${b.color}`)).sort(), expected);
     for (const b of level.bricks) assert.ok(level.bricks.some(other => other.x === b.x && other.y === 8 - b.y - b.d &&

@@ -1,6 +1,7 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import ts from 'typescript';
 
 const modulePath = resolve('src/games/snapforge/level.ts');
@@ -45,8 +46,28 @@ if (!files.length) {
         }
 }
 if (!files.length && !failed) {
-    const recipes = spawnSync(process.execPath, [resolve('scripts/check-snapforge-recipes.mjs')], { stdio: 'inherit' });
-    if (recipes.error) console.error(recipes.error.message);
-    if (recipes.status !== 0) failed = true;
+    const recipeDir = resolve('src/games/snapforge/recipes');
+    const cachePath = resolve('tmp/snapforge-validation.sha256');
+    const inputs = [modulePath, resolve('scripts/snapforge-compiler.mjs'),
+        resolve('scripts/compile-snapforge.mjs'), resolve('scripts/check-snapforge-recipes.mjs'),
+        ...readdirSync(recipeDir).filter(name => name.endsWith('.json')).sort().map(name => resolve(recipeDir, name)),
+        ...targets.sort()];
+    const hash = createHash('sha256');
+    for (const file of inputs) {
+        hash.update(file);
+        hash.update(readFileSync(file));
+    }
+    const fingerprint = hash.digest('hex');
+    if (existsSync(cachePath) && readFileSync(cachePath, 'utf8') === fingerprint) {
+        console.log('✓ Snapforge recipes unchanged; skipping compiler checks');
+    } else {
+        const recipes = spawnSync(process.execPath, [resolve('scripts/check-snapforge-recipes.mjs')], { stdio: 'inherit' });
+        if (recipes.error) console.error(recipes.error.message);
+        if (recipes.status !== 0) failed = true;
+        if (!failed) {
+            mkdirSync(resolve('tmp'), { recursive: true });
+            writeFileSync(cachePath, fingerprint);
+        }
+    }
 }
 if (failed || targets.length === 0) process.exitCode = 1;

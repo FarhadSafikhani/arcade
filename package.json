@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "serve": "vite preview",
     "increment-version": "node scripts/increment-version.js",
-    "deploy": "npm run increment-version && npm run build:prod && gh-pages -d dist",
+    "deploy": "node scripts/deploy.mjs",
     "clean": "rimraf dist",
     "build:clean": "npm run clean && npm run build:prod",
     "validate:snapforge": "node scripts/validate-snapforge.mjs",
