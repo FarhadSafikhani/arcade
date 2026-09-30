@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
+  <title>Snapforge brick</title>
+  <path d="M22 47 64 25l42 22v33l-42 23-42-23V47Z" fill="#EF694C" stroke="#27334D" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M64 70v33L22 80V47l42 23Z" fill="#F47757" stroke="#27334D" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M64 70v33l42-23V47L64 70Z" fill="#D94F45" stroke="#27334D" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M22 47 64 25l42 22-42 23-42-23Z" fill="#FFBD78" stroke="#27334D" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M38 37v-7c0-4 5-7 11-7s11 3 11 7v7" fill="#F5935C" stroke="#27334D" stroke-width="3.5" stroke-linejoin="round"/>
+  <ellipse cx="49" cy="30" rx="11" ry="5.5" fill="#FFE3AA" stroke="#27334D" stroke-width="3.5"/>
+  <path d="M68 38v-7c0-4 5-7 11-7s11 3 11 7v7" fill="#F5935C" stroke="#27334D" stroke-width="3.5" stroke-linejoin="round"/>
+  <ellipse cx="79" cy="31" rx="11" ry="5.5" fill="#FFE3AA" stroke="#27334D" stroke-width="3.5"/>
+  <path d="M35 53v-7c0-4 5-7 11-7s11 3 11 7v7" fill="#F5935C" stroke="#27334D" stroke-width="3.5" stroke-linejoin="round"/>
+  <ellipse cx="46" cy="46" rx="11" ry="5.5" fill="#FFE3AA" stroke="#27334D" stroke-width="3.5"/>
+  <path d="M65 54v-7c0-4 5-7 11-7s11 3 11 7v7" fill="#F5935C" stroke="#27334D" stroke-width="3.5" stroke-linejoin="round"/>
+  <ellipse cx="76" cy="47" rx="11" ry="5.5" fill="#FFE3AA" stroke="#27334D" stroke-width="3.5"/>
+  <path d="m28 60 30 16v17L28 76V60Z" fill="#FF9670" opacity=".55"/>
+</svg>

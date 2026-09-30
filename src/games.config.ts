@@ -5,7 +5,10 @@ export interface GameConfig {
     id: string;
     name: string;
     description: string;
-    icon: string;
+    /** Emoji for games without a custom logo. */
+    icon?: string;
+    /** Logo file name under public/assets/brand/. */
+    logo?: string;
     available: boolean;
     section: GameSection;
     accent?: string;
@@ -25,21 +28,19 @@ export const gamesConfig: GamesConfig = {
             id: "snapforge",
             name: "Snapforge",
             description: "Build little worlds, one snap at a time",
-            icon: "🧱",
+            logo: "snapforge.svg",
             available: true,
             section: "games",
             accent: "#e39a4b",
-            preview: "snapforge.png"
         },
         {
             id: "stickers",
             name: "Stickers",
             description: "Interactive sticker game",
-            icon: "🍎",
+            logo: "stickers.svg",
             available: true,
             section: "games",
             accent: "#e07a86",
-            preview: "stickers.png"
         },
         {
             id: "snake",

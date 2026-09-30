@@ -189,6 +189,16 @@ body:not(.game-page) {
     object-fit: cover;
 }
 
+.polaroid-photo .photo-logo {
+    width: min(44%, 10.5rem);
+    height: auto;
+    aspect-ratio: 1;
+    inset: 50% auto auto 50%;
+    object-fit: contain;
+    transform: translate(-50%, -50%);
+    filter: drop-shadow(0 12px 5px rgba(56, 35, 34, 0.17));
+}
+
 .photo-fallback {
     display: grid;
     place-items: center;
@@ -217,6 +227,13 @@ body:not(.game-page) {
     grid-row: 1 / span 2;
     font-size: 1.7rem;
     line-height: 1;
+}
+
+.game-icon img {
+    display: block;
+    width: 1.9rem;
+    height: 1.9rem;
+    object-fit: contain;
 }
 
 .game-card--featured .game-name {
@@ -595,4 +612,4 @@ body:not(.game-page) {
     #gameUI div {
         padding: 3px 6px;
     }
-} 
+}

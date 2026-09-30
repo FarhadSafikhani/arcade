@@ -53,7 +53,7 @@ function updateLegacySummary(count: number) {
 }
 
 function gameHref(gameId: string): string {
-    return `${import.meta.env.BASE_URL}games/${gameId}/index.html`;
+    return `${import.meta.env.BASE_URL}games/${gameId}/`;
 }
 
 function renderGameCards(games: GameConfig[], containerId: string, variant: CardVariant) {
@@ -93,10 +93,19 @@ function createPolaroidPhoto(card: HTMLElement, game: GameConfig): HTMLElement {
     const photo = document.createElement('div');
     photo.className = 'polaroid-photo';
 
+    if (game.logo) {
+        const logo = document.createElement('img');
+        logo.className = 'photo-logo';
+        logo.alt = '';
+        logo.src = `${import.meta.env.BASE_URL}assets/brand/${game.logo}`;
+        photo.append(logo);
+        return photo;
+    }
+
     const fallback = document.createElement('span');
     fallback.className = 'photo-fallback';
     fallback.setAttribute('aria-hidden', 'true');
-    fallback.textContent = game.icon;
+    fallback.textContent = game.icon ?? '';
     photo.append(fallback);
 
     if (!game.preview) {
@@ -123,7 +132,14 @@ function createCaption(game: GameConfig): HTMLElement {
     const icon = document.createElement('span');
     icon.className = 'game-icon';
     icon.setAttribute('aria-hidden', 'true');
-    icon.textContent = game.icon;
+    if (game.logo) {
+        const logo = document.createElement('img');
+        logo.alt = '';
+        logo.src = `${import.meta.env.BASE_URL}assets/brand/${game.logo}`;
+        icon.append(logo);
+    } else {
+        icon.textContent = game.icon ?? '';
+    }
 
     const name = document.createElement('span');
     name.className = 'game-name';

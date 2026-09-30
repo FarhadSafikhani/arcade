@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
+  <title>Vibe Arcade joystick</title>
+  <rect x="7" y="7" width="114" height="114" rx="29" fill="#7560B8" stroke="#27334D" stroke-width="5"/>
+  <path d="M19 82c0-8 6-14 14-14h62c8 0 14 6 14 14v15c0 8-6 14-14 14H33c-8 0-14-6-14-14V82Z" fill="#FFF3D9" stroke="#27334D" stroke-width="5"/>
+  <path d="M19 91h90v6c0 8-6 14-14 14H33c-8 0-14-6-14-14v-6Z" fill="#E8D9F5"/>
+  <path d="M48 78V51" stroke="#27334D" stroke-width="9" stroke-linecap="round"/>
+  <path d="M48 77V52" stroke="#8ECFC2" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="48" cy="39" r="18" fill="#F26D79" stroke="#27334D" stroke-width="5"/>
+  <path d="M40 33c2-4 6-6 10-6" stroke="#FFB4B5" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="78" cy="82" r="7" fill="#F5B64C" stroke="#27334D" stroke-width="3.5"/>
+  <circle cx="94" cy="92" r="7" fill="#8ECFC2" stroke="#27334D" stroke-width="3.5"/>
+</svg>
