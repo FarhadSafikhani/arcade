@@ -1,0 +1,41 @@
+{
+  "tool": "built-in image_gen",
+  "stylePrompt": "Use case: background-extraction and style-transfer. Asset type: transparent PNG sticker for a children's jigsaw game. Edit target Image 1. Preserve the original subject, recognizable identity, pose, expression, and main colors. Unify into polished colorful hand-painted cartoon illustration with simplified readable shapes, smooth shading and restrained internal texture. Create ONE solid connected sticker silhouette bounded by a smooth uniform thick pure black outer stroke, approximately 12-16 pixels at 1024px canvas, rounded joins. No white border, no shadow, no halo, no background remnants, no separate floating parts or specks, no thin wisps. Fill small internal cutout gaps; simplify peripheral hair/fur/foliage into broad connected shapes. Genuine transparent background, square composition, centered with 4% clear margin, nothing cropped. No text or watermark. Produce only this one sticker. Anatomy QA: coherent species-appropriate anatomy, no duplicate limbs/eyes/ears, no extra fingers or fused appendages; prioritize an immediately readable silhouette.",
+  "subjectInstructions": {
+    "princessemma": "Preserve brown hair, crown and freckles. Replace white halo with black stroke. Consolidate hair locks; no holes or flyaway strands.",
+    "jaina": "Preserve blue hair, pointed ear, armor, face and portrait angle. Clean black fringe into smooth stroke; close gap beside hair strand. Clean rounded portrait bottom.",
+    "grumble": "Preserve rock golem with green moss, full body stance. Remove scattered leaves, dangling tendrils and loose debris. Large broad connected rock forms. Fill openings between arms and body with dark rock to create a single simple solid silhouette.",
+    "frog": "Preserve front facing green frog, gold eyes and sitting pose. Smooth outline and no white slivers or border.",
+    "crocodile": "Preserve green crocodile head with golden eyes and head angle. Remove miscellaneous peripheral shapes and white border.",
+    "police": "Preserve cartoon police child with cap, badge and sunglasses. Eliminate cigarette-like projection, flyaway hair and loose marks. Make lower portrait edge clean.",
+    "lion": "Preserve frontal gold lion head. Consolidate pointed mane into broad rounded tufts, no thin spikes or detached fur.",
+    "panda": "Preserve frontal panda head and black/white colors. Consolidate fur into broad tufts with smooth clean perimeter.",
+    "chimp": "Preserve frontal chimp head and ears; consolidate fur into broad tufts.",
+    "husky": "Preserve husky portrait angle and blue eyes; simplify fur perimeter into broad tufts.",
+    "tiger": "Preserve frontal tiger head, orange and black stripes; simplify fur perimeter.",
+    "elephant": "Preserve front facing elephant head, ears, curled trunk and tusks. Keep ivory tusks visibly joined to head.",
+    "rooster": "Preserve rooster head in side profile, colorful feathers and red comb.",
+    "barbie": "Preserve blonde blue-eyed doll portrait; consolidate hair into broad shapes with smooth clean perimeter.",
+    "princeryan": "Preserve young brown-haired prince head and gold crown. Remove dark rectangular background and white border.",
+    "gecko": "Preserve blue lizard pose, curled tail, yellow eyes. Simplify fingers and toes into broad connected forms; remove white border."
+  },
+  "outputs": {
+    "bluewhale": "C:\\Users\\x2900\\.codex\\generated_images\\01a0f57d-5e62-72d3-a70f-aaf9aaf315c6\\exec-2ab5eae0-75d0-4a1c-a9d5-5af9eec05454.png",
+    "princessemma": "C:\\Users\\x2900\\.codex\\generated_images\\01a0f57d-5e62-72d3-a70f-aaf9aaf315c6\\exec-d91cb665-11e0-4c03-9b4d-7e00954b85c7.png",
+    "jaina": "C:\\Users\\x2900\\.codex\\generated_images\\01a0f57d-5e62-72d3-a70f-aaf9aaf315c6\\exec-a5b3cad1-95a4-41b1-940c-02cd537958e3.png",
+    "grumble": "C:\\Users\\x2900\\.codex\\generated_images\\01a0f57d-5e62-72d3-a70f-aaf9aaf315c6\\exec-c84d94dc-3a4c-4e6b-8b0b-b2ecacad45c9.png",
+    "frog": "C:\\Users\\x2900\\.codex\\generated_images\\01a0f57d-5e62-72d3-a70f-aaf9aaf315c6\\exec-db3b3559-4c6c-4861-96d8-ec3f6b5552fd.png",
+    "crocodile": "C:\\Users\\x2900\\.codex\\generated_images\\01a0f57d-5e62-72d3-a70f-aaf9aaf315c6\\exec-84eb1eaa-35fc-412e-9fb3-d0bafeb4b60f.png",
+    "police": "C:\\Users\\x2900\\.codex\\generated_images\\01a0f57d-5e62-72d3-a70f-aaf9aaf315c6\\exec-03b5c155-e2f2-4f9b-a3cb-b82e023f8cfd.png",
+    "lion": "C:\\Users\\x2900\\.codex\\generated_images\\01a0f57d-5e62-72d3-a70f-aaf9aaf315c6\\exec-4729f055-9c03-4699-bc60-324cf2223bc2.png",
+    "panda": "C:\\Users\\x2900\\.codex\\generated_images\\01a0f57d-5e62-72d3-a70f-aaf9aaf315c6\\exec-49099996-fc7e-4b14-85db-c693bb8550ed.png",
+    "chimp": "C:\\Users\\x2900\\.codex\\generated_images\\01a0f57d-5e62-72d3-a70f-aaf9aaf315c6\\exec-271ef8b6-a539-43c1-b6dd-032c127f2d9b.png",
+    "husky": "C:\\Users\\x2900\\.codex\\generated_images\\01a0f57d-5e62-72d3-a70f-aaf9aaf315c6\\exec-374cfda2-5a83-48ed-bcf3-501fafa7f2fb.png",
+    "tiger": "C:\\Users\\x2900\\.codex\\generated_images\\01a0f57d-5e62-72d3-a70f-aaf9aaf315c6\\exec-f54d4ae1-3460-4f64-a174-3342b9f8e363.png",
+    "elephant": "C:\\Users\\x2900\\.codex\\generated_images\\01a0f57d-5e62-72d3-a70f-aaf9aaf315c6\\exec-9a29cee0-3c6f-442e-af69-25732ba2dcf1.png",
+    "rooster": "C:\\Users\\x2900\\.codex\\generated_images\\01a0f57d-5e62-72d3-a70f-aaf9aaf315c6\\exec-7a40ff97-82cd-4f01-bb5c-c2d1ca823ea0.png",
+    "barbie": "C:\\Users\\x2900\\.codex\\generated_images\\01a0f57d-5e62-72d3-a70f-aaf9aaf315c6\\exec-cdb4b3a5-38bb-44e5-af55-9889bfa564cf.png",
+    "princeryan": "C:\\Users\\x2900\\.codex\\generated_images\\01a0f57d-5e62-72d3-a70f-aaf9aaf315c6\\exec-8282d6e3-9490-4b85-840a-2055d05d71e1.png",
+    "gecko": "C:\\Users\\x2900\\.codex\\generated_images\\01a0f57d-5e62-72d3-a70f-aaf9aaf315c6\\exec-2ef3fdf8-7348-44ad-a135-e672de0b459d.png"
+  }
+}

@@ -6,7 +6,7 @@ export const STICKER_GAME_CONFIG = {
     gideSizeSmall: 3,
     gideSizeMedium: 5,
     gideSizeLarge: 7,
-    snapThreshold: 100,
+    snapThreshold: 132.25,
     visiblePercentage: 0.1
 }
 
@@ -129,6 +129,8 @@ export class StickersGame {
     private stickerMaker: StickerMaker;
     private gameDimensions: GameDimensions;
     private userState: UserState;
+    private levelRequest = 0;
+    private background: Graphics | null = null;
 
     constructor(app: Application) {
         this.app = app;
@@ -387,17 +389,33 @@ export class StickersGame {
     }
 
     public async startLevel(level: StickerGameLevel, gridSize: number): Promise<void> {
-        // Hide level menu and return button, show game
+        const request = ++this.levelRequest;
         this.hideLevelMenu();
         this.hideReturnButton();
-        
-        // Clean up any existing game state
         this.stickerMaker.cleanup();
-        
         this.createBackground();
-        
-        // Start the level
-        await this.stickerMaker.createSticker(level, gridSize);
+        this.setPreparing(true);
+        document.getElementById('levelError')?.setAttribute('hidden', '');
+        try {
+            // Let the scene and spinner paint before starting CPU/GPU work.
+            await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+            if (request !== this.levelRequest) return;
+            const ready = await this.stickerMaker.createSticker(level, gridSize);
+            if (!ready || request !== this.levelRequest) return;
+            this.setPreparing(false);
+            await this.stickerMaker.revealSticker();
+        } catch (error) {
+            if (request !== this.levelRequest) return;
+            console.error('Unable to prepare sticker:', error);
+            this.returnToLevelMenu();
+            document.getElementById('levelError')?.removeAttribute('hidden');
+        }
+    }
+
+    private setPreparing(preparing: boolean): void {
+        const loading = document.getElementById('stickerLoading');
+        if (loading) loading.hidden = !preparing;
+        document.getElementById('gameContainer')?.setAttribute('aria-busy', String(preparing));
     }
 
     private loadUserState(): UserState {
@@ -413,6 +431,8 @@ export class StickersGame {
     }
 
     public returnToLevelMenu(): void {
+        this.levelRequest++;
+        this.setPreparing(false);
         // Clean up current game state
         this.stickerMaker.cleanup();
         
@@ -453,12 +473,14 @@ export class StickersGame {
     }
 
     private createBackground(): void {
+        this.background?.destroy();
         const background = new Graphics();
         background.beginFill(0xffffff); // White background
         background.drawRect(0, 0, this.gameDimensions.gameWidth, this.gameDimensions.gameHeight);
         background.endFill();
         
         this.gameContainer.addChild(background);
+        this.background = background;
     }
 
     private setupBackButton(): void {
@@ -489,6 +511,8 @@ export class StickersGame {
     }
 
     destroy(): void {
+        this.levelRequest++;
+        this.setPreparing(false);
         // Clean up game state first
         this.stickerMaker.cleanup();
         

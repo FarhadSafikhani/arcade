@@ -1,0 +1,291 @@
+[
+  {
+    "name": "bluewhale",
+    "size": [
+      1254,
+      1254
+    ],
+    "bbox": [
+      27,
+      21,
+      1231,
+      1222
+    ],
+    "components_at_least_16px": [
+      633791
+    ],
+    "stray_pixels": 0
+  },
+  {
+    "name": "princessemma",
+    "size": [
+      1254,
+      1254
+    ],
+    "bbox": [
+      0,
+      4,
+      1232,
+      1238
+    ],
+    "components_at_least_16px": [
+      1020461
+    ],
+    "stray_pixels": 0
+  },
+  {
+    "name": "jaina",
+    "size": [
+      1254,
+      1254
+    ],
+    "bbox": [
+      0,
+      7,
+      1218,
+      1254
+    ],
+    "components_at_least_16px": [
+      1117269
+    ],
+    "stray_pixels": 0
+  },
+  {
+    "name": "grumble",
+    "size": [
+      1254,
+      1254
+    ],
+    "bbox": [
+      54,
+      10,
+      1222,
+      1244
+    ],
+    "components_at_least_16px": [
+      963590
+    ],
+    "stray_pixels": 0
+  },
+  {
+    "name": "frog",
+    "size": [
+      1254,
+      1254
+    ],
+    "bbox": [
+      0,
+      21,
+      1222,
+      1254
+    ],
+    "components_at_least_16px": [
+      1003638
+    ],
+    "stray_pixels": 0
+  },
+  {
+    "name": "crocodile",
+    "size": [
+      1254,
+      1254
+    ],
+    "bbox": [
+      0,
+      38,
+      1210,
+      1206
+    ],
+    "components_at_least_16px": [
+      1037078
+    ],
+    "stray_pixels": 0
+  },
+  {
+    "name": "police",
+    "size": [
+      1254,
+      1254
+    ],
+    "bbox": [
+      78,
+      17,
+      1210,
+      1254
+    ],
+    "components_at_least_16px": [
+      865099
+    ],
+    "stray_pixels": 0
+  },
+  {
+    "name": "lion",
+    "size": [
+      1254,
+      1254
+    ],
+    "bbox": [
+      0,
+      21,
+      1206,
+      1224
+    ],
+    "components_at_least_16px": [
+      1014483
+    ],
+    "stray_pixels": 0
+  },
+  {
+    "name": "panda",
+    "size": [
+      1254,
+      1254
+    ],
+    "bbox": [
+      61,
+      21,
+      1206,
+      1240
+    ],
+    "components_at_least_16px": [
+      1033461
+    ],
+    "stray_pixels": 0
+  },
+  {
+    "name": "chimp",
+    "size": [
+      1254,
+      1254
+    ],
+    "bbox": [
+      25,
+      6,
+      1232,
+      1238
+    ],
+    "components_at_least_16px": [
+      901339
+    ],
+    "stray_pixels": 0
+  },
+  {
+    "name": "husky",
+    "size": [
+      1254,
+      1254
+    ],
+    "bbox": [
+      73,
+      10,
+      1181,
+      1238
+    ],
+    "components_at_least_16px": [
+      892274
+    ],
+    "stray_pixels": 0
+  },
+  {
+    "name": "tiger",
+    "size": [
+      1254,
+      1254
+    ],
+    "bbox": [
+      0,
+      0,
+      1232,
+      1221
+    ],
+    "components_at_least_16px": [
+      1032092
+    ],
+    "stray_pixels": 0
+  },
+  {
+    "name": "elephant",
+    "size": [
+      1254,
+      1254
+    ],
+    "bbox": [
+      31,
+      0,
+      1220,
+      1212
+    ],
+    "components_at_least_16px": [
+      789165
+    ],
+    "stray_pixels": 0
+  },
+  {
+    "name": "rooster",
+    "size": [
+      1254,
+      1254
+    ],
+    "bbox": [
+      31,
+      26,
+      1192,
+      1254
+    ],
+    "components_at_least_16px": [
+      934840
+    ],
+    "stray_pixels": 0
+  },
+  {
+    "name": "barbie",
+    "size": [
+      1254,
+      1254
+    ],
+    "bbox": [
+      18,
+      32,
+      1237,
+      1227
+    ],
+    "components_at_least_16px": [
+      1093892
+    ],
+    "stray_pixels": 0
+  },
+  {
+    "name": "princeryan",
+    "size": [
+      1254,
+      1254
+    ],
+    "bbox": [
+      77,
+      23,
+      1190,
+      1238
+    ],
+    "components_at_least_16px": [
+      781594
+    ],
+    "stray_pixels": 0
+  },
+  {
+    "name": "gecko",
+    "size": [
+      1254,
+      1254
+    ],
+    "bbox": [
+      0,
+      29,
+      1238,
+      1238
+    ],
+    "components_at_least_16px": [
+      884389
+    ],
+    "stray_pixels": 0
+  }
+]

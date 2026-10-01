@@ -22,11 +22,19 @@
     <div id="gameContainer">
         <!-- PixiJS will create and append the canvas here -->
     </div>
+    <div id="stickerLoading" class="sticker-loading" role="status" aria-live="polite" hidden>
+        <div class="sticker-loading-card">
+            <span class="sticker-spinner" aria-hidden="true"></span>
+            <strong>Getting your sticker ready</strong>
+            <span>A little puzzle magic…</span>
+        </div>
+    </div>
 
     <!-- Level Selection Menu -->
     <div id="levelMenu" class="level-menu hidden">
         <div class="level-menu-header">
             <h2>Select a Puzzle</h2>
+            <p id="levelError" role="alert" hidden>That sticker couldn't load. Please try again.</p>
         </div>
         <div class="level-grid-container">
             <div id="levelGrid" class="level-grid">

@@ -1,0 +1,14 @@
+<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;background:#f3efff;font-family:Arial}nav{height:56px;display:flex;align-items:center;gap:10px;background:#5945a0;color:white;padding:0 12px}button{padding:7px}canvas{display:block}#returnButton{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);border-radius:25px;padding:15px 30px;background:#6a4bb8;color:white}#status{font-size:11px}</style></head><body><nav><button id="replay">Reveal</button><button id="reduced">Reduced motion</button><button id="leave">Leave</button><span id="status"></span></nav><button id="returnButton" hidden>Return to Menu</button><script type="module">
+import { Application, Sprite, Assets } from 'pixi.js';
+import { StickerMaker } from '/src/games/stickers/stickermaker.ts';
+const app = new Application({width:innerWidth,height:innerHeight-56,backgroundColor:0xf3efff,antialias:true});document.body.append(app.view);
+const texture=await Assets.load('/arcade/assets/stickers/lion.png');
+const game={showReturnButton(){document.querySelector('#returnButton').hidden=false}};
+const maker=new StickerMaker(app,game,app.stage,innerWidth,innerHeight-56);
+const original=new Sprite(texture);original.anchor.set(.5);original.position.set(innerWidth/2,(innerHeight-56)/2);original.scale.set(Math.min(1,innerWidth*.8/texture.width,(innerHeight-56)*.8/texture.height));app.stage.addChild(original);maker.currentStickerSprite=original;
+function reveal(reduced){maker.cancelCelebration?.();document.querySelector('#returnButton').hidden=true;maker.reducedMotion={matches:reduced};maker.celebrate()}
+document.querySelector('#replay').onclick=()=>reveal(false);document.querySelector('#reduced').onclick=()=>reveal(true);
+function leave(){maker.cancelCelebration?.();document.querySelector('#returnButton').hidden=true;document.querySelector('#status').textContent=`Overlay removed: ${app.stage.children.length===1}; artwork visible: ${original.visible}`}
+document.querySelector('#leave').onclick=leave;document.querySelector('#returnButton').onclick=leave;
+addEventListener('resize',()=>{app.renderer.resize(innerWidth,innerHeight-56);maker.gameWidth=innerWidth;maker.gameHeight=innerHeight-56;});
+</script></body></html>
