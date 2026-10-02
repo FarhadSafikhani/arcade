@@ -16,9 +16,7 @@ export class Particle {
         
         // Create particle graphics
         this.graphics = new Graphics();
-        this.graphics.beginFill(color);
-        this.graphics.drawCircle(0, 0, Math.random() * 3 + 1);
-        this.graphics.endFill();
+        this.graphics.circle(0, 0, Math.random() * 3 + 1).fill(color);
         this.container.addChild(this.graphics);
         
         // Random velocity

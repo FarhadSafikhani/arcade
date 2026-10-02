@@ -1,4 +1,4 @@
-import { Application, Container, Graphics } from 'pixi.js';
+import { Application, Container, Graphics, Ticker } from 'pixi.js';
 import { Snake } from './snake';
 import { Food } from './food';
 import { isTouchDevice } from '../../shared/utils/device-detection';
@@ -103,12 +103,9 @@ export class SnakeGame {
 
     private createBackground(): void {
         const background = new Graphics();
-        background.beginFill(0x34495e);
-        background.drawRect(0, 0, this.gameDimensions.gameWidth, this.gameDimensions.gameHeight);
-        background.endFill();
+        background.rect(0, 0, this.gameDimensions.gameWidth, this.gameDimensions.gameHeight).fill(0x34495e);
         
         // Draw grid lines
-        background.lineStyle(1, 0x2c3e50, 1);
         for (let x = 0; x <= this.gameDimensions.gridWidth; x++) {
             background.moveTo(x * GRID_SIZE, 0);
             background.lineTo(x * GRID_SIZE, this.gameDimensions.gameHeight);
@@ -117,6 +114,7 @@ export class SnakeGame {
             background.moveTo(0, y * GRID_SIZE);
             background.lineTo(this.gameDimensions.gameWidth, y * GRID_SIZE);
         }
+        background.stroke({ width: 1, color: 0x2c3e50, alpha: 1 });
         
         this.gameContainer.addChild(background);
     }
@@ -474,7 +472,7 @@ function updateCanvasScaling() {
     const scaleY = windowHeight / currentDimensions.gameHeight;
     const scale = Math.min(scaleX, scaleY);
     
-    const canvas = app.view as HTMLCanvasElement;
+    const canvas = app.canvas;
     
     // Update canvas CSS dimensions with new scale but same game dimensions
     canvas.style.width = `${currentDimensions.gameWidth * scale}px`;
@@ -497,18 +495,20 @@ async function initGame() {
     const dimensions = getGameDimensions();
     
     // Create PIXI application with base dimensions
-    app = new Application({
+    const pixiApp = new Application();
+    await pixiApp.init({
         width: dimensions.gameWidth,
         height: dimensions.gameHeight,
-        backgroundColor: 0x2c3e50,
+        background: 0x2c3e50,
         antialias: true,
         resolution: window.devicePixelRatio || 1,
     });
+    app = pixiApp;
 
     // Add canvas to game container with proper scaling
     const gameContainer = document.getElementById('gameContainer');
     if (gameContainer) {
-        const canvas = app.view as HTMLCanvasElement;
+        const canvas = app.canvas;
         
         // Apply scaling through CSS transform
         canvas.style.width = `${dimensions.gameWidth * dimensions.scale}px`;
@@ -531,9 +531,9 @@ async function initGame() {
     window.addEventListener('resize', updateCanvasScaling);
 }
 
-function gameLoop(delta: number) {
+function gameLoop(ticker: Ticker) {
     if (game) {
-        game.update(delta);
+        game.update(ticker.deltaTime);
     }
 }
 

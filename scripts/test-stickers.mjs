@@ -53,6 +53,23 @@ test('resetting a page removes only its stickers and locks its next-page progres
     assert.deepEqual(resetSceneProgress(saved, 1), ['pond:duck', 'pond:swan', 'pond:heron', 'pond:raccoon']);
 });
 
+const samplingSource = readFileSync(new URL('../src/games/stickers/ambient/sampling.ts', import.meta.url), 'utf8');
+const { pointInRegion, randomPointIn } = await import(moduleUrl(ts.transpileModule(samplingSource, { compilerOptions: { module: ts.ModuleKind.ESNext } }).outputText));
+
+test('ambient effects stay on the page, use ordered ranges, and sample inside concave regions', () => {
+    const notch = [[0, 0], [100, 0], [100, 100], [50, 40], [0, 100]];
+    assert.equal(pointInRegion(notch, 50, 80), false);
+    assert.equal(pointInRegion(notch, 20, 30), true);
+    for (let i = 0; i < 200; i++) assert.ok(pointInRegion(notch, ...randomPointIn(notch)));
+    for (const scene of STORY_SCENES) for (const effect of scene.effects) {
+        for (const [x, y] of effect.region ?? []) assert.ok(x >= 0 && x <= 100 && y >= 0 && y <= 100, `${scene.id} ${effect.type} region leaves the page`);
+        for (const range of [effect.every, effect.life, effect.radius, effect.size, effect.twinkle, effect.rest, effect.period, ...(effect.drift ?? [])].filter(Boolean)) {
+            assert.ok(range[0] <= range[1], `${scene.id} ${effect.type} has a reversed range`);
+        }
+        if (effect.region) for (let i = 0; i < 50; i++) assert.ok(pointInRegion(effect.region, ...randomPointIn(effect.region)));
+    }
+});
+
 test('storybook completion places only a finished puzzle and clears the pending return', async () => {
     const gameSource = readFileSync(new URL('../src/games/stickers/game.ts', import.meta.url), 'utf8');
     const gameJs = ts.transpileModule(gameSource, { compilerOptions: { module: ts.ModuleKind.ESNext } }).outputText

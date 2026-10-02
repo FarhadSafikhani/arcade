@@ -27,6 +27,28 @@ const getGameDimensions = () => {
     };
 };
 
+const ARROW_COLOR = 0xFF8C00;
+
+// Draws an arrow pointing right with its shaft starting at the origin
+const drawArrow = (graphics: Graphics, length: number): void => {
+    graphics
+        .moveTo(0, 0)
+        .lineTo(length, 0)
+        .stroke({ width: 4, color: ARROW_COLOR });
+
+    graphics
+        .moveTo(length, -4)
+        .lineTo(length, 4)
+        .lineTo(length + 8, 0)
+        .fill({ color: ARROW_COLOR })
+        .stroke({ width: 4, color: ARROW_COLOR });
+
+    graphics
+        .rect(-3, -2, 6, 4)
+        .fill({ color: ARROW_COLOR })
+        .stroke({ width: 4, color: ARROW_COLOR });
+};
+
 // Stuck arrow class for arrows left behind
 class StuckArrow {
     container: Container;
@@ -47,23 +69,7 @@ class StuckArrow {
         
         // Create arrow graphics
         this.graphics = new Graphics();
-        
-        // Arrow shaft (pointing to the right)
-        this.graphics.lineStyle(4, 0xFF8C00); // Bright orange shaft
-        this.graphics.moveTo(0, 0);
-        this.graphics.lineTo(50, 0);
-        
-        // Arrow head (pointing to the right)
-        this.graphics.beginFill(0xFF8C00); // Bright orange arrowhead
-        this.graphics.moveTo(50, -4);
-        this.graphics.lineTo(50, 4);
-        this.graphics.lineTo(58, 0);
-        this.graphics.endFill();
-        
-        // Arrow fletching (at the back)
-        this.graphics.beginFill(0xFF8C00); // Bright orange fletching
-        this.graphics.drawRect(-3, -2, 6, 4);
-        this.graphics.endFill();
+        drawArrow(this.graphics, 50);
         
         this.container.addChild(this.graphics);
     }
@@ -87,17 +93,17 @@ class Box {
         this.height = height;
         
         this.graphics = new Graphics();
-        this.graphics.beginFill(0x8B4513);
-        this.graphics.lineStyle(2, 0x654321);
-        this.graphics.drawRect(0, 0, width, height);
-        this.graphics.endFill();
+        this.graphics
+            .rect(0, 0, width, height)
+            .fill({ color: 0x8B4513 })
+            .stroke({ width: 2, color: 0x654321 });
         
         // Add some wood grain effect
-        this.graphics.lineStyle(1, 0xA0522D);
         for (let i = 0; i < height; i += 8) {
             this.graphics.moveTo(0, i);
             this.graphics.lineTo(width, i);
         }
+        this.graphics.stroke({ width: 1, color: 0xA0522D });
         
         this.container.addChild(this.graphics);
     }
@@ -140,16 +146,16 @@ class Tree {
         this.graphics = new Graphics();
         
         // Draw tree trunk (brown rectangle)
-        this.graphics.beginFill(0x8B4513); // Brown trunk
-        this.graphics.lineStyle(2, 0x654321);
-        this.graphics.drawRect(width * 0.4, height * 0.7, width * 0.2, height * 0.3);
-        this.graphics.endFill();
+        this.graphics
+            .rect(width * 0.4, height * 0.7, width * 0.2, height * 0.3)
+            .fill({ color: 0x8B4513 }) // Brown trunk
+            .stroke({ width: 2, color: 0x654321 });
         
         // Draw tree foliage (simple green rectangle)
-        this.graphics.beginFill(0x228B22); // Forest green
-        this.graphics.lineStyle(2, 0x006400);
-        this.graphics.drawRect(0, 0, width, height * 0.7);
-        this.graphics.endFill();
+        this.graphics
+            .rect(0, 0, width, height * 0.7)
+            .fill({ color: 0x228B22 }) // Forest green
+            .stroke({ width: 2, color: 0x006400 });
         
         this.container.addChild(this.graphics);
     }
@@ -210,18 +216,13 @@ class Bird {
 
     drawBird(): void {
         this.graphics.clear();
-        this.graphics.lineStyle(4, 0x000000);
         
         // If hit, ALWAYS show wings up, no exceptions
         if (this.isHit) {
             this.graphics.moveTo(0, -30);
             this.graphics.lineTo(30, 0);
             this.graphics.lineTo(60, -30);
-            return; // Exit early, don't check anything else
-        }
-        
-        // Only normal birds can flap
-        if (this.isFlapping) {
+        } else if (this.isFlapping) {
             // Flapping wings - V shape pointing down
             this.graphics.moveTo(0, -10);
             this.graphics.lineTo(30, 0);
@@ -232,6 +233,8 @@ class Bird {
             this.graphics.lineTo(30, 0);
             this.graphics.lineTo(60, 10);
         }
+
+        this.graphics.stroke({ width: 4, color: 0x000000 });
     }
 
     update(): boolean {
@@ -339,23 +342,7 @@ class Projectile {
         
         // Create arrow graphics
         this.graphics = new Graphics();
-        
-        // Arrow shaft (pointing to the right)
-        this.graphics.lineStyle(4, 0xFF8C00); // Bright orange shaft
-        this.graphics.moveTo(0, 0);
-        this.graphics.lineTo(this.length, 0);
-        
-        // Arrow head (pointing to the right)
-        this.graphics.beginFill(0xFF8C00); // Bright orange arrowhead
-        this.graphics.moveTo(this.length, -4);
-        this.graphics.lineTo(this.length, 4);
-        this.graphics.lineTo(this.length + 8, 0);
-        this.graphics.endFill();
-        
-        // Arrow fletching (at the back)
-        this.graphics.beginFill(0xFF8C00); // Bright orange fletching
-        this.graphics.drawRect(-3, -2, 6, 4);
-        this.graphics.endFill();
+        drawArrow(this.graphics, this.length);
         
         this.container.addChild(this.graphics);
     }
@@ -479,22 +466,22 @@ class Target {
         this.graphics = new Graphics();
         
         // Outer ring (red)
-        this.graphics.beginFill(0xff4444);
-        this.graphics.lineStyle(3, 0xFFFFFF);
-        this.graphics.drawCircle(0, 0, radius);
-        this.graphics.endFill();
+        this.graphics
+            .circle(0, 0, radius)
+            .fill({ color: 0xff4444 })
+            .stroke({ width: 3, color: 0xFFFFFF });
         
         // Middle ring (yellow)
-        this.graphics.beginFill(0xffff00);
-        this.graphics.lineStyle(2, 0xFFFFFF);
-        this.graphics.drawCircle(0, 0, radius * 0.6);
-        this.graphics.endFill();
+        this.graphics
+            .circle(0, 0, radius * 0.6)
+            .fill({ color: 0xffff00 })
+            .stroke({ width: 2, color: 0xFFFFFF });
         
         // Inner ring (red)
-        this.graphics.beginFill(0xff0000);
-        this.graphics.lineStyle(2, 0xFFFFFF);
-        this.graphics.drawCircle(0, 0, radius * 0.3);
-        this.graphics.endFill();
+        this.graphics
+            .circle(0, 0, radius * 0.3)
+            .fill({ color: 0xff0000 })
+            .stroke({ width: 2, color: 0xFFFFFF });
         
         this.container.addChild(this.graphics);
     }
@@ -536,63 +523,61 @@ class SimpleArcher {
         this.bodyContainer = new Container();
 
         // Create quiver (gray box at back)
-        const quiver = new Graphics();
-        quiver.beginFill(0x808080); // Gray color
-        quiver.drawRect(-30, 20, 18, 32); // 16x25 rectangle, moved left and up
-        quiver.endFill();
+        const quiver = new Container();
         quiver.rotation = -.1;
 
+        const quiverBody = new Graphics()
+            .rect(-30, 20, 18, 32) // 16x25 rectangle, moved left and up
+            .fill({ color: 0x808080 }); // Gray color
+        quiver.addChild(quiverBody);
+
         //draw some arrows in the quiver
-        const quiverArrows = new Graphics();
-        quiverArrows.beginFill(0xFF8C00);
-        quiverArrows.drawRect(-30, 5, 4, 12); // Position relative to quiver
-        quiverArrows.endFill();
+        const quiverArrows = new Graphics()
+            .rect(-30, 5, 4, 12) // Position relative to quiver
+            .fill({ color: ARROW_COLOR });
         quiverArrows.rotation = -.1;
         quiver.addChild(quiverArrows);
 
         // Add 2 more arrows
-        const quiverArrow2 = new Graphics();
-        quiverArrow2.beginFill(0xFF8C00);
-        quiverArrow2.drawRect(-25, 5, 4, 12); // Second arrow
-        quiverArrow2.endFill();
+        const quiverArrow2 = new Graphics()
+            .rect(-25, 5, 4, 12) // Second arrow
+            .fill({ color: ARROW_COLOR });
         quiverArrow2.rotation = -.1;
         quiver.addChild(quiverArrow2);
 
-        const quiverArrow3 = new Graphics();
-        quiverArrow3.beginFill(0xFF8C00);
-        quiverArrow3.drawRect(-20, 5, 4, 12); // Third arrow
-        quiverArrow3.endFill();
+        const quiverArrow3 = new Graphics()
+            .rect(-20, 5, 4, 12) // Third arrow
+            .fill({ color: ARROW_COLOR });
         quiverArrow3.rotation = -.1;
         quiver.addChild(quiverArrow3);
         
         // Create circle (head)
-        this.circle = new Graphics();
-        this.circle.beginFill(0x000000);
-        this.circle.drawCircle(0, 0, 20);
-        this.circle.endFill();
+        this.circle = new Graphics()
+            .circle(0, 0, 20)
+            .fill({ color: 0x000000 });
         
         // Create body line
-        const body = new Graphics();
-        body.lineStyle(8, 0x000000);
-        body.moveTo(0, 20);
-        body.lineTo(0, 55);
+        const body = new Graphics()
+            .moveTo(0, 20)
+            .lineTo(0, 55)
+            .stroke({ width: 8, color: 0x000000 });
         
         // Create hand holding the bow
-        this.bowHand = new Graphics();
-        this.bowHand.lineStyle(6, 0x000000);
-        this.bowHand.moveTo(0, 35); // Start from middle of body
-        this.bowHand.lineTo(35, 0); // Go to front center of bow (radius 35)
+        this.bowHand = new Graphics()
+            .moveTo(0, 35) // Start from middle of body
+            .lineTo(35, 0) // Go to front center of bow (radius 35)
+            .stroke({ width: 6, color: 0x000000 });
         
         // Create legs
-        const leftLeg = new Graphics();
-        leftLeg.lineStyle(8, 0x000000);
-        leftLeg.moveTo(0, 50);
-        leftLeg.lineTo(-10, 90);
+        const leftLeg = new Graphics()
+            .moveTo(0, 50)
+            .lineTo(-10, 90)
+            .stroke({ width: 8, color: 0x000000 });
         
-        const rightLeg = new Graphics();
-        rightLeg.lineStyle(8, 0x000000);
-        rightLeg.moveTo(0, 50);
-        rightLeg.lineTo(10, 90);
+        const rightLeg = new Graphics()
+            .moveTo(0, 50)
+            .lineTo(10, 90)
+            .stroke({ width: 8, color: 0x000000 });
         
 
         
@@ -601,9 +586,9 @@ class SimpleArcher {
         this.arrowContainer.y = 15; // Move down closer to shoulders
         
         // Create bow (simple brown arch)
-        const bow = new Graphics();
-        bow.lineStyle(6, 0x8B4513); // Brown color
-        bow.arc(0, 0, this.bowRadius, -Math.PI/2, Math.PI/2, false); // Semi-circle arch from left to right
+        const bow = new Graphics()
+            .arc(0, 0, this.bowRadius, -Math.PI/2, Math.PI/2, false) // Semi-circle arch from left to right
+            .stroke({ width: 6, color: 0x8B4513 }); // Brown color
         
         // Create bow arrow using Projectile class
         this.createNewBowArrow();
@@ -632,7 +617,6 @@ class SimpleArcher {
         this.bowHand.clear();
         
         // Redraw the hand line from body to bow center
-        this.bowHand.lineStyle(6, 0x000000);
         this.bowHand.moveTo(0, 35); // Start from middle of body
         
         // Calculate bow center position based on angle
@@ -641,6 +625,7 @@ class SimpleArcher {
         const bowCenterY = Math.sin(angle) * this.bowRadius + 15; // Add the 15px offset
         
         this.bowHand.lineTo(bowCenterX, bowCenterY); // Go to bow center
+        this.bowHand.stroke({ width: 6, color: 0x000000 });
     }
 
     updateArrowPosition(power: number, maxPower: number): void {
@@ -756,17 +741,17 @@ export class ArcherGame {
 
     private createGround(): void {
         const ground = new Graphics();
-        ground.beginFill(0x8FBC8F);
-        ground.lineStyle(2, 0x556B2F);
-        ground.drawRect(0, BASE_GAME_HEIGHT - GROUND_HEIGHT, BASE_GAME_WIDTH, GROUND_HEIGHT);
-        ground.endFill();
+        ground
+            .rect(0, BASE_GAME_HEIGHT - GROUND_HEIGHT, BASE_GAME_WIDTH, GROUND_HEIGHT)
+            .fill({ color: 0x8FBC8F })
+            .stroke({ width: 2, color: 0x556B2F });
         
         // Add some grass texture
-        ground.lineStyle(1, 0x556B2F);
         for (let i = 0; i < BASE_GAME_WIDTH; i += 20) {
             ground.moveTo(i, BASE_GAME_HEIGHT - GROUND_HEIGHT);
             ground.lineTo(i + 10, BASE_GAME_HEIGHT - GROUND_HEIGHT - 10);
         }
+        ground.stroke({ width: 1, color: 0x556B2F });
         
         this.app.stage.addChild(ground);
     }
@@ -790,7 +775,7 @@ export class ArcherGame {
     }
 
     private setupInput(): void {
-        this.app.stage.interactive = true;
+        this.app.stage.eventMode = 'static';
         this.app.stage.hitArea = this.app.screen;
 
         this.app.stage.on('pointermove', this.onPointerMove, this);
@@ -1008,10 +993,11 @@ export class ArcherGame {
                 const progress = (i) / (totalPoints - 1); // 0 to 1
                 const alpha = 0.4 * (1 - progress * 0.9); // Start at 0.4, fade to 0.08
                 
-                this.trajectoryLine.lineStyle(4, 'red', alpha);
                 if (!trajectoryPoints[i].skip) {
-                    this.trajectoryLine.moveTo(trajectoryPoints[i].x, trajectoryPoints[i].y);
-                    this.trajectoryLine.lineTo(trajectoryPoints[i + 1].x, trajectoryPoints[i + 1].y);
+                    this.trajectoryLine
+                        .moveTo(trajectoryPoints[i].x, trajectoryPoints[i].y)
+                        .lineTo(trajectoryPoints[i + 1].x, trajectoryPoints[i + 1].y)
+                        .stroke({ width: 4, color: 'red', alpha });
                 }
             }
         }
@@ -1460,7 +1446,7 @@ function updateCanvasScaling() {
     if (!app) return;
     
     const dimensions = getGameDimensions();
-    const canvas = app.view as HTMLCanvasElement;
+    const canvas = app.canvas;
     
     // Update canvas CSS dimensions
     canvas.style.width = `${BASE_GAME_WIDTH * dimensions.scale}px`;
@@ -1472,18 +1458,20 @@ async function initGame() {
     const dimensions = getGameDimensions();
     
     // Create PIXI application with base dimensions
-    app = new Application({
+    const pixiApp = new Application();
+    await pixiApp.init({
         width: BASE_GAME_WIDTH,
         height: BASE_GAME_HEIGHT,
-        backgroundColor: 0x87CEEB,
+        background: 0x87CEEB,
         antialias: true,
         resolution: window.devicePixelRatio || 1,
     });
+    app = pixiApp;
 
     // Add canvas to game container with proper scaling
     const gameContainer = document.getElementById('gameContainer');
     if (gameContainer) {
-        const canvas = app.view as HTMLCanvasElement;
+        const canvas = app.canvas;
         
         // Apply scaling through CSS transform
         canvas.style.width = `${BASE_GAME_WIDTH * dimensions.scale}px`;
@@ -1500,9 +1488,9 @@ async function initGame() {
     await game.init();
 
     // Start game loop
-    app.ticker.add((delta) => {
+    app.ticker.add((ticker) => {
         if (game) {
-            game.update(delta);
+            game.update(ticker.deltaTime);
         }
     });
     

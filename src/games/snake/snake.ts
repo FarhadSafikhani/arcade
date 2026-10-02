@@ -2,6 +2,8 @@ import { Container, Graphics } from 'pixi.js';
 
 type Direction = 'up' | 'down' | 'left' | 'right';
 
+const SEGMENT_BORDER = { width: 2, color: 0x229954, alpha: 0.8 };
+
 interface Position {
     x: number;
     y: number;
@@ -117,20 +119,11 @@ export class Snake {
             const x = segment.x * this.gridSize;
             const y = segment.y * this.gridSize;
             
-            // Head is a different color
-            if (index === 0) {
-                this.graphics.beginFill(0x2ecc71);
-            } else {
-                this.graphics.beginFill(0x27ae60);
-            }
-            
-            // Draw rounded rectangle for each segment
-            this.graphics.drawRoundedRect(x + 1, y + 1, this.gridSize - 2, this.gridSize - 2, 3);
-            this.graphics.endFill();
-            
-            // Add border
-            this.graphics.lineStyle(2, 0x229954, 0.8);
-            this.graphics.drawRoundedRect(x + 1, y + 1, this.gridSize - 2, this.gridSize - 2, 3);
+            // Head is a different color, with a bordered rounded rectangle for each segment
+            this.graphics
+                .roundRect(x + 1, y + 1, this.gridSize - 2, this.gridSize - 2, 3)
+                .fill(index === 0 ? 0x2ecc71 : 0x27ae60)
+                .stroke(SEGMENT_BORDER);
             
             // Add eyes to head
             if (index === 0) {
@@ -174,10 +167,11 @@ export class Snake {
         }
         
         // Draw eyes
-        this.graphics.beginFill(0x000000);
-        this.graphics.drawCircle(leftEyeX, leftEyeY, eyeSize);
-        this.graphics.drawCircle(rightEyeX, rightEyeY, eyeSize);
-        this.graphics.endFill();
+        this.graphics
+            .circle(leftEyeX, leftEyeY, eyeSize)
+            .circle(rightEyeX, rightEyeY, eyeSize)
+            .fill(0x000000)
+            .stroke(SEGMENT_BORDER);
     }
 
     getHead(): Position {

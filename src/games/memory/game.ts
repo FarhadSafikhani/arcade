@@ -1,4 +1,4 @@
-import { Application, Container, Graphics } from 'pixi.js';
+import { Application, Container, Graphics, Ticker } from 'pixi.js';
 import { Card } from './card';
 
 // Game constants - fixed base dimensions
@@ -128,9 +128,7 @@ export class MemoryGame {
 
     private createBackground(): void {
         const background = new Graphics();
-        background.beginFill(0x34495e);
-        background.drawRect(0, 0, BASE_GAME_WIDTH, BASE_GAME_HEIGHT);
-        background.endFill();
+        background.rect(0, 0, BASE_GAME_WIDTH, BASE_GAME_HEIGHT).fill(0x34495e);
         
         this.gameContainer.addChild(background);
     }
@@ -411,7 +409,7 @@ function updateCanvasScaling() {
     if (!app) return;
     
     const dimensions = getGameDimensions();
-    const canvas = app.view as HTMLCanvasElement;
+    const canvas = app.canvas;
     
     // Update canvas CSS dimensions
     canvas.style.width = `${BASE_GAME_WIDTH * dimensions.scale}px`;
@@ -424,18 +422,20 @@ async function initGame() {
     const dimensions = getGameDimensions();
     
     // Create PIXI application with base dimensions
-    app = new Application({
+    const pixiApp = new Application();
+    await pixiApp.init({
         width: BASE_GAME_WIDTH,
         height: BASE_GAME_HEIGHT,
-        backgroundColor: 0x2c3e50,
+        background: 0x2c3e50,
         antialias: true,
         resolution: window.devicePixelRatio || 1,
     });
+    app = pixiApp;
 
     // Add canvas to game container with proper scaling
     const gameContainer = document.getElementById('gameContainer');
     if (gameContainer) {
-        const canvas = app.view as HTMLCanvasElement;
+        const canvas = app.canvas;
         
         // Apply scaling through CSS transform
         canvas.style.width = `${BASE_GAME_WIDTH * dimensions.scale}px`;
@@ -458,9 +458,9 @@ async function initGame() {
     window.addEventListener('resize', updateCanvasScaling);
 }
 
-function gameLoop(delta: number) {
+function gameLoop(ticker: Ticker) {
     if (game) {
-        game.update(delta);
+        game.update(ticker.deltaTime);
     }
 }
 

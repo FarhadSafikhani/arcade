@@ -27,14 +27,11 @@ export class Ball {
         
         // Set color based on ball type
         const color = this.type === BallType.BLUE ? 0x3498db : 0xffffff;
-        this.graphics.beginFill(color);
-        this.graphics.drawCircle(0, 0, radius);
-        this.graphics.endFill();
+        this.graphics.circle(0, 0, radius).fill(color);
         
         // Add border
         const borderColor = this.type === BallType.BLUE ? 0x2980b9 : 0x2c3e50;
-        this.graphics.lineStyle(2, borderColor, 0.8);
-        this.graphics.drawCircle(0, 0, radius);
+        this.graphics.circle(0, 0, radius).stroke({ width: 2, color: borderColor, alpha: 0.8 });
         
         this.container.addChild(this.graphics);
     }

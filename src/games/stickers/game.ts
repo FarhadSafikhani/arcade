@@ -8,7 +8,8 @@ export const STICKER_GAME_CONFIG = {
     gideSizeSmall: 3,
     gideSizeMedium: 5,
     gideSizeLarge: 7,
-    snapThreshold: 132.25,
+    // Share of the piece's smaller side. The slot glow uses this same reach.
+    snapThreshold: 0.6,
     visiblePercentage: 0.1
 }
 
@@ -555,10 +556,9 @@ export class StickersGame {
 
     private createBackground(): void {
         this.background?.destroy();
-        const background = new Graphics();
-        background.beginFill(0xffffff); // White background
-        background.drawRect(0, 0, this.gameDimensions.gameWidth, this.gameDimensions.gameHeight);
-        background.endFill();
+        const background = new Graphics()
+            .rect(0, 0, this.gameDimensions.gameWidth, this.gameDimensions.gameHeight)
+            .fill(0xffffff);
         
         this.gameContainer.addChild(background);
         this.background = background;
@@ -665,7 +665,7 @@ export class StickersGame {
         });
 
         // Disable context menu
-        (this.app.view as HTMLCanvasElement).oncontextmenu = (e: MouseEvent) => e.preventDefault();
+        this.app.canvas.oncontextmenu = (e: MouseEvent) => e.preventDefault();
     }
 
 }
@@ -686,10 +686,11 @@ async function initGame() {
     
 
     // Create PIXI application
-    const app = new Application({
+    const app = new Application();
+    await app.init({
         width: gameDimensions.gameWidth,
         height: gameDimensions.gameHeight,
-        backgroundColor: 0xffffff,
+        background: 0xffffff,
         antialias: true,
         resolution: window.devicePixelRatio || 1,
     });
@@ -697,7 +698,7 @@ async function initGame() {
     // Add canvas to DOM
     const gameContainer = document.getElementById('gameContainer');
     if (gameContainer) {
-        gameContainer.appendChild(app.view as HTMLCanvasElement);
+        gameContainer.appendChild(app.canvas);
     }
 
     // Create and initialize game
@@ -705,8 +706,8 @@ async function initGame() {
     await game.init();
 
     // Set up game loop
-    app.ticker.add((delta) => {
-        game.update(delta);
+    app.ticker.add((ticker) => {
+        game.update(ticker.deltaTime);
     });
 
     // Handle window resize

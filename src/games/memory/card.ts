@@ -33,15 +33,7 @@ export class Card {
     private createCard(): void {
         // Create card background (face down)
         this.background = new Graphics();
-        this.background.beginFill(0x3498db);
-        this.background.lineStyle(3, 0x2980b9);
-        this.background.drawRoundedRect(0, 0, this.width, this.height, 10);
-        this.background.endFill();
-        
-        // Add inner highlight
-        this.background.beginFill(0x5dade2);
-        this.background.drawRoundedRect(3, 3, this.width - 6, this.height - 6, 8);
-        this.background.endFill();
+        this.drawFaceDown();
         
         this.container.addChild(this.background);
         
@@ -53,7 +45,7 @@ export class Card {
             align: 'center'
         });
         
-        this.emojiText = new Text(this.emoji, style);
+        this.emojiText = new Text({ text: this.emoji, style });
         this.emojiText.anchor.set(0.5);
         this.emojiText.position.set(this.width / 2, this.height / 2);
         this.emojiText.alpha = 0; // Start hidden
@@ -108,10 +100,10 @@ export class Card {
         
         // Change background to white
         this.background.clear();
-        this.background.beginFill(0xffffff);
-        this.background.lineStyle(3, 0xe0e0e0);
-        this.background.drawRoundedRect(0, 0, this.width, this.height, 10);
-        this.background.endFill();
+        this.background
+            .roundRect(0, 0, this.width, this.height, 10)
+            .fill(0xffffff)
+            .stroke({ width: 3, color: 0xe0e0e0 });
         
         // Animate scale back to normal
         const animate = () => {
@@ -132,16 +124,7 @@ export class Card {
         this.emojiText.alpha = 0;
         
         // Change background back to blue
-        this.background.clear();
-        this.background.beginFill(0x3498db);
-        this.background.lineStyle(3, 0x2980b9);
-        this.background.drawRoundedRect(0, 0, this.width, this.height, 10);
-        this.background.endFill();
-        
-        // Add inner highlight
-        this.background.beginFill(0x5dade2);
-        this.background.drawRoundedRect(3, 3, this.width - 6, this.height - 6, 8);
-        this.background.endFill();
+        this.drawFaceDown();
         
         // Animate scale back to normal
         const animate = () => {
@@ -181,15 +164,21 @@ export class Card {
         this.emojiText.alpha = 0;
         
         // Reset background to face down
+        this.drawFaceDown();
+    }
+
+    private drawFaceDown(): void {
+        const border = { width: 3, color: 0x2980b9 };
         this.background.clear();
-        this.background.beginFill(0x3498db);
-        this.background.lineStyle(3, 0x2980b9);
-        this.background.drawRoundedRect(0, 0, this.width, this.height, 10);
-        this.background.endFill();
+        this.background
+            .roundRect(0, 0, this.width, this.height, 10)
+            .fill(0x3498db)
+            .stroke(border);
         
-        // Add inner highlight
-        this.background.beginFill(0x5dade2);
-        this.background.drawRoundedRect(3, 3, this.width - 6, this.height - 6, 8);
-        this.background.endFill();
+        // Inner highlight shares the outer border stroke
+        this.background
+            .roundRect(3, 3, this.width - 6, this.height - 6, 8)
+            .fill(0x5dade2)
+            .stroke(border);
     }
 } 

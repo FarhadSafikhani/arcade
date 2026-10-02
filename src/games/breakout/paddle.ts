@@ -24,13 +24,10 @@ export class Paddle {
         
         // Create paddle graphics
         this.graphics = new Graphics();
-        this.graphics.beginFill(0x4ecdc4);
-        this.graphics.drawRoundedRect(0, 0, this.width, this.height, 5);
-        this.graphics.endFill();
+        this.graphics.roundRect(0, 0, this.width, this.height, 5).fill(0x4ecdc4);
         
         // Add border
-        this.graphics.lineStyle(2, 0xffffff, 0.8);
-        this.graphics.drawRoundedRect(0, 0, this.width, this.height, 5);
+        this.graphics.roundRect(0, 0, this.width, this.height, 5).stroke({ width: 2, color: 0xffffff, alpha: 0.8 });
         
         this.container.addChild(this.graphics);
     }

@@ -1,4 +1,4 @@
-import { Application, Container, Graphics } from 'pixi.js';
+import { Application, Container, Graphics, Ticker } from 'pixi.js';
 import { Paddle } from './paddle';
 import { Ball, BallType } from './ball';
 import { Brick } from './brick';
@@ -108,17 +108,13 @@ export class BreakoutGame {
 
     private createBackground(): void {
         const background = new Graphics();
-        background.beginFill(0x34495e);
-        background.drawRect(0, 0, BASE_GAME_WIDTH, BASE_GAME_HEIGHT);
-        background.endFill();
+        background.rect(0, 0, BASE_GAME_WIDTH, BASE_GAME_HEIGHT).fill(0x34495e);
         
         this.gameContainer.addChild(background);
         
         // Create safety net (initially hidden)
         this.safetyNet = new Graphics();
-        this.safetyNet.beginFill(0x2ecc71, 0.7);
-        this.safetyNet.drawRect(0, BASE_GAME_HEIGHT - 5, BASE_GAME_WIDTH, 5);
-        this.safetyNet.endFill();
+        this.safetyNet.rect(0, BASE_GAME_HEIGHT - 5, BASE_GAME_WIDTH, 5).fill({ color: 0x2ecc71, alpha: 0.7 });
         this.safetyNet.visible = false;
         this.gameContainer.addChild(this.safetyNet);
     }
@@ -163,7 +159,7 @@ export class BreakoutGame {
             if (this.isGameOver || this.isPaused) return;
             
             const mouseEvent = event as MouseEvent;
-            const rect = (this.app.view as HTMLCanvasElement).getBoundingClientRect();
+            const rect = this.app.canvas.getBoundingClientRect();
             const mouseX = mouseEvent.clientX - rect.left;
             
             // Map mouse position to game coordinates
@@ -210,7 +206,7 @@ export class BreakoutGame {
             
             // Center paddle on initial touch position
             const touchX = touch.clientX;
-            const canvas = this.app.view as HTMLCanvasElement;
+            const canvas = this.app.canvas;
             const rect = canvas.getBoundingClientRect();
             
             // Calculate touch position relative to the canvas
@@ -259,7 +255,7 @@ export class BreakoutGame {
                 const touchX = touch.clientX;
                 
                 // Get the canvas element and its position
-                const canvas = this.app.view as HTMLCanvasElement;
+                const canvas = this.app.canvas;
                 const rect = canvas.getBoundingClientRect();
                 
                 // Calculate touch position relative to the canvas
@@ -285,7 +281,7 @@ export class BreakoutGame {
         };
 
         document.addEventListener('keydown', handleKeydown);
-        const canvas = this.app.view as HTMLCanvasElement;
+        const canvas = this.app.canvas;
         canvas.addEventListener('mousemove', handleMouseMove);
         canvas.addEventListener('click', handleMouseClick);
         
@@ -715,7 +711,7 @@ function updateCanvasScaling() {
     if (!app) return;
     
     const dimensions = getGameDimensions();
-    const canvas = app.view as HTMLCanvasElement;
+    const canvas = app.canvas;
     
     // Update canvas CSS dimensions
     canvas.style.width = `${BASE_GAME_WIDTH * dimensions.scale}px`;
@@ -728,18 +724,20 @@ async function initGame() {
     const dimensions = getGameDimensions();
     
     // Create PIXI application with base dimensions
-    app = new Application({
+    const pixiApp = new Application();
+    await pixiApp.init({
         width: BASE_GAME_WIDTH,
         height: BASE_GAME_HEIGHT,
-        backgroundColor: 0x2c3e50,
+        background: 0x2c3e50,
         antialias: true,
         resolution: window.devicePixelRatio || 1,
     });
+    app = pixiApp;
 
     // Add canvas to game container with proper scaling
     const gameContainer = document.getElementById('gameContainer');
     if (gameContainer) {
-        const canvas = app.view as HTMLCanvasElement;
+        const canvas = app.canvas;
         
         // Apply scaling through CSS transform
         canvas.style.width = `${BASE_GAME_WIDTH * dimensions.scale}px`;
@@ -762,9 +760,9 @@ async function initGame() {
     window.addEventListener('resize', updateCanvasScaling);
 }
 
-function gameLoop(delta: number) {
+function gameLoop(ticker: Ticker) {
     if (game) {
-        game.update(delta);
+        game.update(ticker.deltaTime);
     }
 }
 

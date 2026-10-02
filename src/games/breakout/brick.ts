@@ -32,17 +32,13 @@ export class Brick {
         const colorIndex = Math.max(0, this.health - 1);
         const color = colors[colorIndex];
         
-        this.graphics.beginFill(color);
-        this.graphics.drawRoundedRect(0, 0, this.width, this.height, 3);
-        this.graphics.endFill();
+        this.graphics.roundRect(0, 0, this.width, this.height, 3).fill(color);
         
         // Add outer border
-        this.graphics.lineStyle(1, 0xffffff, 0.3);
-        this.graphics.drawRoundedRect(0, 0, this.width, this.height, 3);
+        this.graphics.roundRect(0, 0, this.width, this.height, 3).stroke({ width: 1, color: 0xffffff, alpha: 0.3 });
         
         // Add inner stroke for depth
-        this.graphics.lineStyle(1, 0xffffff, 0.6);
-        this.graphics.drawRoundedRect(2, 2, this.width - 4, this.height - 4, 2);
+        this.graphics.roundRect(2, 2, this.width - 4, this.height - 4, 2).stroke({ width: 1, color: 0xffffff, alpha: 0.6 });
         
         this.container.addChild(this.graphics);
     }

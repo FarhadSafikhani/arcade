@@ -28,24 +28,25 @@ export class Food {
         const centerY = this.y * this.gridSize + this.gridSize / 2;
         const radius = this.gridSize / 2 - 2;
         
-        // Draw main food circle
-        this.graphics.beginFill(0xe74c3c);
-        this.graphics.drawCircle(centerX, centerY, radius);
-        this.graphics.endFill();
+        const border = { width: 2, color: 0xc0392b, alpha: 0.8 };
         
-        // Add border
-        this.graphics.lineStyle(2, 0xc0392b, 0.8);
-        this.graphics.drawCircle(centerX, centerY, radius);
+        // Draw main food circle with border
+        this.graphics
+            .circle(centerX, centerY, radius)
+            .fill(0xe74c3c)
+            .stroke(border);
         
         // Add shine effect
-        this.graphics.beginFill(0xffffff);
-        this.graphics.drawCircle(centerX - radius / 3, centerY - radius / 3, radius / 4);
-        this.graphics.endFill();
+        this.graphics
+            .circle(centerX - radius / 3, centerY - radius / 3, radius / 4)
+            .fill(0xffffff)
+            .stroke(border);
         
         // Add bite marks (make it look like an apple)
-        this.graphics.beginFill(0x2c3e50);
-        this.graphics.drawEllipse(centerX + radius / 2, centerY - radius / 2, radius / 6, radius / 3);
-        this.graphics.endFill();
+        this.graphics
+            .ellipse(centerX + radius / 2, centerY - radius / 2, radius / 6, radius / 3)
+            .fill(0x2c3e50)
+            .stroke(border);
     }
 
     update(delta: number): void {

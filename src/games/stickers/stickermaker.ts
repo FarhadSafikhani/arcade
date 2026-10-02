@@ -1,4 +1,4 @@
-import { Application, Container, Graphics, Sprite, Texture, Assets, Rectangle, RenderTexture, FederatedPointerEvent, ColorMatrixFilter, BlurFilter, Text, Filter, BLEND_MODES } from 'pixi.js';
+import { Application, Container, Graphics, Sprite, Texture, Assets, Rectangle, RenderTexture, FederatedPointerEvent, ColorMatrixFilter, BlurFilter, Text, Filter, Ticker, defaultFilterVert } from 'pixi.js';
 import { Pnt } from '../../shared/utils/shared-types';
 import { STICKER_GAME_CONFIG, StickerGameLevel, StickersGame } from './game';
 import { VERSION } from '../../version';
@@ -27,7 +27,7 @@ function readStickerSource(app: Application, texture: Texture): Promise<StickerS
         const renderTexture = RenderTexture.create({ width: texture.width, height: texture.height, resolution: 1 });
         let canvas: HTMLCanvasElement;
         try {
-            app.renderer.render(temporary, { renderTexture });
+            app.renderer.render({ container: temporary, target: renderTexture });
             canvas = app.renderer.extract.canvas(renderTexture) as HTMLCanvasElement;
         } finally {
             temporary.destroy();
@@ -89,12 +89,13 @@ export class Chunk {
                 return;
             }
 
-            const pos = event.getLocalPosition(this.sprite.parent);
+            const parent = this.sprite.parent!;
+            const pos = event.getLocalPosition(parent);
             this.dragOffset.x = pos.x - this.sprite.position.x;
             this.dragOffset.y = pos.y - this.sprite.position.y;
 
             // bring chunk sprite ontop of everything else
-            this.sprite.parent.addChild(this.sprite);
+            parent.addChild(this.sprite);
 
             // Dispatch custom event for the parent to handle
             const customEvent = new CustomEvent('startChunkDrag', {
@@ -109,8 +110,8 @@ export class Chunk {
         const x = Math.min(Math.max(this.sprite.x, 0), this.stickerMaker.gameWidth - this.sprite.width);
         const y = Math.min(Math.max(this.sprite.y, 0), this.stickerMaker.gameHeight - this.sprite.height);
         const distance = Math.hypot(x - this.originX, y - this.originY);
-        const relativeSnapThreshold = STICKER_GAME_CONFIG.snapThreshold / this.stickerMaker.currentGridSize;
-        return this.inPlay && distance < relativeSnapThreshold;
+        const reach = Math.min(this.sprite.width, this.sprite.height) * STICKER_GAME_CONFIG.snapThreshold;
+        return this.inPlay && distance < reach;
     }
 
     public setDropReady(ready: boolean): void {
@@ -140,7 +141,7 @@ export class Chunk {
         this.sprite.cursor = 'default';
 
         //make chunk first child of its parent
-        this.sprite.parent.setChildIndex(this.sprite, 0);
+        this.sprite.parent!.setChildIndex(this.sprite, 0);
         
         // Create a smooth brightness pulse animation using PIXI ticker
 
@@ -148,8 +149,8 @@ export class Chunk {
         let elapsed = 0;
         const duration = 60; 
         
-        const animationTicker = (deltaTime: number) => {
-            elapsed += deltaTime; // Convert to milliseconds (60fps = 16.67ms per frame)
+        const animationTicker = (ticker: Ticker) => {
+            elapsed += ticker.deltaTime; // Frames at 60fps
             
             const progress = Math.min(elapsed / duration, 1);
             
@@ -235,14 +236,14 @@ export class Hole {
                 0, 0, 0, 0, 0.72,
                 0, 0, 0, 1, 0,
             ];
-            this.highlightBlur = new BlurFilter(6, 4);
+            this.highlightBlur = new BlurFilter({ strength: 6, quality: 4 });
             const glow = cloneSlot(this.graphics);
             glow.filters = [this.highlightColor, this.highlightBlur];
             const fill = cloneSlot(this.graphics);
             fill.filters = [this.highlightColor];
             fill.alpha = 0.35;
             this.highlight.addChild(glow, fill);
-            this.graphics.parent.addChild(this.highlight);
+            this.graphics.parent!.addChild(this.highlight);
         }
         this.highlight.visible = true;
         this.highlight.alpha = alpha;
@@ -286,7 +287,7 @@ export class StickerMaker {
     private cancelIntro: (() => void) | null = null;
     private cancelCelebration: (() => void) | null = null;
 
-    private readonly animateDropPreview = (delta: number): void => {
+    private readonly animateDropPreview = ({ deltaTime: delta }: Ticker): void => {
         this.updateDropPreview();
         if (!this.previewReady) return;
         this.previewElapsed += delta;
@@ -405,14 +406,11 @@ export class StickerMaker {
     }
 
     private pieceDisplay(piece: StickerPiece, texture: Texture): Sprite | Graphics {
-        const region = new Texture(texture.baseTexture, new Rectangle(piece.x, piece.y, piece.width, piece.height));
+        const region = new Texture({ source: texture.source, frame: new Rectangle(piece.x, piece.y, piece.width, piece.height) });
         this.pieceTextures.add(region);
         if (!piece.points) return new Sprite(region);
-        const triangle = new Graphics();
-        triangle.beginTextureFill({ texture: region });
-        triangle.drawPolygon(piece.points);
-        triangle.endFill();
-        return triangle;
+        // 'global' anchors the region at the piece origin instead of stretching it to the triangle's bounds.
+        return new Graphics().poly(piece.points).fill({ texture: region, textureSpace: 'global' });
     }
 
     private createPiece(piece: StickerPiece, texture: Texture): void {
@@ -516,7 +514,7 @@ export class StickerMaker {
 
     public onMove(event: FederatedPointerEvent){
         if (this.activeChunk) {
-            const pos = event.getLocalPosition(this.activeChunk.sprite.parent);
+            const pos = event.getLocalPosition(this.activeChunk.sprite.parent!);
             this.activeChunk.sprite.position.x = pos.x - this.activeChunk.dragOffset.x;
             this.activeChunk.sprite.position.y = pos.y - this.activeChunk.dragOffset.y;
             this.updateDropPreview();
@@ -559,12 +557,8 @@ export class StickerMaker {
         
         for (let i = 0; i < particleCount; i++) {
             // Create simple white circle particle
-            const particle = new Graphics();
             const size = Math.random() * 4 + 2; // 3-9 pixels
-            
-            particle.beginFill(0xFFFFFF); // White
-            particle.drawCircle(0, 0, size);
-            particle.endFill();
+            const particle = new Graphics().circle(0, 0, size).fill(0xFFFFFF);
             
             // Position at snap point
             particle.position.set(x, y);
@@ -584,7 +578,7 @@ export class StickerMaker {
             let currentVelX = velocityX;
             let currentVelY = velocityY;
             
-            const particleTicker = (deltaTime: number) => {
+            const particleTicker = ({ deltaTime }: Ticker) => {
                 life -= deltaTime;
                 
                 // Apply physics
@@ -683,72 +677,81 @@ export class StickerMaker {
         for (let i = 0; i < 16; i++) {
             const a = i * Math.PI / 8;
             const radius = 1000;
-            rays.beginFill(colors[i % colors.length], i % 2 ? 0.08 : 0.16);
-            rays.drawPolygon([0, 0, Math.cos(a) * radius, Math.sin(a) * radius,
-                Math.cos(a + 0.085) * radius, Math.sin(a + 0.085) * radius]);
-            rays.endFill();
+            rays.poly([0, 0, Math.cos(a) * radius, Math.sin(a) * radius,
+                Math.cos(a + 0.085) * radius, Math.sin(a + 0.085) * radius])
+                .fill({ color: colors[i % colors.length], alpha: i % 2 ? 0.08 : 0.16 });
         }
-        rays.blendMode = BLEND_MODES.ADD;
+        rays.blendMode = 'add';
         overlay.addChild(rays);
         const halo = new Graphics();
         for (let i = 10; i >= 1; i--) {
-            halo.beginFill(i % 2 ? 0x9d70ff : 0xffd786, 0.018);
-            halo.drawCircle(0, 0, 80 + i * 16);
-            halo.endFill();
+            halo.circle(0, 0, 80 + i * 16).fill({ color: i % 2 ? 0x9d70ff : 0xffd786, alpha: 0.018 });
         }
         overlay.addChild(halo);
         const hero = new Sprite(original.texture);
         hero.anchor.set(0.5);
         overlay.addChild(hero);
         // The foil light is applied only to opaque artwork, preserving its cutout.
-        const foil = new Filter(undefined, `
-            varying vec2 vTextureCoord;
-            uniform sampler2D uSampler;
-            uniform vec4 inputClamp;
-            uniform float sweep;
-            uniform float strength;
-            void main() {
-                vec4 art = texture2D(uSampler, vTextureCoord);
-                vec2 uv = (vTextureCoord - inputClamp.xy) / (inputClamp.zw - inputClamp.xy);
-                float band = exp(-pow((uv.x + uv.y * 0.45 - sweep) * 5.0, 2.0));
-                vec3 rainbow = 0.5 + 0.5 * cos(6.28318 * (uv.x * 0.65 + uv.y * 0.4 + vec3(0.0, 0.33, 0.67)));
-                art.rgb = mix(art.rgb, rainbow * art.a, band * strength * 0.45);
-                art.rgb += vec3(band * strength * 0.3) * art.a;
-                gl_FragColor = art;
-            }
-        `, { sweep: -0.4, strength: reduced ? 0 : 1 });
+        const foil = Filter.from({
+            gl: {
+                vertex: defaultFilterVert,
+                fragment: `
+                    in vec2 vTextureCoord;
+                    uniform sampler2D uTexture;
+                    uniform vec4 uInputClamp;
+                    uniform float uSweep;
+                    uniform float uStrength;
+                    void main() {
+                        vec4 art = texture2D(uTexture, vTextureCoord);
+                        vec2 uv = (vTextureCoord - uInputClamp.xy) / (uInputClamp.zw - uInputClamp.xy);
+                        float band = exp(-pow((uv.x + uv.y * 0.45 - uSweep) * 5.0, 2.0));
+                        vec3 rainbow = 0.5 + 0.5 * cos(6.28318 * (uv.x * 0.65 + uv.y * 0.4 + vec3(0.0, 0.33, 0.67)));
+                        art.rgb = mix(art.rgb, rainbow * art.a, band * uStrength * 0.45);
+                        art.rgb += vec3(band * uStrength * 0.3) * art.a;
+                        gl_FragColor = art;
+                    }
+                `,
+            },
+            resources: {
+                foilUniforms: {
+                    uSweep: { value: -0.4, type: 'f32' },
+                    uStrength: { value: reduced ? 0 : 1, type: 'f32' },
+                },
+            },
+        });
+        const foilUniforms = foil.resources.foilUniforms.uniforms as { uSweep: number; uStrength: number };
         hero.filters = [foil];
         const sparkles = new Container();
         overlay.addChild(sparkles);
         const glints = Array.from({ length: 24 }, (_, i) => {
-            const star = new Graphics();
-            star.beginFill(i % 3 === 0 ? 0xffd886 : 0xffffff);
-            star.drawPolygon([0, -9, 2, -2, 9, 0, 2, 2, 0, 9, -2, 2, -9, 0, -2, -2]);
-            star.endFill();
-            star.blendMode = BLEND_MODES.ADD;
+            const star = new Graphics()
+                .poly([0, -9, 2, -2, 9, 0, 2, 2, 0, 9, -2, 2, -9, 0, -2, -2])
+                .fill(i % 3 === 0 ? 0xffd886 : 0xffffff);
+            star.blendMode = 'add';
             sparkles.addChild(star);
             return { star, angle: i * Math.PI * 2 / 24, phase: i * 1.7 };
         });
-        const label = new Text('LEGENDARY STICKER', {
+        const label = new Text({ text: 'LEGENDARY STICKER', style: {
             fontFamily: 'Trebuchet MS, sans-serif', fontSize: 16, fontWeight: 'bold',
             fill: '#ffe4a2', letterSpacing: 4,
-        });
+        } });
         label.anchor.set(0.5);
         overlay.addChild(label);
         const stamp = new Container();
-        const stampPlate = new Graphics();
-        stampPlate.lineStyle(3, 0xffdf91).beginFill(0x332450, 0.94);
-        stampPlate.drawRoundedRect(-150, -30, 300, 60, 14).endFill();
-        const stampText = new Text('COLLECTED!', {
+        const stampPlate = new Graphics()
+            .roundRect(-150, -30, 300, 60, 14)
+            .fill({ color: 0x332450, alpha: 0.94 })
+            .stroke({ width: 3, color: 0xffdf91 });
+        const stampText = new Text({ text: 'COLLECTED!', style: {
             fontFamily: 'Trebuchet MS, sans-serif', fontSize: 34, fontWeight: '900',
             fill: '#fff2c8', letterSpacing: 3,
-        });
+        } });
         stampText.anchor.set(0.5);
         stamp.addChild(stampPlate, stampText);
         overlay.addChild(stamp);
-        const subtitle = new Text('Added to your collection', {
+        const subtitle = new Text({ text: 'Added to your collection', style: {
             fontFamily: 'Trebuchet MS, sans-serif', fontSize: 15, fill: '#ddd1f4',
-        });
+        } });
         subtitle.anchor.set(0.5);
         overlay.addChild(subtitle);
         original.visible = false;
@@ -787,14 +790,14 @@ export class StickerMaker {
             const artHeight = Math.max(48, Math.min(h * 0.53, h - 240, 520));
             const cx = w / 2, cy = Math.min(h * 0.43, h - 180 - artHeight / 2);
             const targetScale = Math.min(artWidth / hero.texture.width, artHeight / hero.texture.height);
-            dim.clear().beginFill(0x130e2b, 0.88 * reveal).drawRect(0, 0, w, h).endFill();
+            dim.clear().rect(0, 0, w, h).fill({ color: 0x130e2b, alpha: 0.88 * reveal });
             hero.position.set(original.x + (cx - original.x) * lift, original.y + (cy - original.y) * lift);
             const heroScale = original.scale.x + (targetScale - original.scale.x) * lift;
             hero.scale.set(heroScale * (reduced ? 1 : 1 + Math.sin(progress(120, 900) * Math.PI) * 0.09), heroScale);
             hero.rotation = reduced ? 0 : Math.sin(progress(120, 1100) * Math.PI * 2) * 0.07;
             hero.skew.y = reduced ? 0 : Math.sin(progress(300, 1900) * Math.PI * 2) * 0.06;
-            foil.uniforms.sweep = -0.4 + progress(600, 1500) * 2.1;
-            foil.uniforms.strength = reduced ? 0 : 1 - progress(2900, 500);
+            foilUniforms.uSweep = -0.4 + progress(600, 1500) * 2.1;
+            foilUniforms.uStrength = reduced ? 0 : 1 - progress(2900, 500);
             rays.position.set(cx, cy);
             rays.rotation = reduced ? 0 : elapsed * 0.00007;
             rays.alpha = reveal * (0.75 + (reduced ? 0 : Math.sin(elapsed * 0.002) * 0.2));

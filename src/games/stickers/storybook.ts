@@ -1,7 +1,9 @@
+import { AmbientLayer } from './ambient/ambient-layer';
 import { addStorySticker, readStoryProgress, resetSceneProgress, restoredPage, sceneComplete, STORY_PAGE_KEY, STORY_SAVE_KEY, STORY_SCENES, stickerPath, StorySticker } from './story-state';
 
 export class StickerStorybook {
     readonly element = document.createElement('section');
+    private readonly ambient = new AmbientLayer();
     private progress: StorySticker[] = [];
     private page = 0;
     private turnTimer: ReturnType<typeof setTimeout> | null = null;
@@ -23,9 +25,9 @@ export class StickerStorybook {
         this.turnTimer = null;
         this.element.classList.remove('turning-forward', 'turning-backward');
     }
-    hide(): void { this.stopTurn(); this.element.hidden = true; }
+    hide(): void { this.stopTurn(); this.ambient.detach(); this.element.hidden = true; }
     show(): void { this.element.hidden = false; this.render(); }
-    destroy(): void { this.stopTurn(); this.element.remove(); }
+    destroy(): void { this.stopTurn(); this.ambient.destroy(); this.element.remove(); }
     record(id: StorySticker): void {
         this.progress = addStorySticker(this.progress, id);
         try { localStorage.setItem(STORY_SAVE_KEY, JSON.stringify(this.progress)); } catch { /* Keep playing without disk. */ }
@@ -68,6 +70,7 @@ export class StickerStorybook {
         const complete = sceneComplete(this.progress, this.page);
         this.element.innerHTML = `<div class="story-book"><div class="painted-page">
           <img class="pond-painting" src="/arcade/assets/stickers/story/${scene.background}" alt="${this.page === 0 ? 'Sunlit fantasy pond with water lilies and a mossy woodland bank' : 'A woodland pond glowing in the last light of dusk'}" draggable="false">
+          <div class="ambient-slot" aria-hidden="true"></div>
           ${scene.birds.map((bird, index) => {
               const id: StorySticker = `${scene.id}:${bird.id}`;
               const done = this.progress.includes(id);
@@ -80,7 +83,8 @@ export class StickerStorybook {
           ${this.page > 0 ? '<button type="button" class="page-arrow previous-page" aria-label="Previous scene">‹</button>' : ''}
           ${this.page < STORY_SCENES.length - 1 ? `<button type="button" class="page-arrow next-page" aria-label="Next scene" ${complete ? '' : 'disabled'}>›</button>` : ''}
           <p class="story-error" role="alert" hidden></p>
-        </div></div>${import.meta.env.DEV ? '<details class="stickers-dev-panel"><summary>[DEV]</summary><div><button type="button" class="reset-page">Reset page puzzles</button></div></details>' : ''}`;
+        </div></div>${import.meta.env.DEV ? `<details class="stickers-dev-panel"><summary>[DEV]</summary><div><button type="button" class="reset-page">Reset page puzzles</button><label class="ambient-tuner">Ambient <input type="range" class="ambient-intensity" min="0" max="2" step="0.05" value="${this.ambient.intensity}"><output>${this.ambient.intensity.toFixed(2)}</output></label></div></details>` : ''}`;
+        void this.ambient.attach(this.element.querySelector<HTMLElement>('.ambient-slot')!, scene.effects);
         this.element.querySelectorAll<HTMLButtonElement>('[data-sticker]').forEach(button => {
             button.addEventListener('click', () => {
                 const grid = Number(document.querySelector<HTMLSelectElement>('#storyDifficulty')?.value || 3);
@@ -90,5 +94,10 @@ export class StickerStorybook {
         this.element.querySelector('.next-page')?.addEventListener('click', () => this.turn(1));
         this.element.querySelector('.previous-page')?.addEventListener('click', () => this.turn(-1));
         this.element.querySelector('.reset-page')?.addEventListener('click', () => this.resetPage());
+        this.element.querySelector<HTMLInputElement>('.ambient-intensity')?.addEventListener('input', event => {
+            const input = event.currentTarget as HTMLInputElement;
+            this.ambient.setIntensity(Number(input.value));
+            input.nextElementSibling!.textContent = this.ambient.intensity.toFixed(2);
+        });
     }
 }

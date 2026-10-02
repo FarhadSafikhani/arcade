@@ -55,13 +55,10 @@ export class PowerUp {
                 break;
         }
         
-        this.graphics.beginFill(color);
-        this.graphics.drawRoundedRect(0, 0, this.width, this.height, 5);
-        this.graphics.endFill();
+        this.graphics.roundRect(0, 0, this.width, this.height, 5).fill(color);
         
         // Add border
-        this.graphics.lineStyle(2, 0xffffff, 0.8);
-        this.graphics.drawRoundedRect(0, 0, this.width, this.height, 5);
+        this.graphics.roundRect(0, 0, this.width, this.height, 5).stroke({ width: 2, color: 0xffffff, alpha: 0.8 });
         
         // Create text
         const textStyle = new TextStyle({
@@ -69,11 +66,10 @@ export class PowerUp {
             fontSize: 16,
             fontWeight: 'bold',
             fill: 0xffffff,
-            stroke: 0x000000,
-            strokeThickness: 2
+            stroke: { color: 0x000000, width: 2 }
         });
         
-        this.text = new Text(symbol, textStyle);
+        this.text = new Text({ text: symbol, style: textStyle });
         this.text.anchor.set(0.5);
         this.text.x = this.width / 2;
         this.text.y = this.height / 2;
