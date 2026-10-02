@@ -465,3 +465,30 @@
     display: none;
 }
 
+.stickers-dev-panel {
+    position: fixed;
+    bottom: 12px;
+    left: 12px;
+    z-index: 1000;
+    color: #fff;
+    background: #20283b;
+    border: 1px solid #46516b;
+    border-radius: 8px;
+    font: 12px monospace;
+    box-shadow: 0 4px 16px #0004;
+}
+.stickers-dev-panel[hidden] { display: none; }
+.stickers-dev-panel summary { padding: 8px 12px; cursor: pointer; }
+.stickers-dev-panel > div { display: flex; flex-direction: column; gap: 6px; padding: 0 8px 8px; }
+.stickers-dev-panel button {
+    padding: 8px 12px;
+    color: inherit;
+    background: #303c54;
+    border: 1px solid #46516b;
+    border-radius: 5px;
+    font: inherit;
+    cursor: pointer;
+}
+.stickers-dev-panel button:hover { background: #3c4a68; }
+.stickers-dev-panel :focus-visible { outline: 2px solid #ffedb8; outline-offset: 2px; }
+

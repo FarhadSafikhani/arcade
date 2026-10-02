@@ -1,6 +1,8 @@
 import { Application, Container, Graphics, FederatedPointerEvent, Assets } from 'pixi.js';
 import { StickerMaker } from './stickermaker';
 import { GameDimensions } from '../../shared/utils/shared-types';
+import { StickerStorybook } from './storybook';
+import { StorySticker, stickerPath } from './story-state';
 
 export const STICKER_GAME_CONFIG = {
     gideSizeSmall: 3,
@@ -131,6 +133,12 @@ export class StickersGame {
     private userState: UserState;
     private levelRequest = 0;
     private background: Graphics | null = null;
+    private storybook!: StickerStorybook;
+    private storySticker: StorySticker | null = null;
+    private storyCompleted = false;
+    private storyReturnTimer: ReturnType<typeof setTimeout> | null = null;
+    private inBook = true;
+    private devPanel: HTMLDetailsElement | null = null;
 
     constructor(app: Application) {
         this.app = app;
@@ -149,6 +157,7 @@ export class StickersGame {
         // Create game background
         this.createBackground();
         this.setupBackButton();
+        if (import.meta.env.DEV) this.installDevPanel();
 
         // Show level menu immediately
         this.showLevelMenu();
@@ -159,6 +168,35 @@ export class StickersGame {
 
         // Setup click outside handler for difficulty buttons
         this.setupClickOutsideHandler();
+        this.storybook = new StickerStorybook((id, grid) => {
+            this.storySticker = id;
+            this.storyCompleted = false;
+            void this.startLevel({ id: `scene_${id}`, path: stickerPath(id) }, grid);
+        });
+        const switcher = document.createElement('button');
+        switcher.type = 'button';
+        switcher.className = 'story-switch';
+        switcher.id = 'storySwitch';
+        switcher.textContent = 'Sticker gallery';
+        switcher.addEventListener('click', () => {
+            if (this.gameContainer.visible) this.returnToLevelMenu();
+            this.inBook = !this.inBook;
+            this.showLevelMenu();
+        });
+        const navigation = document.createElement('div');
+        navigation.className = 'story-nav';
+        const difficulty = document.createElement('select');
+        difficulty.id = 'storyDifficulty';
+        difficulty.setAttribute('aria-label', 'Puzzle difficulty');
+        difficulty.innerHTML = '<option value="3">Easy</option><option value="5">Medium</option><option value="7">Hard</option>';
+        difficulty.addEventListener('change', () => {
+            if (!this.storySticker || !this.gameContainer.visible) return;
+            this.storyCompleted = false;
+            void this.startLevel({ id: `scene_${this.storySticker}`, path: stickerPath(this.storySticker) }, Number(difficulty.value));
+        });
+        navigation.append(difficulty, switcher);
+        document.querySelector('.stickers-header')?.appendChild(navigation);
+        this.showLevelMenu();
 
         // Load assets in background and update cards as they load
         this.loadAssetsProgressively();
@@ -167,16 +205,26 @@ export class StickersGame {
 
 
     public showLevelMenu(): void {
+        if (this.devPanel) this.devPanel.hidden = true;
         // Hide game container and show level menu
         this.gameContainer.visible = false;
         const levelMenu = document.getElementById('levelMenu');
         if (levelMenu) {
-            levelMenu.classList.remove('hidden');
+            levelMenu.classList.toggle('hidden', this.inBook);
         }
+        if (this.storybook) {
+            if (this.inBook) this.storybook.show();
+            else this.storybook.hide();
+        }
+        const switcher = document.getElementById('storySwitch');
+        if (switcher) switcher.textContent = this.inBook ? 'Sticker gallery' : 'Storybook';
+        const difficulty = document.getElementById('storyDifficulty');
+        if (difficulty) difficulty.hidden = !this.inBook;
         this.updateBackButton();
     }
 
     public hideLevelMenu(): void {
+        this.storybook?.hide();
         // Show game container and hide level menu
         this.gameContainer.visible = true;
         const levelMenu = document.getElementById('levelMenu');
@@ -389,6 +437,8 @@ export class StickersGame {
     }
 
     public async startLevel(level: StickerGameLevel, gridSize: number): Promise<void> {
+        this.cancelStoryReturn();
+        if (this.devPanel) this.devPanel.hidden = true;
         const request = ++this.levelRequest;
         this.hideLevelMenu();
         this.hideReturnButton();
@@ -404,10 +454,13 @@ export class StickersGame {
             if (!ready || request !== this.levelRequest) return;
             this.setPreparing(false);
             await this.stickerMaker.revealSticker();
+            if (request === this.levelRequest && this.devPanel) this.devPanel.hidden = false;
         } catch (error) {
             if (request !== this.levelRequest) return;
             console.error('Unable to prepare sticker:', error);
+            const wasStory = this.storySticker !== null;
             this.returnToLevelMenu();
+            if (wasStory) this.storybook.reportError();
             document.getElementById('levelError')?.removeAttribute('hidden');
         }
     }
@@ -424,13 +477,36 @@ export class StickersGame {
     }
 
     public setLevelCompleted(levelId: string): void {
+        if (this.devPanel) this.devPanel.hidden = true;
+        if (this.storySticker && levelId === `scene_${this.storySticker}`) {
+            this.storyCompleted = true;
+            this.storybook.record(this.storySticker);
+            return;
+        }
         if (!this.userState.levelsCompleted.includes(levelId)) {
             this.userState.levelsCompleted.push(levelId);
             this.saveUserState();
         }
     }
 
+    public finishStorySticker(): boolean {
+        if (!this.storySticker) return false;
+        const request = this.levelRequest;
+        this.cancelStoryReturn();
+        this.storyReturnTimer = setTimeout(() => {
+            this.storyReturnTimer = null;
+            if (request === this.levelRequest) this.returnToLevelMenu();
+        }, 500);
+        return true;
+    }
+
+    private cancelStoryReturn(): void {
+        if (this.storyReturnTimer !== null) clearTimeout(this.storyReturnTimer);
+        this.storyReturnTimer = null;
+    }
+
     public returnToLevelMenu(): void {
+        this.cancelStoryReturn();
         this.levelRequest++;
         this.setPreparing(false);
         // Clean up current game state
@@ -443,6 +519,9 @@ export class StickersGame {
         this.hideReturnButton();
         this.showLevelMenu();
         this.populateLevelMenu();
+        if (this.storySticker && this.storyCompleted) this.storybook.place(this.storySticker);
+        this.storySticker = null;
+        this.storyCompleted = false;
     }
 
     private setupReturnButton(): void {
@@ -457,6 +536,8 @@ export class StickersGame {
     public showReturnButton(): void {
         const returnButton = document.getElementById('returnButton');
         if (returnButton) {
+            returnButton.textContent = this.storySticker ? '↗' : 'Return to Menu';
+            returnButton.setAttribute('aria-label', this.storySticker ? 'Place sticker in scene' : 'Return to menu');
             returnButton.classList.remove('hidden');
         }
     }
@@ -502,7 +583,7 @@ export class StickersGame {
         if (!(button instanceof HTMLButtonElement) || !label) return;
 
         const inPuzzle = this.gameContainer.visible;
-        label.textContent = inPuzzle ? 'Menu' : 'Arcade';
+        label.textContent = inPuzzle ? (this.inBook ? 'Book' : 'Menu') : 'Arcade';
         button.setAttribute('aria-label', inPuzzle ? 'Back to puzzle menu' : 'Back to arcade');
     }
 
@@ -511,6 +592,9 @@ export class StickersGame {
     }
 
     destroy(): void {
+        this.cancelStoryReturn();
+        this.devPanel?.remove();
+        this.storybook?.destroy();
         this.levelRequest++;
         this.setPreparing(false);
         // Clean up game state first
@@ -519,6 +603,30 @@ export class StickersGame {
         // Clean up PIXI resources
         this.app.stage.removeChild(this.gameContainer);
         this.gameContainer.destroy({ children: true });
+    }
+
+    private installDevPanel(): void {
+        const panel = document.createElement('details');
+        panel.className = 'stickers-dev-panel';
+        panel.hidden = true;
+        const toggle = document.createElement('summary');
+        toggle.textContent = '[DEV]';
+        const actions = document.createElement('div');
+        for (const [label, action] of [
+            ['Snap a part in place', () => this.stickerMaker.snapNextPart()],
+            ['Finish puzzle', () => {
+                while (this.stickerMaker.snapNextPart()) { /* Place remaining parts. */ }
+            }],
+        ] as const) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.textContent = label;
+            button.addEventListener('click', action);
+            actions.appendChild(button);
+        }
+        panel.append(toggle, actions);
+        document.body.appendChild(panel);
+        this.devPanel = panel;
     }
 
     returnToMainMenu(): void {

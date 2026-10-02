@@ -16,6 +16,79 @@ const makerJs = ts.transpileModule(makerSource, { compilerOptions: { module: ts.
     .replace("from './preparation'", `from '${moduleUrl(js)}'`);
 const { StickerMaker } = await import(moduleUrl(makerJs));
 
+const storySource = readFileSync(new URL('../src/games/stickers/story-state.ts', import.meta.url), 'utf8');
+const storyJs = ts.transpileModule(storySource, { compilerOptions: { module: ts.ModuleKind.ESNext } }).outputText;
+const { readStoryProgress, addStorySticker, resetSceneProgress, sceneComplete, restoredPage, STORY_SCENES } = await import(moduleUrl(storyJs));
+
+test('storybook saves are bounded, tolerate invalid data, and keep placements idempotent', () => {
+    for (const raw of [null, '{', '{}', 'false', '"pond:duck"']) assert.deepEqual(readStoryProgress(raw), []);
+    assert.deepEqual(readStoryProgress('["pond:duck","unknown","pond:duck","pond:swan"]'), ['pond:duck', 'pond:swan']);
+    const progress = addStorySticker(['pond:duck'], 'pond:swan');
+    assert.deepEqual(addStorySticker(progress, 'pond:swan'), ['pond:duck', 'pond:swan']);
+    assert.deepEqual(addStorySticker(progress, 'pond:heron'), ['pond:duck', 'pond:swan', 'pond:heron']);
+});
+
+test('the first scene includes the raccoon; only all its own completions unlock the next scene', () => {
+    assert.deepEqual(STORY_SCENES.map(scene => scene.birds.length), [4, 3]);
+    const partial = ['pond:duck', 'pond:swan', 'twilight:heron'];
+    assert.equal(sceneComplete(partial, 0), false);
+    assert.equal(restoredPage('1', partial), 0);
+    const birdsComplete = addStorySticker(partial, 'pond:heron');
+    assert.equal(sceneComplete(birdsComplete, 0), false);
+    assert.equal(restoredPage('1', birdsComplete), 0);
+    const complete = addStorySticker(birdsComplete, 'pond:raccoon');
+    assert.equal(sceneComplete(complete, 0), true);
+    assert.equal(sceneComplete(complete, 1), false);
+    assert.equal(restoredPage('1', complete), 1);
+    for (const raw of ['-1', '2', 'NaN', '1.5']) assert.equal(restoredPage(raw, complete), 0);
+});
+
+test('resetting a page removes only its stickers and locks its next-page progression again', () => {
+    const saved = ['pond:duck', 'pond:swan', 'pond:heron', 'pond:raccoon', 'twilight:duck'];
+    const reset = resetSceneProgress(saved, 0);
+    assert.deepEqual(reset, ['twilight:duck']);
+    assert.deepEqual(saved, ['pond:duck', 'pond:swan', 'pond:heron', 'pond:raccoon', 'twilight:duck']);
+    assert.equal(sceneComplete(reset, 0), false);
+    assert.equal(restoredPage('1', reset), 0);
+    assert.deepEqual(resetSceneProgress(saved, 1), ['pond:duck', 'pond:swan', 'pond:heron', 'pond:raccoon']);
+});
+
+test('storybook completion places only a finished puzzle and clears the pending return', async () => {
+    const gameSource = readFileSync(new URL('../src/games/stickers/game.ts', import.meta.url), 'utf8');
+    const gameJs = ts.transpileModule(gameSource, { compilerOptions: { module: ts.ModuleKind.ESNext } }).outputText
+        .replace("from 'pixi.js'", `from '${new URL('../node_modules/pixi.js/lib/index.mjs', import.meta.url).href}'`)
+        .replace("from './stickermaker'", `from '${moduleUrl('export class StickerMaker {}')}'`)
+        .replace("from './storybook'", `from '${moduleUrl('export class StickerStorybook {}')}'`)
+        .replace("from './story-state'", `from '${moduleUrl(storyJs)}'`);
+    const previous = globalThis.window;
+    globalThis.window = { addEventListener() {} };
+    try {
+        const { StickersGame } = await import(moduleUrl(gameJs));
+        const placed = [];
+        const saved = [];
+        const game = Object.assign(Object.create(StickersGame.prototype), {
+            levelRequest: 0, storySticker: 'pond:duck', storyCompleted: false,
+            storybook: { place: id => placed.push(id), record: id => saved.push(id) }, stickerMaker: { cleanup() {} },
+            gameContainer: { removeChildren() {} }, userState: { levelsCompleted: [] },
+            setPreparing() {}, hideReturnButton() {}, showLevelMenu() {}, populateLevelMenu() {},
+        });
+        game.returnToLevelMenu();
+        assert.deepEqual(placed, []);
+        assert.deepEqual(saved, []);
+        game.storySticker = 'pond:duck';
+        game.setLevelCompleted('scene_pond:duck');
+        assert.equal(game.storyCompleted, true);
+        assert.deepEqual(saved, ['pond:duck']);
+        assert.deepEqual(game.userState.levelsCompleted, []);
+        game.returnToLevelMenu();
+        assert.deepEqual(placed, ['pond:duck']);
+        assert.equal(game.storySticker, null);
+        assert.equal(game.storyCompleted, false);
+        game.returnToLevelMenu();
+        assert.deepEqual(placed, ['pond:duck']);
+    } finally { globalThis.window = previous; }
+});
+
 function introFixture(reduced = false) {
     const callbacks = new Set();
     const container = () => ({ alpha: 0, eventMode: 'none', removeChildren() {} });

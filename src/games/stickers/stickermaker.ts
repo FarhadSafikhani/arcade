@@ -533,12 +533,23 @@ export class StickerMaker {
                     this.currentStickerSprite.texture = Assets.get(this.currentLevel.path);
                     this.currentStickerSprite.tint = 0xffffff;
                 }
-                this.celebrate();
                 this.game.setLevelCompleted(this.currentLevel.id);
+                if (!this.game.finishStorySticker()) this.celebrate();
                 
             }
         }
 
+    }
+
+    public snapNextPart(): boolean {
+        if (!import.meta.env.DEV) return false;
+        const chunk = Object.values(this.chunks).find(part => part.inPlay);
+        if (!chunk) return false;
+        this.clearDropPreview();
+        this.activeChunk = chunk;
+        chunk.sprite.position.set(chunk.originX, chunk.originY);
+        this.onUp();
+        return true;
     }
 
 
