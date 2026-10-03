@@ -1,0 +1,1 @@
+import{a as e,b as s}from"./index-657jbpiU.js";class t extends e{static create(e){const{dynamic:r,textureOptions:i,...n}=e;return new t({...i,source:new s(n),dynamic:r??!1})}resize(e,s,t){return this.source.resize(e,s,t),this}}export{t as R};
