@@ -69,16 +69,16 @@ export class StickerStorybook {
         const scene = STORY_SCENES[this.page];
         const complete = sceneComplete(this.progress, this.page);
         this.element.innerHTML = `<div class="story-book"><div class="painted-page">
-          <img class="pond-painting" src="/arcade/assets/stickers/story/${scene.background}" alt="${this.page === 0 ? 'Sunlit fantasy pond with water lilies and a mossy woodland bank' : 'A woodland pond glowing in the last light of dusk'}" draggable="false">
+          <img class="pond-painting" src="/arcade/assets/stickers/story/${scene.background}" alt="${scene.description}" draggable="false">
           <div class="ambient-slot" aria-hidden="true"></div>
-          ${scene.birds.map((bird, index) => {
-              const id: StorySticker = `${scene.id}:${bird.id}`;
+          ${scene.animals.map((animal, index) => {
+              const id = `${scene.id}:${animal.id}` as StorySticker;
               const done = this.progress.includes(id);
               const dust = done ? '' : `<span class="shimmer-dust" aria-hidden="true">${[
                   [27, 40, -10, -25], [43, 29, 8, -32], [61, 38, -5, -28],
                   [72, 58, 14, -35], [36, 61, -14, -30], [57, 54, 6, -40],
               ].map(([x, y, drift, rise], mote) => `<span style="--dust-x:${x}%;--dust-y:${y}%;--drift:${drift}px;--rise:${rise}px;--dust-size:${mote % 2 ? 2 : 3}px"></span>`).join('')}</span>`;
-              return `<button type="button" class="pond-sticker ${done ? 'completed' : 'silhouette'}" data-sticker="${id}" style="--x:${bird.x}%;--y:${bird.y}%;--w:${bird.width}%;--shimmer-delay:${index * 0.8}s;--bird:url('${stickerPath(id)}')" aria-label="${done ? 'Replay' : 'Build'} ${bird.id}"><img src="${stickerPath(id)}" alt="" draggable="false">${dust}</button>`;
+              return `<button type="button" class="pond-sticker ${done ? 'completed' : 'silhouette'}" data-sticker="${id}" style="${animal.anchor === 'feet' ? 'translate:-50% -100%;' : ''}--x:${animal.x}%;--y:${animal.y}%;--w:${animal.width}%;--shimmer-delay:${index * 0.8}s;--bird:url('${stickerPath(id)}')" aria-label="${done ? 'Replay' : 'Build'} ${animal.id}"><img src="${stickerPath(id)}" alt="" draggable="false">${dust}</button>`;
           }).join('')}
           ${this.page > 0 ? '<button type="button" class="page-arrow previous-page" aria-label="Previous scene">‹</button>' : ''}
           ${this.page < STORY_SCENES.length - 1 ? `<button type="button" class="page-arrow next-page" aria-label="Next scene" ${complete ? '' : 'disabled'}>›</button>` : ''}

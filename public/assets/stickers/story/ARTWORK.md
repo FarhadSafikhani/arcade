@@ -22,8 +22,4 @@ Create one isolated full-body elegant great blue heron standing, side view facin
 
 Generated with the built-in ImageGen tool from the approved raccoon illustration in this chat. A separate transparent PNG preserving the painterly fur, friendly face, ringed tail, and golden highlights. No rock, scenery, or white border. Added to the first page as a playable sticker using the same puzzle and placement flow as the birds.
 
-## twilight.png
-
-Wide landscape 3:2 full-bleed painterly fantasy woodland pond at twilight, a second quiet book page. Reference frog ONLY for dimensional painted brushwork and rich jewel colors. Deep luminous turquoise water, sapphire shadows, violet iris flowers, reeds, mossy bank on right foreground, gently glowing fireflies, distant willows, sky amber sunset fading to violet, luminous water lilies. Open water below center and left, shoreline at right for future bird cutouts. Gorgeous immersive fantasy illustration, no animals, no birds, no people, no text, no book frame, no UI, not flat vector, not pastel cartoon.
-
-This records image provenance and prompts. The reusable scene-authoring process in `doc/story-board.md` remains pending refinement and user approval of the prototype.
+The dusk page has been replaced by the farm and safari scenes. Their prompts and provenance are recorded in [NEW-ARTWORK.md](NEW-ARTWORK.md).

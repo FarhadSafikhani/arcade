@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import ts from 'typescript';
 
 const source = readFileSync(new URL('../src/games/stickers/preparation.ts', import.meta.url), 'utf8');
@@ -18,7 +18,7 @@ const { StickerMaker } = await import(moduleUrl(makerJs));
 
 const storySource = readFileSync(new URL('../src/games/stickers/story-state.ts', import.meta.url), 'utf8');
 const storyJs = ts.transpileModule(storySource, { compilerOptions: { module: ts.ModuleKind.ESNext } }).outputText;
-const { readStoryProgress, addStorySticker, resetSceneProgress, sceneComplete, restoredPage, STORY_SCENES } = await import(moduleUrl(storyJs));
+const { readStoryProgress, addStorySticker, resetSceneProgress, sceneComplete, restoredPage, stickerPath, STORY_SCENES } = await import(moduleUrl(storyJs));
 
 test('storybook saves are bounded, tolerate invalid data, and keep placements idempotent', () => {
     for (const raw of [null, '{', '{}', 'false', '"pond:duck"']) assert.deepEqual(readStoryProgress(raw), []);
@@ -29,8 +29,8 @@ test('storybook saves are bounded, tolerate invalid data, and keep placements id
 });
 
 test('the first scene includes the raccoon; only all its own completions unlock the next scene', () => {
-    assert.deepEqual(STORY_SCENES.map(scene => scene.birds.length), [4, 3]);
-    const partial = ['pond:duck', 'pond:swan', 'twilight:heron'];
+    assert.deepEqual(STORY_SCENES.map(scene => scene.animals.length), [4, 5, 5]);
+    const partial = ['pond:duck', 'pond:swan', 'farm:hen'];
     assert.equal(sceneComplete(partial, 0), false);
     assert.equal(restoredPage('1', partial), 0);
     const birdsComplete = addStorySticker(partial, 'pond:heron');
@@ -40,17 +40,37 @@ test('the first scene includes the raccoon; only all its own completions unlock 
     assert.equal(sceneComplete(complete, 0), true);
     assert.equal(sceneComplete(complete, 1), false);
     assert.equal(restoredPage('1', complete), 1);
-    for (const raw of ['-1', '2', 'NaN', '1.5']) assert.equal(restoredPage(raw, complete), 0);
+    for (const raw of ['-1', '3', 'NaN', '1.5']) assert.equal(restoredPage(raw, complete), 0);
+    assert.equal(restoredPage('2', complete), 0);
+    const farmComplete = STORY_SCENES[1].animals.reduce((saved, animal) => addStorySticker(saved, `farm:${animal.id}`), complete);
+    assert.equal(restoredPage('2', farmComplete), 2);
 });
 
 test('resetting a page removes only its stickers and locks its next-page progression again', () => {
-    const saved = ['pond:duck', 'pond:swan', 'pond:heron', 'pond:raccoon', 'twilight:duck'];
+    const saved = ['pond:duck', 'pond:swan', 'pond:heron', 'pond:raccoon', 'farm:hen'];
     const reset = resetSceneProgress(saved, 0);
-    assert.deepEqual(reset, ['twilight:duck']);
-    assert.deepEqual(saved, ['pond:duck', 'pond:swan', 'pond:heron', 'pond:raccoon', 'twilight:duck']);
+    assert.deepEqual(reset, ['farm:hen']);
+    assert.deepEqual(saved, ['pond:duck', 'pond:swan', 'pond:heron', 'pond:raccoon', 'farm:hen']);
     assert.equal(sceneComplete(reset, 0), false);
     assert.equal(restoredPage('1', reset), 0);
     assert.deepEqual(resetSceneProgress(saved, 1), ['pond:duck', 'pond:swan', 'pond:heron', 'pond:raccoon']);
+});
+
+test('each page owns unique animal artwork and obsolete dusk placements are discarded', () => {
+    assert.deepEqual(STORY_SCENES.map(scene => scene.id), ['pond', 'farm', 'safari']);
+    assert.deepEqual(STORY_SCENES[1].animals.map(animal => animal.id), ['cow', 'sheep', 'dog', 'hen', 'rooster']);
+    assert.deepEqual(new Set(STORY_SCENES[2].animals.map(animal => animal.id)), new Set(['lion', 'hippo', 'elephant', 'zebra', 'giraffe']));
+    const paths = [];
+    for (const scene of STORY_SCENES) {
+        assert.ok(existsSync(new URL(`../public/assets/stickers/story/${scene.background}`, import.meta.url)));
+        for (const animal of scene.animals) {
+            const path = stickerPath(`${scene.id}:${animal.id}`);
+            assert.ok(existsSync(new URL(`../public/${path.replace('/arcade/', '')}`, import.meta.url)), path);
+            paths.push(path);
+        }
+    }
+    assert.equal(new Set(paths).size, paths.length);
+    assert.deepEqual(readStoryProgress('["pond:duck","twilight:duck","farm:hen","safari:hen"]'), ['pond:duck', 'farm:hen']);
 });
 
 const samplingSource = readFileSync(new URL('../src/games/stickers/ambient/sampling.ts', import.meta.url), 'utf8');

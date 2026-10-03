@@ -1,17 +1,20 @@
 import type { EffectSpec } from './ambient/effects';
 import type { Region } from './ambient/types';
 
-export const BIRDS = ['duck', 'swan', 'heron', 'raccoon'] as const;
-export type Bird = typeof BIRDS[number];
-export type SceneId = 'pond' | 'twilight';
-export type StorySticker = `${SceneId}:${Bird}`;
+type PondAnimal = 'duck' | 'swan' | 'heron' | 'raccoon';
+type FarmAnimal = 'cow' | 'sheep' | 'dog' | 'hen' | 'rooster';
+type SafariAnimal = 'lion' | 'hippo' | 'elephant' | 'zebra' | 'giraffe';
+type Animal = PondAnimal | FarmAnimal | SafariAnimal;
+export type SceneId = 'pond' | 'farm' | 'safari';
+export type StorySticker = `pond:${PondAnimal}` | `farm:${FarmAnimal}` | `safari:${SafariAnimal}`;
 export const STORY_SAVE_KEY = 'stickers:painted-pond:v1';
 export const STORY_PAGE_KEY = `${STORY_SAVE_KEY}:page`;
 
 export interface StoryScene {
     id: SceneId;
     background: string;
-    birds: { id: Bird; x: number; y: number; width: number }[];
+    description: string;
+    animals: { id: Animal; x: number; y: number; width: number; anchor?: 'feet' }[];
     /** Ambient overlay played above the painting, below the stickers. */
     effects: readonly EffectSpec[];
 }
@@ -23,7 +26,7 @@ const POND_WATERFALL_FOOT: Region = [[17, 34], [27, 34], [27, 39], [17, 39]];
 const POND_SUNLIT_AIR: Region = [[40, 4], [78, 4], [74, 50], [44, 50]];
 
 export const STORY_SCENES: StoryScene[] = [
-    { id: 'pond', background: 'pond.png', birds: [
+    { id: 'pond', background: 'pond.png', description: 'Sunlit fantasy pond with water lilies and a mossy woodland bank', animals: [
         { id: 'duck', x: 14, y: 65, width: 21 },
         { id: 'swan', x: 45, y: 46, width: 27 },
         { id: 'heron', x: 78, y: 33, width: 16 },
@@ -40,14 +43,23 @@ export const STORY_SCENES: StoryScene[] = [
         { type: 'glints', region: POND_WATERFALL_FOOT, count: 4, size: [0.8, 1.4], twinkle: [0.4, 0.9], rest: [0.3, 1.5], alpha: 0.6 },
         { type: 'motes', region: POND_SUNLIT_AIR, count: 14, size: [1.5, 3], drift: [[-14, 14], [-40, -16]], life: [7, 13], alpha: 0.55 },
     ] },
-    { id: 'twilight', background: 'twilight.png', birds: [
-        { id: 'duck', x: 46, y: 68, width: 20 },
-        { id: 'swan', x: 15, y: 46, width: 27 },
-        { id: 'heron', x: 78, y: 32, width: 16 },
+    { id: 'farm', background: 'farm.png', description: 'Sunny farm meadow with a red barn, wooden fences and chicks around the hen', animals: [
+        { id: 'cow', x: 20, y: 60, width: 29, anchor: 'feet' },
+        { id: 'sheep', x: 72, y: 57, width: 23, anchor: 'feet' },
+        { id: 'dog', x: 32, y: 88, width: 17, anchor: 'feet' },
+        { id: 'hen', x: 57, y: 87, width: 14, anchor: 'feet' },
+        { id: 'rooster', x: 83, y: 86, width: 17, anchor: 'feet' },
+    ], effects: [] },
+    { id: 'safari', background: 'safari.png', description: 'Golden African savanna with acacia trees and a turquoise watering hole', animals: [
+        { id: 'elephant', x: 30, y: 56, width: 29, anchor: 'feet' },
+        { id: 'zebra', x: 62, y: 57, width: 20, anchor: 'feet' },
+        { id: 'giraffe', x: 85, y: 64, width: 18, anchor: 'feet' },
+        { id: 'hippo', x: 17, y: 86, width: 27, anchor: 'feet' },
+        { id: 'lion', x: 49, y: 92, width: 23, anchor: 'feet' },
     ], effects: [] },
 ];
-const keys = STORY_SCENES.flatMap(scene => scene.birds.map(bird => `${scene.id}:${bird.id}` as StorySticker));
-export const stickerPath = (id: StorySticker): string => `/arcade/assets/stickers/story/pond-${id.split(':')[1]}.png`;
+const keys = STORY_SCENES.flatMap(scene => scene.animals.map(animal => `${scene.id}:${animal.id}` as StorySticker));
+export const stickerPath = (id: StorySticker): string => `/arcade/assets/stickers/story/${id.replace(':', '-')}.png`;
 export function readStoryProgress(raw: string | null): StorySticker[] {
     try {
         const value: unknown = JSON.parse(raw || '[]');
@@ -63,7 +75,7 @@ export function resetSceneProgress(progress: StorySticker[], page: number): Stor
 }
 export function sceneComplete(progress: StorySticker[], page: number): boolean {
     const scene = STORY_SCENES[page];
-    return !!scene && scene.birds.every(bird => progress.includes(`${scene.id}:${bird.id}`));
+    return !!scene && scene.animals.every(animal => progress.includes(`${scene.id}:${animal.id}` as StorySticker));
 }
 export function restoredPage(raw: string | null, progress: StorySticker[]): number {
     const page = Number(raw);
