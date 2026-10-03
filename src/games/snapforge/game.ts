@@ -167,16 +167,27 @@ class SnapforgeGame {
     }
 
     private async initializeScene(): Promise<void> {
+        const loading = byId<HTMLElement>('studioLoading');
+        const retry = byId<HTMLButtonElement>('loadingRetry');
+        retry.addEventListener('click', () => window.location.reload());
         try {
             this.scene = await SnapScene3D.create(this.root, this.model, this.pile);
             this.scene.setCallbacks(id => this.placed(id), () => this.wrong(), () => this.playEffect('grab'));
             this.scene.setIntroCallbacks(() => this.playIntroEffect('breakup'),
                 () => this.playIntroEffect('pour'), () => this.stopIntroEffects());
             this.scene.setPreviews(this.galleryTrack, this.previewEntries());
-            byId<HTMLElement>('loadingNote').hidden = true;
+            this.root.classList.remove('is-warming');
+            this.gallery.inert = false;
+            loading.hidden = true;
         } catch (error) {
             console.error('Snapforge 3D could not start', error);
-            byId<HTMLElement>('loadingNote').textContent = '3D could not start on this device. Please try a browser with WebGL support.';
+            loading.classList.add('is-error');
+            loading.setAttribute('aria-label', 'Studio unavailable');
+            byId<HTMLElement>('loadingTitle').textContent = 'The studio couldn’t start';
+            byId<HTMLElement>('loadingNote').textContent = 'Try again, or use a browser with WebGL support.';
+            retry.hidden = false;
+        } finally {
+            this.gallery.setAttribute('aria-busy', 'false');
         }
     }
 

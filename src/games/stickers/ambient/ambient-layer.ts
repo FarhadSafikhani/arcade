@@ -2,20 +2,8 @@ import { Application, Container, Ticker } from 'pixi.js';
 import { effectDefinition, EffectSpec } from './effects';
 import type { AmbientContext, AmbientEffect } from './types';
 
-const INTENSITY_KEY = 'stickers:ambient-intensity';
-
-const clampIntensity = (value: number): number => Number.isFinite(value) ? Math.min(2, Math.max(0, value)) : 1;
-
-/** `?ambient=0.5` tunes any build; the dev slider's value persists only in dev. */
-function initialIntensity(): number {
-    const param = new URLSearchParams(window.location.search).get('ambient');
-    if (param !== null) return clampIntensity(Number(param));
-    if (!import.meta.env.DEV) return 1;
-    try {
-        const stored = localStorage.getItem(INTENSITY_KEY);
-        return stored === null ? 1 : clampIntensity(Number(stored));
-    } catch { return 1; }
-}
+/** Fixed at the former ambient slider's maximum. */
+const AMBIENT_INTENSITY = 2;
 
 /**
  * Plays a scene's ambient effects over its painting. One transparent Pixi canvas
@@ -34,7 +22,6 @@ export class AmbientLayer {
     private destroyed = false;
     private width = 0;
     private height = 0;
-    private intensityValue = initialIntensity();
 
     private readonly tick = (ticker: Ticker): void => {
         const seconds = ticker.deltaMS / 1000;
@@ -43,7 +30,7 @@ export class AmbientLayer {
 
     constructor() {
         this.dom.className = 'ambient-css';
-        this.applyIntensity();
+        this.dom.style.setProperty('--ambient-intensity', String(AMBIENT_INTENSITY));
         const layer = this;
         this.context = {
             dom: this.dom,
@@ -53,17 +40,8 @@ export class AmbientLayer {
             },
             get width() { return layer.width; },
             get height() { return layer.height; },
-            get intensity() { return layer.intensityValue; },
+            intensity: AMBIENT_INTENSITY,
         };
-    }
-
-    get intensity(): number { return this.intensityValue; }
-
-    setIntensity(value: number): void {
-        this.intensityValue = clampIntensity(value);
-        this.applyIntensity();
-        if (!import.meta.env.DEV) return;
-        try { localStorage.setItem(INTENSITY_KEY, String(this.intensityValue)); } catch { /* Session-only tuning. */ }
     }
 
     async attach(slot: HTMLElement, specs: readonly EffectSpec[]): Promise<void> {
@@ -147,9 +125,5 @@ export class AmbientLayer {
         this.width = width;
         this.height = height;
         this.app?.renderer.resize(Math.max(1, width), Math.max(1, height));
-    }
-
-    private applyIntensity(): void {
-        this.dom.style.setProperty('--ambient-intensity', String(this.intensityValue));
     }
 }

@@ -19,6 +19,125 @@ const { StickerMaker } = await import(moduleUrl(makerJs));
 const storySource = readFileSync(new URL('../src/games/stickers/story-state.ts', import.meta.url), 'utf8');
 const storyJs = ts.transpileModule(storySource, { compilerOptions: { module: ts.ModuleKind.ESNext } }).outputText;
 const { readStoryProgress, addStorySticker, resetSceneProgress, sceneComplete, restoredPage, stickerPath, STORY_SCENES } = await import(moduleUrl(storyJs));
+const bookSource = readFileSync(new URL('../src/games/stickers/storybook.ts', import.meta.url), 'utf8');
+const bookJs = ts.transpileModule(bookSource, { compilerOptions: { module: ts.ModuleKind.ESNext } }).outputText
+    .replace("from './ambient/ambient-layer'", `from '${moduleUrl('export class AmbientLayer {}')}'`)
+    .replace("from './story-state'", `from '${moduleUrl(storyJs)}'`);
+const { StickerStorybook, waitForStoryImages } = await import(moduleUrl(bookJs));
+
+function storyImage({ cached = false, broken = false, decode = async () => {} } = {}) {
+    return Object.assign(new EventTarget(), { complete: cached, naturalWidth: broken ? 0 : 100, src: '/story.png', decode });
+}
+
+test('book readiness waits for uncached artwork and decoding, including cached painting pixels', async () => {
+    let finishDecode;
+    const painting = storyImage({ cached: true, decode: () => new Promise(resolve => { finishDecode = resolve; }) });
+    const sticker = storyImage();
+    let ready = false;
+    const loading = waitForStoryImages([painting, sticker], new AbortController().signal).then(() => { ready = true; });
+    await Promise.resolve();
+    assert.equal(ready, false);
+    sticker.dispatchEvent(new Event('load'));
+    await Promise.resolve();
+    assert.equal(ready, false);
+    finishDecode();
+    await loading;
+    assert.equal(ready, true);
+});
+
+test('book readiness rejects failed artwork, decoding errors, and cancelled loads', async () => {
+    await assert.rejects(waitForStoryImages([storyImage({ cached: true, broken: true })], new AbortController().signal), /Could not load/);
+    const image = storyImage();
+    const failed = waitForStoryImages([image], new AbortController().signal);
+    image.dispatchEvent(new Event('error'));
+    await assert.rejects(failed, /Could not load/);
+    await assert.rejects(waitForStoryImages([storyImage({ cached: true, decode: async () => { throw new Error('Decode failed'); } })], new AbortController().signal), /Decode failed/);
+    const controller = new AbortController();
+    const pending = waitForStoryImages([storyImage()], controller.signal);
+    controller.abort();
+    await assert.rejects(pending, { name: 'AbortError' });
+    await assert.rejects(waitForStoryImages([storyImage({ cached: true })], controller.signal), { name: 'AbortError' });
+});
+
+function bootFixture(animated = false) {
+    const classes = new Set(['boot-loading']);
+    const attributes = new Map();
+    const pages = { inert: true, removeAttribute() { this.inert = false; } };
+    const status = { textContent: '' };
+    const retry = { hidden: true };
+    let fadeFinished, openingFinished;
+    const magic = { getAnimations: () => animated ? [{ finished: new Promise(resolve => { fadeFinished = resolve; }) }] : [] };
+    const cover = { removed: false, getAnimations: () => animated ? [{ finished: new Promise(resolve => { openingFinished = resolve; }) }] : [], remove() { this.removed = true; } };
+    const nodes = { '.book-boot-status p': status, '.book-boot-retry': retry, '.book-magic': magic, '.story-cover': cover, '.story-pages': pages, '.book-boot-status': { remove() {} } };
+    const image = storyImage();
+    let ambientAttached = false;
+    const book = Object.assign(Object.create(StickerStorybook.prototype), {
+        page: 1, bootFinished: false, render() {}, renderDevControls() {}, attachAmbient() { ambientAttached = true; },
+        element: { hidden: false, querySelector: selector => nodes[selector], querySelectorAll: () => [image],
+            classList: { add: (...values) => values.forEach(value => classes.add(value)), remove: (...values) => values.forEach(value => classes.delete(value)) },
+            setAttribute: (key, value) => attributes.set(key, value) },
+    });
+    return { book, image, classes, pages, cover, retry, attributes,
+        fadeFinished: () => fadeFinished(), openingFinished: () => openingFinished(), ambientAttached: () => ambientAttached };
+}
+
+test('boot keeps the saved page inert until artwork, spinner fade, and cover opening finish', async () => {
+    const { book, image, classes, pages, cover, attributes, fadeFinished, openingFinished, ambientAttached } = bootFixture(true);
+    const loading = book.loadBook();
+    assert.equal(pages.inert, true);
+    assert.equal(classes.has('boot-fading'), false);
+    image.dispatchEvent(new Event('load'));
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(classes.has('boot-fading'), true);
+    assert.equal(classes.has('boot-opening'), false);
+    fadeFinished();
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(classes.has('boot-opening'), true);
+    assert.equal(pages.inert, true);
+    openingFinished();
+    await loading;
+    assert.equal(book.page, 1);
+    assert.equal(book.bootFinished, true);
+    assert.equal(cover.removed, true);
+    assert.equal(pages.inert, false);
+    assert.equal(attributes.get('aria-busy'), 'false');
+    assert.equal(ambientAttached(), true);
+});
+
+test('a failed book load keeps its cover and offers a working retry; reduced motion needs no animation events', async () => {
+    const { book, image, classes, pages, cover, retry } = bootFixture();
+    const failed = book.loadBook();
+    image.dispatchEvent(new Event('error'));
+    await failed;
+    assert.equal(classes.has('boot-error'), true);
+    assert.equal(pages.inert, true);
+    assert.equal(cover.removed, false);
+    assert.equal(retry.hidden, false);
+    const retrying = book.loadBook();
+    assert.equal(classes.has('boot-error'), false);
+    assert.equal(retry.hidden, true);
+    image.dispatchEvent(new Event('load'));
+    await retrying;
+    assert.equal(book.bootFinished, true);
+    assert.equal(pages.inert, false);
+});
+
+test('leaving the book during loading finishes quietly; destruction prevents revealing a stale book', async () => {
+    const hidden = bootFixture();
+    const loading = hidden.book.loadBook();
+    hidden.book.element.hidden = true;
+    hidden.image.dispatchEvent(new Event('load'));
+    await loading;
+    assert.equal(hidden.book.bootFinished, true);
+    assert.equal(hidden.ambientAttached(), false);
+    const destroyed = bootFixture();
+    const cancelled = destroyed.book.loadBook();
+    destroyed.book.boot.abort();
+    await cancelled;
+    assert.equal(destroyed.book.bootFinished, false);
+    assert.equal(destroyed.cover.removed, false);
+    assert.equal(destroyed.classes.has('boot-error'), false);
+});
 
 test('storybook saves are bounded, tolerate invalid data, and keep placements idempotent', () => {
     for (const raw of [null, '{', '{}', 'false', '"pond:duck"']) assert.deepEqual(readStoryProgress(raw), []);
@@ -76,17 +195,20 @@ test('each page owns unique animal artwork and obsolete dusk placements are disc
 const samplingSource = readFileSync(new URL('../src/games/stickers/ambient/sampling.ts', import.meta.url), 'utf8');
 const { pointInRegion, randomPointIn } = await import(moduleUrl(ts.transpileModule(samplingSource, { compilerOptions: { module: ts.ModuleKind.ESNext } }).outputText));
 
-test('ambient effects stay on the page, use ordered ranges, and sample inside concave regions', () => {
+test('every story page has ambience with valid regions and ordered ranges', () => {
     const notch = [[0, 0], [100, 0], [100, 100], [50, 40], [0, 100]];
     assert.equal(pointInRegion(notch, 50, 80), false);
     assert.equal(pointInRegion(notch, 20, 30), true);
     for (let i = 0; i < 200; i++) assert.ok(pointInRegion(notch, ...randomPointIn(notch)));
-    for (const scene of STORY_SCENES) for (const effect of scene.effects) {
-        for (const [x, y] of effect.region ?? []) assert.ok(x >= 0 && x <= 100 && y >= 0 && y <= 100, `${scene.id} ${effect.type} region leaves the page`);
-        for (const range of [effect.every, effect.life, effect.radius, effect.size, effect.twinkle, effect.rest, effect.period, ...(effect.drift ?? [])].filter(Boolean)) {
-            assert.ok(range[0] <= range[1], `${scene.id} ${effect.type} has a reversed range`);
+    for (const scene of STORY_SCENES) {
+        assert.ok(scene.effects.length > 0, `${scene.id} needs ambience authored for its painting`);
+        for (const effect of scene.effects) {
+            for (const [x, y] of effect.region ?? []) assert.ok(x >= 0 && x <= 100 && y >= 0 && y <= 100, `${scene.id} ${effect.type} region leaves the page`);
+            for (const range of [effect.every, effect.life, effect.radius, effect.size, effect.twinkle, effect.rest, effect.period, ...(effect.drift ?? [])].filter(Boolean)) {
+                assert.ok(range[0] <= range[1], `${scene.id} ${effect.type} has a reversed range`);
+            }
+            if (effect.region) for (let i = 0; i < 50; i++) assert.ok(pointInRegion(effect.region, ...randomPointIn(effect.region)));
         }
-        if (effect.region) for (let i = 0; i < 50; i++) assert.ok(pointInRegion(effect.region, ...randomPointIn(effect.region)));
     }
 });
 
@@ -124,6 +246,34 @@ test('storybook completion places only a finished puzzle and clears the pending 
         game.returnToLevelMenu();
         assert.deepEqual(placed, ['pond:duck']);
     } finally { globalThis.window = previous; }
+});
+
+test('a newly completed page celebrates on placement even when the puzzle already saved it; replays stay quiet', async () => {
+    const status = { textContent: '' };
+    const book = Object.assign(Object.create(StickerStorybook.prototype), {
+        progress: [], page: 0, pendingCompletionPage: null, reducedMotion: { matches: true }, bootFinished: true,
+        element: { querySelector: selector => selector === '.story-status' ? status : null },
+        render() {},
+    });
+    for (const id of ['pond:duck', 'pond:swan', 'pond:heron']) {
+        book.record(id);
+        book.place(id);
+        assert.equal(status.textContent, '');
+    }
+    book.record('pond:raccoon'); // Saved as soon as the final puzzle finishes, before returning to the book.
+    book.show(); // The game shows its menu before placing the sticker.
+    assert.equal(status.textContent, '');
+    book.place('pond:raccoon');
+    assert.match(status.textContent, /Page complete.*next adventure/);
+    assert.equal(book.pendingCompletionPage, null);
+    status.textContent = '';
+    book.place('pond:raccoon');
+    assert.equal(status.textContent, '');
+
+    book.page = STORY_SCENES.length - 1;
+    for (const animal of STORY_SCENES[book.page].animals) book.record(`safari:${animal.id}`);
+    book.place('safari:lion');
+    assert.match(status.textContent, /Book complete/);
 });
 
 function introFixture(reduced = false) {

@@ -12,7 +12,7 @@ export interface AmbientContext {
     readonly stage: Container;
     readonly width: number;
     readonly height: number;
-    /** Global strength multiplier, 0-2. Pixi effects read it every frame. */
+    /** Fixed global strength multiplier shared by Pixi and DOM effects. */
     readonly intensity: number;
 }
 
