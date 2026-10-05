@@ -23,3 +23,5 @@ Create one isolated full-body elegant great blue heron standing, side view facin
 Generated with the built-in ImageGen tool from the approved raccoon illustration in this chat. A separate transparent PNG preserving the painterly fur, friendly face, ringed tail, and golden highlights. No rock, scenery, or white border. Added to the first page as a playable sticker using the same puzzle and placement flow as the birds.
 
 The dusk page has been replaced by the farm and safari scenes. Their prompts and provenance are recorded in [NEW-ARTWORK.md](NEW-ARTWORK.md).
+
+Six further pages (bakery, castle, underwater ruins, orchard, pirate cove, and Jurassic valley) and their 24 playable stickers are recorded in [MORE-ARTWORK.md](MORE-ARTWORK.md).

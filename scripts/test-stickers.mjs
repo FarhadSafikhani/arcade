@@ -148,7 +148,7 @@ test('storybook saves are bounded, tolerate invalid data, and keep placements id
 });
 
 test('the first scene includes the raccoon; only all its own completions unlock the next scene', () => {
-    assert.deepEqual(STORY_SCENES.map(scene => scene.animals.length), [4, 5, 5]);
+    assert.deepEqual(STORY_SCENES.map(scene => scene.animals.length), [4, 5, 5, 4, 4, 4, 4, 4, 4]);
     const partial = ['pond:duck', 'pond:swan', 'farm:hen'];
     assert.equal(sceneComplete(partial, 0), false);
     assert.equal(restoredPage('1', partial), 0);
@@ -159,7 +159,7 @@ test('the first scene includes the raccoon; only all its own completions unlock 
     assert.equal(sceneComplete(complete, 0), true);
     assert.equal(sceneComplete(complete, 1), false);
     assert.equal(restoredPage('1', complete), 1);
-    for (const raw of ['-1', '3', 'NaN', '1.5']) assert.equal(restoredPage(raw, complete), 0);
+    for (const raw of ['-1', String(STORY_SCENES.length), 'NaN', '1.5']) assert.equal(restoredPage(raw, complete), 0);
     assert.equal(restoredPage('2', complete), 0);
     const farmComplete = STORY_SCENES[1].animals.reduce((saved, animal) => addStorySticker(saved, `farm:${animal.id}`), complete);
     assert.equal(restoredPage('2', farmComplete), 2);
@@ -176,7 +176,7 @@ test('resetting a page removes only its stickers and locks its next-page progres
 });
 
 test('each page owns unique animal artwork and obsolete dusk placements are discarded', () => {
-    assert.deepEqual(STORY_SCENES.map(scene => scene.id), ['pond', 'farm', 'safari']);
+    assert.deepEqual(STORY_SCENES.map(scene => scene.id), ['pond', 'farm', 'safari', 'bakery', 'castle', 'underwater', 'orchard', 'pirate', 'jurassic']);
     assert.deepEqual(STORY_SCENES[1].animals.map(animal => animal.id), ['cow', 'sheep', 'dog', 'hen', 'rooster']);
     assert.deepEqual(new Set(STORY_SCENES[2].animals.map(animal => animal.id)), new Set(['lion', 'hippo', 'elephant', 'zebra', 'giraffe']));
     const paths = [];
@@ -271,8 +271,9 @@ test('a newly completed page celebrates on placement even when the puzzle alread
     assert.equal(status.textContent, '');
 
     book.page = STORY_SCENES.length - 1;
-    for (const animal of STORY_SCENES[book.page].animals) book.record(`safari:${animal.id}`);
-    book.place('safari:lion');
+    const lastScene = STORY_SCENES[book.page];
+    for (const animal of lastScene.animals) book.record(`${lastScene.id}:${animal.id}`);
+    book.place(`${lastScene.id}:${lastScene.animals[0].id}`);
     assert.match(status.textContent, /Book complete/);
 });
 

@@ -170,7 +170,7 @@ export class StickerStorybook {
                   [27, 40, -10, -25], [43, 29, 8, -32], [61, 38, -5, -28],
                   [72, 58, 14, -35], [36, 61, -14, -30], [57, 54, 6, -40],
               ].map(([x, y, drift, rise], mote) => `<span style="--dust-x:${x}%;--dust-y:${y}%;--drift:${drift}px;--rise:${rise}px;--dust-size:${mote % 2 ? 2 : 3}px"></span>`).join('')}</span>`;
-              return `<button type="button" class="pond-sticker ${done ? 'completed' : 'silhouette'}" data-sticker="${id}" style="${animal.anchor === 'feet' ? 'translate:-50% -100%;' : ''}--x:${animal.x}%;--y:${animal.y}%;--w:${animal.width}%;--shimmer-delay:${index * 0.8}s;--bird:url('${stickerPath(id)}')" aria-label="${done ? 'Replay' : 'Build'} ${animal.id}"><img src="${stickerPath(id)}" alt="" draggable="false">${dust}</button>`;
+              return `<button type="button" class="pond-sticker ${done ? 'completed' : 'silhouette'}" data-sticker="${id}" style="${animal.anchor === 'feet' ? 'translate:-50% -100%;' : ''}--x:${animal.x}%;--y:${animal.y}%;--w:${animal.width}%;--shimmer-delay:${index * 0.8}s;--bird:url('${stickerPath(id)}')" aria-label="${done ? 'Replay' : 'Build'} ${animal.id.replace(/-/g, ' ')}"><img src="${stickerPath(id)}" alt="" draggable="false">${dust}</button>`;
           }).join('')}
           ${this.page > 0 ? '<button type="button" class="page-arrow previous-page" aria-label="Previous scene">‹</button>' : ''}
           ${this.page < STORY_SCENES.length - 1 ? `<button type="button" class="page-arrow next-page" aria-label="Next scene" ${complete ? '' : 'disabled'}>
@@ -203,7 +203,7 @@ export class StickerStorybook {
         const page = this.element.querySelector<HTMLElement>('.painted-page')!;
         const hasNext = this.page < STORY_SCENES.length - 1;
         this.element.querySelector('.story-status')!.textContent = hasNext
-            ? 'Page complete! Your next adventure is ready.' : 'Book complete! Every animal is home.';
+            ? 'Page complete! Your next adventure is ready.' : 'Book complete! Every sticker is in its story.';
         if (this.reducedMotion.matches) return;
 
         const flies = document.createElement('div');
