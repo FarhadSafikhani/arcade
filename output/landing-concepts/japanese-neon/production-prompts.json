@@ -1,0 +1,21 @@
+{
+  "generator": "Built-in image_gen",
+  "assets": [
+    {
+      "file": "public/assets/landing/alley-desktop.webp",
+      "prompt": "Edit supplied approved concept into a PRODUCTION WEBSITE BACKGROUND ONLY. Remove ALL website UI: title VIBE ARCADE, both game cards and emblems and captions, Misc / Games button. Inpaint seamlessly with empty rainy alley, dark mist at center, wet asphalt below. Preserve original exquisite photographic Japanese midnight alley, cyan vertical ゲーム neon on right building, warm amber arcade shop on left, red lantern far right, distant skyline, pipes, rain and reflections. Expand composition horizontally to a landscape 16:10 image, 2400x1500 preferred. Keep cyan sign in upper right at approximately x 82%, y 21%; warm shop along far left; perspective vanishing point at x50% y42%; puddles bottom 32%. Large quiet DARK center area for HTML content, especially central 55% of frame. No logo or UI text, no interface, no cards. Environmental Japanese storefront signs remain. Match original cinematography and color grading precisely. This is the scene behind the approved design, not a new scene."
+    },
+    {
+      "file": "public/assets/landing/alley-mobile.webp",
+      "prompt": "Edit supplied approved concept into a PRODUCTION WEBSITE BACKGROUND ONLY. Preserve portrait 4:5 composition. Remove ALL website UI: large VIBE ARCADE title, both cards including brick and star and game labels, and Misc / Games button. Restore a continuous naturally dark empty rainy Japanese alley and wet asphalt where UI was. Keep original neon sign, buildings, storefront, lantern, skyline, puddles, atmosphere and framing exactly unchanged. Especially preserve cyan ゲーム sign at upper right x82% y17%, amber storefront left, and puddles lower third. No new objects. Center of alley remains very dark with mist for text readability. Photographic environmental signage stays intact. No website text, logos, cards, icons or buttons."
+    },
+    {
+      "file": "public/assets/landing/snapforge-card.webp",
+      "prompt": "Extract and recreate ONLY the LEFT game card artwork from this approved image as a standalone square production image, no card border and no text. Single coral-orange plastic 2x2 four-stud building brick at three-quarter isometric angle. Match the reference brick precisely with four round studs, warm cream highlights, coral faces, realistic smooth tactile plastic, warm amber light from left, cyan edge light from right. Center brick at 50% x, 53% y, filling about 68% of image width. Dark blue-black subtle studio backdrop and glossy wet dark surface, soft restrained reflection. Minimal iconic beautiful premium game emblem. No Japanese city, no words, no UI, no caption, no other toys or bricks. Square 1024x1024 composition. Full-bleed image, no framing."
+    },
+    {
+      "file": "public/assets/landing/stickers-card.webp",
+      "prompt": "Extract and recreate ONLY the RIGHT game card artwork from this approved image as a standalone square production image, no card border and no text. One ivory rounded-square sticker slightly tilted, a large friendly coral-pink five-point star printed on it, lower right corner peeling and curling to show pale lavender backing. Match reference sticker closely, tactile subtle paper texture, graceful dimensional curved edge, warm light from left and cyan rim light from right. Center at 50% x, 53% y, occupies about 68% of image width. Very dark blue-black subtle studio background with a restrained glossy surface reflection. Clean iconic premium game emblem, no scenery, no other stickers, no sparkles, no city, no text or UI. Square 1024x1024 composition. Full bleed no framing."
+    }
+  ]
+}

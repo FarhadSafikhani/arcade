@@ -1,0 +1,6 @@
+{
+  "generator": "Built-in image_gen",
+  "source": "01-midnight-alley-v2.png",
+  "file": "01-midnight-alley-v3.png",
+  "prompt": "Use case: precise-object-edit.\nEdit target: supplied VIBE ARCADE rainy Japanese neon alley website mockup.\nPerform only a minimal text removal:\n- Remove small top-left navigation wordmark \"VIBE ARCADE\".\n- Remove small top-right navigation link \"Games\".\n- Remove bottom footer text \"More experiments\" and its little underline.\n- Remove bottom footer line \"Made by dad.\".\nNaturally restore those areas with the exact surrounding dark wet architecture and asphalt/reflections. Do not add substitute text.\nStrict invariants: keep the LARGE CENTRAL \"VIBE ARCADE\" title, its central \"Made by dad.\" subtitle, both game names \"SNAPFORGE\" and \"STICKERS\", both Play arrow buttons, game card positions, dimensions and cover art exactly as supplied. Preserve entire rainy Japanese alley, skyline, neon signs, storefront, foliage, fox and umbrella, brick miniature city, puddle reflections, palette, crop and lighting. Keep all environmental signage intact. No redesign, no rearrangement, no new elements. The only change is removal of those four peripheral UI text items and tiny footer underline."
+}
