@@ -1,0 +1,186 @@
+/* Defender: full-bleed 3D stage with a DOM HUD. Layers stack by DOM order, not z-index. */
+:root {
+    --defender-ink: #fff8ea;
+    --defender-shadow: 0 1px 2px #1c120a, 0 2px 10px #1c120a99;
+    --defender-panel: #2a1d14e6;
+    --defender-panel-edge: #c9a46a;
+    --defender-accent: #b8282e;
+    --defender-accent-hover: #cf3a40;
+    --defender-gate: #6fd36a;
+    --defender-gate-low: #e0483a;
+    --defender-display: 'Cinzel', Georgia, serif;
+    --defender-body: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --defender-space-1: 6px;
+    --defender-space-2: 12px;
+    --defender-space-3: 20px;
+    --defender-space-4: 32px;
+    --defender-inset: max(16px, env(safe-area-inset-left));
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #1c120a; }
+
+.defender {
+    --draw: 0;
+    position: fixed;
+    inset: 0;
+    color: var(--defender-ink);
+    font-family: var(--defender-body);
+    user-select: none;
+    touch-action: none;
+}
+
+.defender-stage { position: absolute; inset: 0; overflow: hidden; }
+.defender-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.defender[data-state="playing"] .defender-canvas,
+.defender[data-state="wave-break"] .defender-canvas { cursor: none; }
+
+/* HUD */
+.hud { position: absolute; inset: 0; pointer-events: none; text-shadow: var(--defender-shadow); }
+
+.hud-brand {
+    position: absolute;
+    top: var(--defender-space-3);
+    left: var(--defender-inset);
+    display: flex;
+    align-items: center;
+    gap: var(--defender-space-2);
+    padding-bottom: var(--defender-space-1);
+    border-bottom: 1px solid #fff8ea99;
+    color: inherit;
+    font: 700 20px var(--defender-display);
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    text-transform: uppercase;
+    pointer-events: auto;
+}
+.hud-brand img { width: 26px; height: 26px; }
+
+.hud-wave {
+    position: absolute;
+    top: var(--defender-space-3);
+    left: 50%;
+    transform: translateX(-50%);
+    font: 700 20px var(--defender-display);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.hud-gate {
+    position: absolute;
+    top: var(--defender-space-3);
+    right: var(--defender-inset);
+    display: grid;
+    gap: var(--defender-space-1);
+    justify-items: end;
+    font: 700 18px var(--defender-display);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.gate-bar { width: 150px; height: 9px; border-radius: 5px; background: #1c120a99; box-shadow: inset 0 0 0 1px #fff8ea55; overflow: hidden; }
+.gate-fill { --gate: 1; width: 100%; height: 100%; background: var(--defender-gate); transform-origin: left center; transform: scaleX(var(--gate)); transition: transform 0.2s ease-out; }
+.is-gate-low .gate-fill { background: var(--defender-gate-low); }
+
+.crosshair { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+.crosshair-dot, .crosshair-ring { position: absolute; border-radius: 50%; transform: translate(-50%, -50%); }
+.crosshair-dot { width: 4px; height: 4px; background: var(--defender-ink); box-shadow: 0 0 0 1px #1c120a88; }
+.crosshair-ring {
+    width: calc(46px - 30px * var(--draw));
+    height: calc(46px - 30px * var(--draw));
+    border: 2px solid rgb(255 248 234 / calc(0.25 + 0.6 * var(--draw)));
+    box-shadow: 0 0 0 1px #1c120a44;
+}
+.defender:not([data-state="playing"]):not([data-state="wave-break"]) .crosshair { display: none; }
+
+.banner {
+    position: absolute;
+    top: 18%;
+    left: 50%;
+    margin: 0;
+    transform: translateX(-50%);
+    font: 700 clamp(28px, 5vw, 52px) var(--defender-display);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    animation: banner-in 0.35s ease-out;
+}
+@keyframes banner-in { from { opacity: 0; transform: translate(-50%, -8px); } }
+
+.touch-draw {
+    position: absolute;
+    right: var(--defender-space-4);
+    bottom: var(--defender-space-4);
+    width: 96px;
+    height: 96px;
+    border: 2px solid var(--defender-panel-edge);
+    border-radius: 50%;
+    background: var(--defender-panel);
+    color: var(--defender-ink);
+    font: 700 16px var(--defender-display);
+    pointer-events: auto;
+    touch-action: none;
+}
+.touch-draw[hidden] { display: none; }
+
+/* Overlays */
+.overlay {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: var(--defender-space-3);
+    background: radial-gradient(ellipse at center, #1c120a55, #1c120acc);
+}
+.overlay[hidden] { display: none; }
+
+.panel {
+    display: grid;
+    gap: var(--defender-space-2);
+    justify-items: center;
+    width: min(420px, 100%);
+    padding: var(--defender-space-4) var(--defender-space-3);
+    border: 1px solid var(--defender-panel-edge);
+    border-radius: 14px;
+    background: var(--defender-panel);
+    box-shadow: 0 12px 40px #0008;
+    text-align: center;
+}
+
+.title { margin: 0; font: 700 clamp(30px, 6vw, 44px) var(--defender-display); letter-spacing: 0.1em; text-transform: uppercase; }
+#gameOverTitle { font-size: clamp(24px, 5vw, 32px); }
+.tagline { margin: 0; font: 600 18px var(--defender-display); letter-spacing: 0.06em; color: #f1d9a8; }
+.note, .result { margin: 0; font-size: 15px; color: #e9dcc4; }
+.note:empty { display: none; }
+.result strong { font-size: 20px; color: var(--defender-ink); }
+
+.controls { display: grid; grid-template-columns: auto auto; gap: var(--defender-space-1) var(--defender-space-3); margin: var(--defender-space-1) 0; padding: 0; list-style: none; font-size: 14px; text-align: left; }
+.controls li { display: contents; }
+kbd { justify-self: end; padding: 2px 8px; border: 1px solid #c9a46a88; border-radius: 6px; background: #1c120a66; font: 600 12px var(--defender-body); }
+
+.panel button, .panel .button {
+    min-width: 200px;
+    min-height: 44px;
+    padding: 10px 20px;
+    border: 1px solid var(--defender-panel-edge);
+    border-radius: 8px;
+    background: #3a2a1d;
+    color: var(--defender-ink);
+    font: 700 15px var(--defender-display);
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    cursor: pointer;
+}
+.panel button:hover, .panel .button:hover { background: #4a3626; }
+.panel .primary { border-color: #e4a0a3; background: var(--defender-accent); }
+.panel .primary:hover { background: var(--defender-accent-hover); }
+
+@media (max-width: 640px) {
+    .hud-brand span { display: none; }
+    .hud-wave, .hud-gate { font-size: 15px; }
+    .gate-bar { width: 96px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .banner { animation: none; }
+    .gate-fill { transition: none; }
+}

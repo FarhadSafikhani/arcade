@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <title>Defender</title>
+  <rect x="7" y="7" width="114" height="114" rx="29" fill="#F8ECD8"/>
+  <path fill="#B8A684" d="M28 104V46h10v8h9v-8h10v8h14v-8h10v8h9v-8h10v58H74V84a10 10 0 0 0-20 0v20z"/>
+  <path fill="#DCCDB0" d="M32 104V58h64v46H74V84a10 10 0 0 0-20 0v20z"/>
+  <path fill="#6B4426" d="M56 104V85a8 8 0 0 1 16 0v19z"/>
+  <path fill="#7A4F2C" d="M63 24h2v26h-2z"/>
+  <path fill="#B8282E" d="M65 25h17l-5 6 5 6H65z"/>
+</svg>

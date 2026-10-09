@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Defender · Vibe Arcade</title>
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%assets/brand/defender.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/styles/defender.css">
+</head>
+<body>
+    <main id="defender" class="defender" data-state="loading">
+        <div id="stage" class="defender-stage">
+            <div class="hud">
+                <a class="hud-brand" href="/arcade/" aria-label="Back to arcade">
+                    <img src="/assets/brand/defender.svg" alt="">
+                    <span>Defender</span>
+                </a>
+                <div class="hud-wave" aria-live="polite">Wave <span id="waveNumber">1</span></div>
+                <div class="hud-gate">
+                    <span class="hud-gate-label">Gate <span id="gatePercent">100%</span></span>
+                    <div class="gate-bar"><div id="gateFill" class="gate-fill"></div></div>
+                </div>
+                <div class="crosshair" aria-hidden="true"><span class="crosshair-ring"></span><span class="crosshair-dot"></span></div>
+                <p id="banner" class="banner" role="status" hidden></p>
+                <button id="touchDraw" class="touch-draw" type="button" hidden>Draw</button>
+            </div>
+
+            <section id="loadingScreen" class="overlay" aria-label="Loading">
+                <div class="panel">
+                    <h1 class="title">Defender</h1>
+                    <p id="loadingNote" class="note">Raising the drawbridge…</p>
+                </div>
+            </section>
+
+            <section id="startScreen" class="overlay" aria-labelledby="startTitle" hidden>
+                <div class="panel">
+                    <h1 id="startTitle" class="title">Defender</h1>
+                    <p class="tagline">Hold the gate.</p>
+                    <ul class="controls">
+                        <li><kbd>Mouse</kbd> Aim</li>
+                        <li><kbd>Hold left</kbd> Draw the bow</li>
+                        <li><kbd>Release</kbd> Loose</li>
+                        <li><kbd>Right click</kbd> Ease off</li>
+                        <li><kbd>WASD</kbd> Walk the walkway</li>
+                        <li><kbd>Esc</kbd> Pause</li>
+                    </ul>
+                    <button id="startButton" class="primary" type="button">Defend the gate</button>
+                    <p id="startBest" class="note"></p>
+                </div>
+            </section>
+
+            <section id="pauseScreen" class="overlay" aria-labelledby="pauseTitle" hidden>
+                <div class="panel">
+                    <h2 id="pauseTitle" class="title">Paused</h2>
+                    <button id="resumeButton" class="primary" type="button">Resume</button>
+                    <button id="restartButton" type="button">Restart</button>
+                    <a class="button" href="/arcade/">Arcade</a>
+                    <p id="pauseNote" class="note" role="status"></p>
+                </div>
+            </section>
+
+            <section id="gameOverScreen" class="overlay" aria-labelledby="gameOverTitle" hidden>
+                <div class="panel">
+                    <h2 id="gameOverTitle" class="title">The gate has fallen</h2>
+                    <p class="result">You held until wave <strong id="finalWave">1</strong></p>
+                    <p class="note">Best: wave <span id="finalBest">1</span></p>
+                    <button id="againButton" class="primary" type="button">Defend again</button>
+                    <a class="button" href="/arcade/">Arcade</a>
+                </div>
+            </section>
+        </div>
+    </main>
+    <script type="module" src="/src/games/defender/game.ts"></script>
+</body>
+</html>

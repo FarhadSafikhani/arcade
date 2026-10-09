@@ -43,6 +43,15 @@ export const gamesConfig: GamesConfig = {
             accent: "#e07a86",
         },
         {
+            id: "defender",
+            name: "Defender",
+            description: "Hold the gate with your bow",
+            logo: "defender.svg",
+            available: true,
+            section: "games",
+            accent: "#b8282e",
+        },
+        {
             id: "snake",
             name: "Snake",
             description: "Classic snake game",
