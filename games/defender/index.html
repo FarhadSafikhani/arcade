@@ -24,6 +24,7 @@
                         <span id="levelLabel">Lv 1</span>
                         <div class="xp-bar"><div id="xpFill" class="xp-fill"></div></div>
                     </div>
+                    <button id="pointsBadge" class="points-badge" type="button">Skills · T</button>
                 </div>
                 <div class="hud-gate">
                     <span class="hud-gate-label">Gate <span id="gatePercent">100%</span></span>
@@ -32,6 +33,7 @@
                 <ul id="crew" class="crew" aria-label="Archers on the wall" hidden></ul>
                 <div class="crosshair" aria-hidden="true"><span class="crosshair-ring"></span><span class="crosshair-dot"></span></div>
                 <p id="banner" class="banner" role="status" hidden></p>
+                <div id="buffBar" class="buff-bar" aria-label="Active buffs" hidden></div>
                 <div id="spellBar" class="spell-bar" hidden></div>
                 <button id="touchDraw" class="touch-draw" type="button" hidden>Draw</button>
             </div>
@@ -54,7 +56,8 @@
                         <li><kbd>Release</kbd> Loose</li>
                         <li><kbd>Right click</kbd> Ease off</li>
                         <li><kbd>WASD</kbd> Walk the wall and towers</li>
-                        <li><kbd>Q E R F</kbd> Cast a spell</li>
+                        <li><kbd>T</kbd> Skill trees</li>
+                        <li><kbd>Q E R F G C</kbd> Use a skill</li>
                         <li><kbd>Esc</kbd> Pause</li>
                     </ul>
                     <button id="startButton" class="primary" type="button">Defend alone</button>
@@ -100,13 +103,7 @@
                 </div>
             </section>
 
-            <section id="cardScreen" class="card-screen" aria-labelledby="cardTitle" hidden>
-                <div class="card-sheet">
-                    <h2 id="cardTitle" class="card-title">Choose an upgrade</h2>
-                    <p id="cardNote" class="note">Keys 1 to 3.</p>
-                    <div id="cardChoices" class="card-choices"></div>
-                </div>
-            </section>
+            <section id="treeScreen" class="card-screen tree-screen" aria-label="Skill trees" hidden></section>
         </div>
     </main>
     <script type="module" src="/src/games/defender/game.ts"></script>

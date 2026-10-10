@@ -1,34 +1,42 @@
 import RAPIER from '@dimforge/rapier3d-compat';
-import { applyCard, combatMods, dealCards, emptyBuild, rolledDamage, spellCooldown, type CardId, type CombatMods, type RunBuild, type ShotProfile, type SpellId } from './cards';
 import { buildCastleColliders } from './castle';
 import {
-    aimDirection, arrowDamage, arrowSpeed, canStand, clamp, drawFraction, eyePosition, grantXp, scaleEnemy, shieldBlocks,
-    spawnList, turnAboutY, waveSpec, type Point3, type WaveSpec,
+    aimDirection, arrowDamage, arrowSpeed, canStand, clamp, drawFraction, eyePosition, grantXp, killXp, pointsAt,
+    scaleEnemy, shieldBlocks, spawnList, waveSpec, xpToAdvance, type Point3, type WaveSpec,
 } from './rules';
-import { ARROW, BOW, ENEMIES, ENEMY_MOTION, GATE, GOBLIN, LAYOUT, NET, PLAYER, SPELL, WAVES, type EnemyId, type EnemyKind } from './tuning';
+import {
+    ArrowKind, kitOf, learnBlock, rankOf, shotFromKit, SKILL_DEFS, skillCooldown, spentPoints,
+    type Kit, type Ranks, type ShotProfile, type SkillId,
+} from './skills';
+import { ARROW, BOW, ENEMIES, ENEMY_MOTION, GATE, GOBLIN, LAYOUT, NET, PLAYER, SKILLS, WAVES, type EnemyId, type EnemyKind } from './tuning';
 
 /**
- * The whole Defender run with nothing drawn: waves, foes, arrows, spells, the gate,
+ * The whole Defender run with nothing drawn: waves, foes, arrows, skills, the gate,
  * and every archer on the wall. The co-op server runs one per room; solo play runs
  * one in the page. Renderers read the public fields, which match the network schema.
  */
 
 export type Phase = 'lobby' | 'playing' | 'break' | 'over';
-export type EnemyMode = 'walking' | 'striking' | 'casting' | 'stunned' | 'dying';
+export type EnemyMode = 'walking' | 'striking' | 'casting' | 'stunned' | 'frozen' | 'dying';
+
+/** Bits in `SimEnemy.status`, so a foe can show what ails it. */
+export const STATUS = { bleeding: 1, chilled: 2, frozen: 4 } as const;
 
 /** Something worth a flash, a puff, or a sound. Sent to clients alongside the state. */
 export type FxEvent =
     | { t: 'hit'; enemy: string }
     | { t: 'kill'; enemy: string }
     | { t: 'block'; enemy: string }
+    | { t: 'freeze'; enemy: string }
     | { t: 'stick' }
     | { t: 'puff'; x: number; y: number; z: number; color: number; r: number }
     | { t: 'spark'; ax: number; az: number; bx: number; bz: number }
     | { t: 'gate' }
+    | { t: 'heal'; amount: number }
     | { t: 'loose'; owner: string; draw: number }
-    | { t: 'spell'; owner: string }
+    | { t: 'spell'; owner: string; skill: SkillId }
     | { t: 'wave'; wave: number; fresh: EnemyId | '' }
-    | { t: 'level'; owner: string }
+    | { t: 'level'; level: number }
     | { t: 'over'; wave: number };
 
 export interface Pose { x: number; z: number; yaw: number; pitch: number; draw: number; }
@@ -47,13 +55,17 @@ export interface SimEnemy {
     pace: number;
     /** Caster wind-up from 0 to 1. */
     charge: number;
+    /** `STATUS` bits. */
+    status: number;
 }
 
 export interface SimArrow {
     id: string;
     owner: string;
-    /** The owner's shot number, so the shooter can match it to the arrow they already drew. 0 for spells. */
+    /** The owner's shot number, so the shooter can match it to the arrow they already drew. 0 for skills. */
     seq: number;
+    /** `ArrowKind`: how the arrow looks. */
+    kind: number;
     x: number; y: number; z: number;
     /** Velocity in flight. Once stuck, the unit direction it points. */
     vx: number; vy: number; vz: number;
@@ -63,6 +75,7 @@ export interface SimArrow {
 }
 
 export interface SimBolt { id: string; x: number; y: number; z: number; vx: number; vy: number; vz: number; }
+/** A Tar Pit on the bridge. */
 export interface SimOil { id: string; x: number; z: number; }
 
 export interface SimPlayer {
@@ -74,19 +87,22 @@ export interface SimPlayer {
     yaw: number;
     pitch: number;
     draw: number;
-    level: number;
-    xp: number;
-    pending: number;
-    offer: CardId[];
-    spells: SpellId[];
-    /** Seconds left on each slotted spell, aligned with `spells`. */
+    /** Unspent skill points. */
+    points: number;
+    /** Rank of every learned skill. */
+    ranks: Map<string, number>;
+    /** Learned actives in the order they were learned; slot N is key N on the bar. */
+    actives: string[];
+    /** Seconds left on each active, aligned with `actives`. */
     cooldowns: number[];
     cooldownMax: number[];
-    /** Rank of every card taken, passives and spells alike. */
-    ranks: Map<string, number>;
+    /** Running buffs, with seconds left and their full length, aligned. */
+    buffs: string[];
+    buffLeft: number[];
+    buffMax: number[];
+    /** Draw time and nock delay multipliers, every attack-speed bonus included. */
     drawTime: number;
     nock: number;
-    drawMove: number;
 }
 
 interface Enemy extends SimEnemy {
@@ -98,10 +114,14 @@ interface Enemy extends SimEnemy {
     clock: number;
     deathTime: number;
     castTimer: number;
-    burn: number;
-    burnDps: number;
-    slow: number;
-    slowMul: number;
+    bleed: number;
+    bleedDps: number;
+    chill: number;
+    chillMul: number;
+    frostbite: number;
+    frozen: number;
+    frostHits: number;
+    frostSince: number;
     stun: number;
 }
 
@@ -112,16 +132,18 @@ interface Arrow extends SimArrow {
 }
 
 interface Bolt extends SimBolt { damage: number; }
-interface Oil extends SimOil { left: number; }
+interface Oil extends SimOil { left: number; slow: number; }
 
 interface Archer extends SimPlayer {
-    build: RunBuild;
-    mods: CombatMods;
-    brand: number;
-    barrage: number;
+    skills: Ranks;
+    kit: Kit;
+    timers: Partial<Record<SkillId, number>>;
     lastShot: number;
     lastPose: number;
 }
+
+const BUFFS: SkillId[] = ['rapid', 'mending'];
+const GATE_POINT = { x: 0, y: LAYOUT.gateHeight / 2, z: LAYOUT.wallFrontZ };
 
 export class DefenderSim {
     readonly enemies = new Map<string, SimEnemy>();
@@ -134,6 +156,9 @@ export class DefenderSim {
     gate: number = GATE.health;
     gateMax: number = GATE.health;
     breakLeft = 0;
+    /** The team's shared level and experience toward the next one. */
+    level = 1;
+    xp = 0;
     /** Running sim clock in seconds. */
     time = 0;
 
@@ -174,46 +199,43 @@ export class DefenderSim {
         return out;
     }
 
+    /** Joins an archer. Late joiners get every point the team's level has earned. */
     addPlayer(id: string, name: string): SimPlayer {
         const taken = new Set([...this.players.values()].map(player => player.slot));
         let slot = 0;
         while (taken.has(slot)) slot++;
         const spread = [0, -2.6, 2.6, -5.2][slot] ?? 0;
-        const build = emptyBuild();
         const archer: Archer = {
             id, name, slot,
             x: spread, z: PLAYER.walk.z.min + 0.3, yaw: 0, pitch: -0.22, draw: 0,
-            level: 1, xp: 0, pending: 0, offer: [], spells: [], cooldowns: [], cooldownMax: [], ranks: new Map(),
-            drawTime: 1, nock: 1, drawMove: 1,
-            build, mods: combatMods(build), brand: 0, barrage: 0, lastShot: -10, lastPose: this.time,
+            points: 0, ranks: new Map(), actives: [], cooldowns: [], cooldownMax: [],
+            buffs: [], buffLeft: [], buffMax: [], drawTime: 1, nock: 1,
+            skills: {}, kit: kitOf({}), timers: {}, lastShot: -10, lastPose: this.time,
         };
         this.players.set(id, archer);
-        this.refreshGateMax();
+        this.refreshArcher(archer);
         return archer;
     }
 
     removePlayer(id: string): void {
         this.players.delete(id);
-        this.refreshGateMax();
         if (this.players.size === 0 && this.phase !== 'lobby') this.toLobby();
     }
 
-    /** Begins a fresh run. Archers keep their places and lose their upgrades. */
+    /** Begins a fresh run. Archers keep their places and forget their skills. */
     start(): void {
         this.clearField();
+        this.level = 1;
+        this.xp = 0;
+        this.gate = this.gateMax;
         for (const archer of this.archerList()) {
-            archer.build = emptyBuild();
-            archer.level = 1;
-            archer.xp = 0;
-            archer.pending = 0;
-            archer.offer = [];
-            archer.brand = 0;
-            archer.barrage = 0;
+            archer.skills = {};
+            archer.actives = [];
+            archer.cooldowns = [];
+            archer.timers = {};
             archer.lastShot = -10;
             this.refreshArcher(archer);
         }
-        this.refreshGateMax();
-        this.gate = this.gateMax;
         this.startWave(1);
     }
 
@@ -226,7 +248,7 @@ export class DefenderSim {
         archer.draw = clamp(pose.draw, 0, 1);
         const elapsed = Math.max(0, this.time - archer.lastPose);
         archer.lastPose = this.time;
-        const reach = PLAYER.walkSpeed * archer.drawMove * elapsed * NET.moveTolerance + NET.moveSlack;
+        const reach = PLAYER.walkSpeed * elapsed * NET.moveTolerance + NET.moveSlack;
         const moved = Math.hypot(pose.x - archer.x, pose.z - archer.z);
         if (trusted || (moved <= reach && canStand(pose.x, pose.z))) {
             archer.x = pose.x;
@@ -237,11 +259,11 @@ export class DefenderSim {
     /** Looses an arrow for an archer. Returns false when the bow was not ready. */
     loose(id: string, shot: Loose): boolean {
         const archer = this.archer(id);
-        if (!archer || !this.active || archer.offer.length > 0 || !finitePose({ ...shot, draw: shot.draw })) return false;
-        const nock = BOW.nockDelay * archer.mods.nock;
+        if (!archer || !this.active || !finitePose(shot)) return false;
+        const nock = BOW.nockDelay * archer.nock;
         const since = this.time - archer.lastShot;
         if (since < nock - NET.shotSlack) return false;
-        const maxDraw = drawFraction(since - nock + NET.shotSlack, BOW.drawTime * archer.mods.drawTime);
+        const maxDraw = drawFraction(since - nock + NET.shotSlack, BOW.drawTime * archer.drawTime);
         const draw = clamp(Math.min(shot.draw, maxDraw), 0, 1);
         archer.lastShot = this.time;
         archer.yaw = shot.yaw;
@@ -250,45 +272,45 @@ export class DefenderSim {
             archer.x = shot.x;
             archer.z = shot.z;
         }
-        const profile = this.looseProfile(archer, draw);
-        this.fire(archer, profile, 0, Math.max(0, Math.floor(shot.seq)));
-        const extras = (this.random() < archer.mods.twinChance ? 1 : 0) + (archer.barrage > 0 ? SPELL.barrage.extra : 0);
-        for (let index = 0; index < extras; index++) {
-            const sign = index % 2 === 0 ? 1 : -1;
-            const step = Math.ceil((index + 1) / 2);
-            this.fire(archer, profile, sign * step * 0.08, 0);
+        const profile = shotFromKit(archer.kit, arrowDamage(draw), arrowSpeed(draw), draw);
+        const mending = archer.timers.mending ?? 0;
+        if (mending > 0) {
+            const rank = rankOf(archer.skills, 'mending');
+            profile.heal = SKILLS.mending.heal + SKILLS.mending.healPer * (rank - 1);
+            profile.kind = ArrowKind.Healing;
         }
+        this.fire(archer, profile, Math.max(0, Math.floor(shot.seq)));
         this.fx.push({ t: 'loose', owner: id, draw });
+        return true;
+    }
+
+    /** Puts one of an archer's points into a skill, if the tree allows it. */
+    learn(id: string, skill: string): boolean {
+        const archer = this.archer(id);
+        if (!archer || !(skill in SKILL_DEFS)) return false;
+        const skillId = skill as SkillId;
+        if (learnBlock(archer.skills, skillId, this.level, archer.points) !== null) return false;
+        archer.skills[skillId] = rankOf(archer.skills, skillId) + 1;
+        if (SKILL_DEFS[skillId].kind === 'active' && !archer.actives.includes(skillId)) {
+            archer.actives.push(skillId);
+            archer.cooldowns.push(0);
+        }
+        this.refreshArcher(archer);
         return true;
     }
 
     cast(id: string, slot: number, yaw: number, pitch: number): boolean {
         const archer = this.archer(id);
-        if (!archer || this.phase !== 'playing' || archer.offer.length > 0) return false;
+        if (!archer || this.phase !== 'playing') return false;
         if (!Number.isFinite(yaw) || !Number.isFinite(pitch)) return false;
-        const spell = archer.build.spells[slot];
-        const index = archer.spells.indexOf(spell);
-        if (!spell || index < 0 || archer.cooldowns[index] > 0) return false;
+        const skill = archer.actives[slot] as SkillId | undefined;
+        if (!skill || archer.cooldowns[slot] > 0) return false;
         archer.yaw = yaw;
         archer.pitch = clamp(pitch, -PLAYER.pitchLimit, PLAYER.pitchLimit);
-        this.castSpell(archer, spell);
-        archer.cooldowns[index] = spellCooldown(spell, archer.build);
-        this.fx.push({ t: 'spell', owner: id });
-        return true;
-    }
-
-    pick(id: string, index: number): boolean {
-        const archer = this.archer(id);
-        const card = archer?.offer[index];
-        if (!archer || !card) return false;
-        const before = this.gateMax;
-        applyCard(archer.build, card);
+        this.castSkill(archer, skill, rankOf(archer.skills, skill));
+        archer.cooldowns[slot] = skillCooldown(skill, rankOf(archer.skills, skill));
         this.refreshArcher(archer);
-        this.refreshGateMax();
-        this.gate = Math.min(this.gateMax, this.gate + Math.max(0, this.gateMax - before));
-        archer.pending = Math.max(0, archer.pending - 1);
-        archer.offer = [];
-        if (archer.pending > 0) this.deal(archer);
+        this.fx.push({ t: 'spell', owner: id, skill });
         return true;
     }
 
@@ -296,11 +318,17 @@ export class DefenderSim {
         if (!this.active) return;
         this.time += dt;
         for (const archer of this.archerList()) {
-            archer.brand = Math.max(0, archer.brand - dt);
-            archer.barrage = Math.max(0, archer.barrage - dt);
+            let changed = false;
+            for (const skill of BUFFS) {
+                const left = archer.timers[skill] ?? 0;
+                if (left <= 0) continue;
+                archer.timers[skill] = Math.max(0, left - dt);
+                changed = true;
+            }
             for (let index = 0; index < archer.cooldowns.length; index++) {
                 archer.cooldowns[index] = Math.max(0, archer.cooldowns[index] - dt);
             }
+            if (changed) this.refreshArcher(archer);
         }
         for (const [id, oil] of this.oils as Map<string, Oil>) {
             oil.left -= dt;
@@ -332,9 +360,8 @@ export class DefenderSim {
         if (this.phase === 'playing' && this.queue.length === 0 && this.aliveCount === 0) {
             this.phase = 'break';
             this.breakLeft = WAVES.breakSeconds;
-            for (const archer of this.archerList()) if (archer.pending > 0) this.deal(archer);
         }
-        if (this.phase === 'break' && !this.archerList().some(archer => archer.offer.length > 0)) {
+        if (this.phase === 'break') {
             this.breakLeft -= dt;
             if (this.breakLeft <= 0) this.startWave(this.wave + 1);
         }
@@ -379,104 +406,51 @@ export class DefenderSim {
         this.fx.push({ t: 'wave', wave, fresh });
     }
 
-    private deal(archer: Archer): void {
-        archer.offer = dealCards(this.random, archer.build);
-        if (archer.offer.length === 0) {
-            archer.pending = 0;
-            this.gate = Math.min(this.gateMax, this.gate + 12);
-        }
-    }
-
+    /** Recomputes everything derived from an archer's skills and running buffs. */
     private refreshArcher(archer: Archer): void {
-        archer.mods = combatMods(archer.build);
-        const spells = [...archer.build.spells];
-        archer.cooldowns = spells.map(spell => {
-            const index = archer.spells.indexOf(spell);
-            return index >= 0 ? archer.cooldowns[index] ?? 0 : 0;
-        });
-        archer.spells = spells;
-        archer.cooldownMax = spells.map(spell => spellCooldown(spell, archer.build));
-        archer.ranks = new Map(Object.entries({ ...archer.build.ranks, ...archer.build.spellRanks }));
-        archer.drawTime = archer.mods.drawTime;
-        archer.nock = archer.mods.nock;
-        archer.drawMove = archer.mods.drawMove;
+        archer.kit = kitOf(archer.skills);
+        archer.points = Math.max(0, pointsAt(this.level) - spentPoints(archer.skills));
+        archer.ranks = new Map(Object.entries(archer.skills));
+        archer.cooldownMax = archer.actives.map(skill => skillCooldown(skill as SkillId, rankOf(archer.skills, skill as SkillId)));
+        const rapid = (archer.timers.rapid ?? 0) > 0 ? SKILLS.rapid.attackSpeed[rankOf(archer.skills, 'rapid') - 1] ?? 0 : 0;
+        const speed = 1 + archer.kit.attackSpeed + rapid;
+        archer.drawTime = 1 / speed;
+        archer.nock = 1 / speed;
+        archer.buffs = BUFFS.filter(skill => (archer.timers[skill] ?? 0) > 0);
+        archer.buffLeft = archer.buffs.map(skill => archer.timers[skill as SkillId] ?? 0);
+        archer.buffMax = archer.buffs.map(skill => this.buffLength(skill as SkillId, rankOf(archer.skills, skill as SkillId)));
     }
 
-    /** Masons on the wall each strengthen the shared gate. */
-    private refreshGateMax(): void {
-        const bonus = this.archerList().reduce((sum, archer) => sum + archer.mods.gateBonus, 0);
-        this.gateMax = GATE.health + bonus;
-        if (this.phase === 'lobby') this.gate = this.gateMax;
-        else this.gate = Math.min(this.gateMax, this.gate);
-    }
-
-    /** The sturdiest gate wright on the wall sets how much of each blow lands. */
-    private gateTaken(): number {
-        const archers = this.archerList();
-        return archers.length === 0 ? 1 : Math.min(...archers.map(archer => archer.mods.gateTaken));
+    private buffLength(skill: SkillId, rank: number): number {
+        if (skill === 'rapid') return SKILLS.rapid.duration;
+        if (skill === 'mending') return SKILLS.mending.duration + SKILLS.mending.durationPer * (rank - 1);
+        return 0;
     }
 
     private damageGate(amount: number): void {
-        this.gate = Math.max(0, this.gate - amount * this.gateTaken());
+        this.gate = Math.max(0, this.gate - amount);
         this.struck = true;
     }
 
-    private looseProfile(archer: Archer, draw: number): ShotProfile {
-        const mods = archer.mods;
-        return {
-            damage: arrowDamage(draw) * mods.damage,
-            speed: arrowSpeed(draw) * mods.arrowSpeed,
-            pierce: this.random() < mods.pierceChance ? 1 : 0,
-            ignoreShield: this.random() < mods.shieldBreak,
-            explode: 0,
-            burn: mods.burn,
-            slow: mods.slow,
-            chain: 0,
-            knockback: mods.knockback,
-            aura: 0,
-            vs: mods.vs,
-            critChance: mods.critChance,
-            critMul: mods.critMul,
-        };
+    private skillShot(archer: Archer, damage: number, speed: number, extra: Partial<ShotProfile>): ShotProfile {
+        return { ...shotFromKit(archer.kit, damage, speed, 1), knockback: 0, ...extra };
     }
 
-    private spellShot(archer: Archer, damage: number, speed: number, extra: Partial<ShotProfile> = {}): ShotProfile {
-        const mods = archer.mods;
-        return {
-            damage: damage * mods.damage,
-            speed: speed * mods.arrowSpeed,
-            pierce: extra.pierce ?? 0,
-            ignoreShield: extra.ignoreShield ?? false,
-            explode: extra.explode ?? 0,
-            burn: extra.burn ?? 0,
-            slow: extra.slow ?? 0,
-            chain: extra.chain ?? 0,
-            knockback: extra.knockback ?? 0,
-            aura: extra.aura ?? 0,
-            vs: extra.vs ?? mods.vs,
-            critChance: mods.critChance,
-            critMul: mods.critMul,
-        };
-    }
-
-    /** Looses an arrow from the archer's eye. `yawOffset` fans it sideways, in radians. */
-    private fire(archer: Archer, profile: ShotProfile, yawOffset: number, seq: number): void {
-        let direction = aimDirection(archer.yaw, archer.pitch);
-        if (yawOffset !== 0) direction = turnAboutY(direction, yawOffset);
+    /** Looses an arrow from the archer's eye along their aim. */
+    private fire(archer: Archer, profile: ShotProfile, seq: number): void {
+        const direction = aimDirection(archer.yaw, archer.pitch);
         const eye = eyePosition(archer.x, archer.z, archer.yaw, archer.pitch);
-        const shot: ShotProfile = { ...profile };
-        if (archer.brand > 0) shot.burn += SPELL.brand.burn;
-        this.launch(archer.id, seq, shot, {
+        this.launch(archer.id, seq, profile, {
             x: eye.x + direction.x * ARROW.spawnOffset,
             y: eye.y + direction.y * ARROW.spawnOffset,
             z: eye.z + direction.z * ARROW.spawnOffset,
-        }, { x: direction.x * shot.speed, y: direction.y * shot.speed, z: direction.z * shot.speed });
+        }, { x: direction.x * profile.speed, y: direction.y * profile.speed, z: direction.z * profile.speed });
     }
 
     private launch(owner: string, seq: number, profile: ShotProfile, position: Point3, velocity: Point3): void {
         const id = String(this.nextId++);
         const arrow: Arrow = {
-            id, owner, seq,
+            id, owner, seq, kind: profile.kind,
             x: position.x, y: position.y, z: position.z,
             vx: velocity.x, vy: velocity.y, vz: velocity.z,
             stuck: false, enemy: '',
@@ -485,83 +459,55 @@ export class DefenderSim {
         this.arrows.set(id, arrow);
     }
 
-    private castSpell(archer: Archer, id: SpellId): void {
+    private castSkill(archer: Archer, id: SkillId, rank: number): void {
+        const r = Math.max(1, rank);
         switch (id) {
-            case 'volley': {
-                const shot = this.spellShot(archer, SPELL.volley.damage, SPELL.volley.speed);
-                const span = SPELL.volley.shots - 1;
-                for (let index = 0; index < SPELL.volley.shots; index++) {
-                    this.fire(archer, shot, (index - span / 2) * (SPELL.volley.spread / span), 0);
-                }
+            case 'power':
+                this.fire(archer, this.skillShot(archer, SKILLS.power.damage + SKILLS.power.damagePer * (r - 1), SKILLS.power.speed, {
+                    pierce: 99, ignoreShield: true, kind: ArrowKind.Power,
+                }), 0);
                 break;
-            }
-            case 'bolt':
-                this.fire(archer, this.spellShot(archer, SPELL.bolt.damage, SPELL.bolt.speed, { pierce: SPELL.bolt.pierce, ignoreShield: true }), 0, 0);
+            case 'concuss':
+                this.fire(archer, this.skillShot(archer, SKILLS.concuss.damage, SKILLS.concuss.speed, {
+                    stun: SKILLS.concuss.stun + SKILLS.concuss.stunPer * (r - 1), stunRadius: SKILLS.concuss.radius,
+                }), 0);
                 break;
-            case 'blast':
-                this.fire(archer, this.spellShot(archer, SPELL.blast.damage, SPELL.blast.speed, {
-                    explode: SPELL.blast.radius, ignoreShield: true, knockback: 1.4,
-                }), 0, 0);
-                break;
-            case 'rain':
-                this.rain(archer);
-                break;
-            case 'repel':
-                this.repel();
-                break;
-            case 'mend':
-                this.gate = Math.min(this.gateMax, this.gate + SPELL.mend.heal);
-                break;
-            case 'brand':
-                archer.brand = SPELL.brand.duration;
-                break;
-            case 'frost':
-                this.fire(archer, this.spellShot(archer, SPELL.frost.damage, SPELL.frost.speed, { slow: SPELL.frost.slow, aura: SPELL.frost.aura }), 0, 0);
-                break;
-            case 'spark':
-                this.fire(archer, this.spellShot(archer, SPELL.spark.damage, SPELL.spark.speed, { chain: SPELL.spark.jumps, ignoreShield: true }), 0, 0);
-                break;
-            case 'snipe':
-                this.fire(archer, this.spellShot(archer, SPELL.snipe.damage, SPELL.snipe.speed, {
-                    vs: { ...archer.mods.vs, caster: archer.mods.vs.caster * SPELL.snipe.casterBonus },
-                }), 0, 0);
-                break;
-            case 'barrage':
-                archer.barrage = SPELL.barrage.duration;
-                break;
-            case 'oil': {
+            case 'tar': {
                 const aim = this.aimOnBridge(archer);
                 const id = String(this.nextId++);
-                const oil: Oil = { id, x: aim.x, z: aim.z, left: SPELL.oil.duration };
+                const oil: Oil = {
+                    id, x: aim.x, z: aim.z,
+                    left: SKILLS.tar.duration + SKILLS.tar.durationPer * (r - 1),
+                    slow: SKILLS.tar.slow + SKILLS.tar.slowPer * (r - 1),
+                };
                 this.oils.set(id, oil);
                 break;
             }
+            case 'shockwave':
+                this.shockwave(SKILLS.shockwave.distance + SKILLS.shockwave.distancePer * (r - 1), SKILLS.shockwave.stun + SKILLS.shockwave.stunPer * (r - 1));
+                break;
+            case 'rapid':
+            case 'mending':
+                archer.timers[id] = this.buffLength(id, r);
+                break;
             default:
                 break;
         }
     }
 
-    private rain(archer: Archer): void {
-        const aim = this.aimOnBridge(archer);
-        for (let index = 0; index < SPELL.rain.arrows; index++) {
-            const shot = this.spellShot(archer, SPELL.rain.damage, 16);
-            this.launch(archer.id, 0, shot, {
-                x: clamp(aim.x + (this.random() - 0.5) * 6, -LAYOUT.bridgeHalfWidth + 0.3, LAYOUT.bridgeHalfWidth - 0.3),
-                y: 7.5 + this.random() * 2,
-                z: aim.z + (this.random() - 0.5) * 7,
-            }, { x: (this.random() - 0.5) * 1.5, y: -10, z: (this.random() - 0.5) * 1.5 });
-        }
-    }
-
-    private repel(): void {
-        const limit = ENEMY_MOTION.gateStrikeZ - SPELL.repel.range;
+    private shockwave(distance: number, stun: number): void {
+        const limit = ENEMY_MOTION.gateStrikeZ - SKILLS.shockwave.range;
         for (const enemy of this.enemies.values() as Iterable<Enemy>) {
             if (enemy.mode === 'dying' || enemy.z < limit) continue;
-            enemy.z = Math.max(ENEMY_MOTION.spawnZ + 1, enemy.z - SPELL.repel.distance);
-            enemy.stun = SPELL.repel.stun;
-            enemy.mode = 'stunned';
+            enemy.z = Math.max(ENEMY_MOTION.spawnZ + 1, enemy.z - distance);
+            this.stunFor(enemy, stun);
         }
         this.puff(0, 1.2, ENEMY_MOTION.gateStrikeZ - 1, 0xf4e2b0, 1.4);
+    }
+
+    private stunFor(enemy: Enemy, seconds: number): void {
+        enemy.stun = Math.max(enemy.stun, seconds);
+        if (enemy.mode !== 'frozen') enemy.mode = 'stunned';
     }
 
     private aimOnBridge(archer: Archer): Point3 {
@@ -591,11 +537,11 @@ export class DefenderSim {
         const id = String(this.nextId++);
         const enemy: Enemy = {
             id, kind: kind.id, x, z, facing: 0, mode: 'walking',
-            health: kind.health, maxHealth: kind.health, pace: 0, charge: 0,
+            health: kind.health, maxHealth: kind.health, pace: 0, charge: 0, status: 0,
             spec: kind, body, collider, laneX: x,
             speed: kind.speed * jitter,
-            clock: this.random() * 10, deathTime: 0,
-            castTimer: kind.castInterval, burn: 0, burnDps: 0, slow: 0, slowMul: 1, stun: 0,
+            clock: this.random() * 10, deathTime: 0, castTimer: kind.castInterval,
+            bleed: 0, bleedDps: 0, chill: 0, chillMul: 1, frostbite: 0, frozen: 0, frostHits: 0, frostSince: 0, stun: 0,
         };
         this.enemies.set(id, enemy);
         this.enemyByCollider.set(collider.handle, enemy);
@@ -607,35 +553,52 @@ export class DefenderSim {
         const all = [...this.enemies.values()] as Enemy[];
         for (const enemy of all) {
             enemy.clock += dt;
-            if (enemy.burn > 0) {
-                enemy.burn -= dt;
-                if (this.wound(enemy, enemy.burnDps * dt, false)) continue;
+            if (enemy.bleed > 0) {
+                enemy.bleed = Math.max(0, enemy.bleed - dt);
+                if (this.wound(enemy, enemy.bleedDps * dt, false)) continue;
             }
+            if (enemy.chill > 0) {
+                enemy.chill = Math.max(0, enemy.chill - dt);
+                if (enemy.chill === 0) {
+                    enemy.chillMul = 1;
+                    enemy.frostbite = 0;
+                }
+            }
+            enemy.status = (enemy.bleed > 0 ? STATUS.bleeding : 0) | (enemy.chill > 0 ? STATUS.chilled : 0) | (enemy.frozen > 0 ? STATUS.frozen : 0);
             if (enemy.mode === 'dying') {
                 enemy.deathTime += dt;
                 if (enemy.deathTime >= ENEMY_MOTION.deathDuration) this.removeEnemy(enemy);
                 continue;
             }
             enemy.charge = 0;
+            const hold = (): void => { enemy.body.setNextKinematicTranslation({ x: enemy.x, y: enemy.spec.height / 2, z: enemy.z }); };
+            if (enemy.frozen > 0) {
+                enemy.frozen = Math.max(0, enemy.frozen - dt);
+                enemy.mode = enemy.frozen > 0 ? 'frozen' : enemy.stun > 0 ? 'stunned' : 'walking';
+                enemy.pace = 0;
+                hold();
+                continue;
+            }
             if (enemy.stun > 0) {
                 enemy.stun -= dt;
                 enemy.mode = enemy.stun > 0 ? 'stunned' : 'walking';
                 enemy.pace = 0.2;
-                enemy.body.setNextKinematicTranslation({ x: enemy.x, y: enemy.spec.height / 2, z: enemy.z });
+                hold();
                 continue;
             }
+            const chilled = enemy.chill > 0 ? enemy.chillMul : 1;
             if (enemy.mode === 'striking') {
-                this.damageGate(enemy.spec.gateDamagePerSecond * dt);
+                this.damageGate(enemy.spec.gateDamagePerSecond * chilled * dt);
                 continue;
             }
             if (enemy.mode === 'casting') {
                 enemy.charge = clamp(1 - enemy.castTimer / Math.max(0.3, enemy.spec.castInterval), 0, 1);
-                enemy.castTimer -= dt;
+                enemy.castTimer -= dt * chilled;
                 if (enemy.castTimer <= 0) {
                     this.launchBolt(enemy);
                     enemy.castTimer = enemy.spec.castInterval;
                 }
-                enemy.body.setNextKinematicTranslation({ x: enemy.x, y: enemy.spec.height / 2, z: enemy.z });
+                hold();
                 continue;
             }
 
@@ -663,14 +626,10 @@ export class DefenderSim {
                     advance = Math.min(advance, clamp((ahead - reach * 0.45) / (reach * 0.4), 0, 1));
                 }
             }
-            let pace = enemy.speed;
-            if (enemy.slow > 0) {
-                enemy.slow = Math.max(0, enemy.slow - dt);
-                pace *= enemy.slowMul;
-            }
-            for (const oil of this.oils.values()) {
-                if (Math.abs(enemy.z - oil.z) < SPELL.oil.reach && Math.abs(enemy.x - oil.x) < 3.3) {
-                    pace *= SPELL.oil.slow;
+            let pace = enemy.speed * chilled;
+            for (const oil of this.oils.values() as Iterable<Oil>) {
+                if (Math.abs(enemy.z - oil.z) < SKILLS.tar.reach && Math.abs(enemy.x - oil.x) < SKILLS.tar.halfWidth) {
+                    pace *= oil.slow;
                     break;
                 }
             }
@@ -681,10 +640,10 @@ export class DefenderSim {
                 enemy.z = goalZ;
                 enemy.mode = enemy.spec.standoff > 0 ? 'casting' : 'striking';
                 enemy.castTimer = enemy.spec.castInterval * 0.55;
-            }
+            } else enemy.mode = 'walking';
             enemy.facing = Math.atan2(steerX, Math.max(0.2, pace * advance)) * 0.6;
             enemy.pace = pace * Math.max(0.3, advance);
-            enemy.body.setNextKinematicTranslation({ x: enemy.x, y: enemy.spec.height / 2, z: enemy.z });
+            hold();
         }
     }
 
@@ -740,7 +699,8 @@ export class DefenderSim {
         const direction = distance > 0
             ? { x: (next.x - start.x) / distance, y: (next.y - start.y) / distance, z: (next.z - start.z) / distance }
             : { x: 0, y: -1, z: 0 };
-        this.clipBolts(start, next);
+        const healing = arrow.profile.heal > 0;
+        if (!healing) this.clipBolts(start, next);
 
         let traveled = 0;
         let guard = 0;
@@ -756,7 +716,8 @@ export class DefenderSim {
                 undefined,
                 undefined,
                 undefined,
-                collider => !arrow.ignore.has(collider.handle),
+                // Healing arrows fly through foes to reach the gate.
+                collider => !arrow.ignore.has(collider.handle) && !(healing && this.enemyByCollider.has(collider.handle)),
             );
             if (!hit) break;
             const impact = traveled + hit.timeOfImpact;
@@ -768,21 +729,19 @@ export class DefenderSim {
             arrow.x = point.x; arrow.y = point.y; arrow.z = point.z;
             const enemy = this.enemyByCollider.get(hit.collider.handle);
             if (!enemy) {
-                this.burstAt(arrow, point, null);
+                if (healing) this.mendAt(point, arrow.profile.heal);
                 this.embed(arrow, direction, null);
                 this.fx.push({ t: 'stick' });
                 return true;
             }
-            const blocked = enemy.spec.shield && !arrow.profile.ignoreShield
+            const blocked = enemy.spec.shield && !arrow.profile.ignoreShield && enemy.mode !== 'frozen'
                 && shieldBlocks(arrow.vx, arrow.vy, arrow.vz, Math.sin(enemy.facing), Math.cos(enemy.facing));
             if (blocked) {
                 this.fx.push({ t: 'block', enemy: enemy.id });
-                this.burstAt(arrow, point, null);
                 this.embed(arrow, direction, enemy);
                 return true;
             }
-            this.hurt(enemy, arrow.profile.damage, arrow.profile);
-            this.burstAt(arrow, point, enemy);
+            this.strike(enemy, arrow.profile);
             if (arrow.profile.pierce > 0) {
                 arrow.profile.pierce -= 1;
                 arrow.ignore.add(hit.collider.handle);
@@ -794,61 +753,40 @@ export class DefenderSim {
         }
 
         arrow.x = next.x; arrow.y = next.y; arrow.z = next.z;
+        if (healing && next.y < LAYOUT.waterY) this.mendAt(next, arrow.profile.heal);
         return !(next.y < LAYOUT.waterY || arrow.age > ARROW.lifetime);
     }
 
-    /** Leaves the arrow where it hit. In a foe, its place is kept in the foe's frame so it rides along. */
-    private embed(arrow: Arrow, direction: Point3, enemy: Enemy | null): void {
-        arrow.stuck = true;
-        arrow.age = 0;
-        arrow.vx = direction.x; arrow.vy = direction.y; arrow.vz = direction.z;
-        if (!enemy) return;
-        const cos = Math.cos(enemy.facing);
-        const sin = Math.sin(enemy.facing);
-        const dx = arrow.x - enemy.x;
-        const dz = arrow.z - enemy.z;
-        arrow.enemy = enemy.id;
-        arrow.x = dx * cos - dz * sin;
-        arrow.z = dx * sin + dz * cos;
-        const vx = direction.x * cos - direction.z * sin;
-        const vz = direction.x * sin + direction.z * cos;
-        arrow.vx = vx; arrow.vz = vz;
+    /** A healing arrow that lands at the gate mends it. */
+    private mendAt(point: Point3, share: number): void {
+        const near = Math.hypot(point.x - GATE_POINT.x, point.y - GATE_POINT.y, point.z - GATE_POINT.z) <= SKILLS.mending.gateReach;
+        if (!near) {
+            this.puff(point.x, point.y + 0.2, point.z, 0x9be38a, 0.25);
+            return;
+        }
+        const amount = Math.min(this.gateMax - this.gate, share * this.gateMax);
+        this.gate += amount;
+        this.puff(point.x, point.y + 0.3, point.z, 0x9be38a, 0.9);
+        this.fx.push({ t: 'heal', amount });
     }
 
-    private burstAt(arrow: Arrow, point: Point3, primary: Enemy | null): void {
-        const profile = arrow.profile;
-        if (profile.explode > 0) {
-            this.puff(point.x, point.y, point.z, 0xff8a3a, profile.explode * 0.45);
-            for (const enemy of this.enemies.values() as Iterable<Enemy>) {
-                if (enemy === primary || enemy.mode === 'dying') continue;
-                if (Math.hypot(enemy.x - point.x, enemy.z - point.z) > profile.explode + enemy.spec.radius) continue;
-                this.hurt(enemy, profile.damage * 0.6, { ...profile, explode: 0, pierce: 0, chain: 0 });
+    /** A direct hit: stun splash, the wound itself, then maybe a leap to the next foe. */
+    private strike(enemy: Enemy, profile: ShotProfile): void {
+        if (profile.stun > 0) {
+            for (const other of this.enemies.values() as Iterable<Enemy>) {
+                if (other.mode === 'dying') continue;
+                if (other !== enemy && Math.hypot(other.x - enemy.x, other.z - enemy.z) > profile.stunRadius) continue;
+                this.stunFor(other, profile.stun);
             }
+            this.puff(enemy.x, 1, enemy.z, 0xf4e2b0, profile.stunRadius * 0.5);
         }
-        if (profile.aura > 0) {
-            this.puff(point.x, 0.4, point.z, 0xb7e6ff, profile.aura * 0.4);
-            for (const enemy of this.enemies.values() as Iterable<Enemy>) {
-                if (enemy.mode === 'dying') continue;
-                if (Math.hypot(enemy.x - point.x, enemy.z - point.z) > profile.aura + enemy.spec.radius) continue;
-                enemy.slow = Math.max(enemy.slow, 2.6);
-                enemy.slowMul = profile.slow;
+        this.hurt(enemy, profile.damage, profile);
+        if (profile.ricochet > 0 && this.random() < profile.ricochet) {
+            const next = this.nearest(enemy, SKILLS.ricochet.range, new Set([enemy]));
+            if (next) {
+                this.fx.push({ t: 'spark', ax: enemy.x, az: enemy.z, bx: next.x, bz: next.z });
+                this.hurt(next, profile.damage * SKILLS.ricochet.damage, { ...profile, ricochet: 0, stun: 0, knockback: 0 });
             }
-        }
-        if (profile.chain > 0 && primary) this.chainFrom(primary, profile);
-    }
-
-    private chainFrom(first: Enemy, profile: ShotProfile): void {
-        const hit = new Set<Enemy>([first]);
-        let current = first;
-        let power = profile.damage * 0.72;
-        for (let jump = 0; jump < profile.chain; jump++) {
-            const next = this.nearest(current, SPELL.spark.range, hit);
-            if (!next) break;
-            this.fx.push({ t: 'spark', ax: current.x, az: current.z, bx: next.x, bz: next.z });
-            this.hurt(next, power, { ...profile, chain: 0, explode: 0 });
-            hit.add(next);
-            current = next;
-            power *= 0.72;
         }
     }
 
@@ -868,24 +806,44 @@ export class DefenderSim {
 
     private hurt(enemy: Enemy, amount: number, profile: ShotProfile): void {
         if (enemy.mode === 'dying') return;
-        const rolled = rolledDamage({ ...profile, damage: amount }, enemy.kind, this.random());
-        if (profile.burn > 0) {
-            enemy.burn = Math.max(enemy.burn, 3.2);
-            enemy.burnDps = Math.max(enemy.burnDps, profile.burn);
+        let damage = amount;
+        if (enemy.bleed > 0) damage *= 1 + profile.wound;
+        if (enemy.chill > 0) damage *= 1 + enemy.frostbite;
+        if (profile.bleedDps > 0) {
+            enemy.bleed = Math.max(enemy.bleed, profile.bleedTime);
+            enemy.bleedDps = Math.max(enemy.bleedDps, profile.bleedDps);
         }
-        if (profile.slow > 0) {
-            enemy.slow = Math.max(enemy.slow, 2.4);
-            enemy.slowMul = profile.slow;
+        if (profile.chillSlow > 0) {
+            enemy.chill = Math.max(enemy.chill, profile.chillTime);
+            enemy.chillMul = Math.min(enemy.chillMul, 1 - profile.chillSlow);
+            enemy.frostbite = Math.max(enemy.frostbite, profile.frostbite);
         }
+        if (profile.winter > 0) this.frostHit(enemy, profile.winter);
         if (profile.knockback > 0) {
             const shove = profile.knockback * (enemy.kind === 'brute' ? 0.35 : 1);
             enemy.z = Math.max(ENEMY_MOTION.spawnZ + 1, enemy.z - shove);
-            if (enemy.mode === 'striking') enemy.mode = 'walking';
+            if (enemy.mode === 'striking' || enemy.mode === 'casting') enemy.mode = 'walking';
         }
-        this.wound(enemy, rolled.damage);
+        this.wound(enemy, damage);
     }
 
-    /** Returns true when this blow drops the foe. Every archer learns from every kill. */
+    /** Winter's Grip: enough frost arrows in a short window freeze a foe solid. */
+    private frostHit(enemy: Enemy, rank: number): void {
+        if (enemy.frozen > 0) return;
+        if (this.time - enemy.frostSince > SKILLS.winter.window) {
+            enemy.frostSince = this.time;
+            enemy.frostHits = 0;
+        }
+        enemy.frostHits += 1;
+        if (enemy.frostHits < SKILLS.winter.hits) return;
+        enemy.frostHits = 0;
+        enemy.frozen = SKILLS.winter.freeze[rank - 1] ?? SKILLS.winter.freeze[0];
+        enemy.mode = 'frozen';
+        this.fx.push({ t: 'freeze', enemy: enemy.id });
+        this.puff(enemy.x, enemy.spec.height * 0.6, enemy.z, 0xcdefff, 0.9);
+    }
+
+    /** Returns true when this blow drops the foe. Every kill feeds the team's shared experience. */
     private wound(enemy: Enemy, amount: number, flash = true): boolean {
         if (enemy.mode === 'dying') return false;
         enemy.health -= amount;
@@ -895,20 +853,43 @@ export class DefenderSim {
         enemy.mode = 'dying';
         enemy.deathTime = 0;
         enemy.charge = 0;
+        enemy.status = 0;
         this.fx.push({ t: 'kill', enemy: enemy.id });
         this.enemyByCollider.delete(enemy.collider.handle);
         this.physics.removeRigidBody(enemy.body);
-        for (const archer of this.archerList()) this.grant(archer, enemy.spec.xp * archer.mods.xpGain);
+        this.grant(killXp(enemy.spec, this.archers));
         return true;
     }
 
-    private grant(archer: Archer, amount: number): void {
-        const granted = grantXp(archer.xp, archer.level, amount);
-        archer.xp = granted.xp;
-        archer.level = granted.level;
+    /** Dev cheat: raises the team by whole levels. Only a server started with DEFENDER_CHEATS=1 calls it. */
+    grantLevels(levels: number): void {
+        for (let index = 0; index < Math.min(20, Math.max(0, Math.floor(levels))); index++) this.grant(xpToAdvance(this.level) - this.xp);
+    }
+
+    private grant(amount: number): void {
+        const granted = grantXp(this.xp, this.level, amount);
+        this.xp = granted.xp;
+        this.level = granted.level;
         if (granted.gainedLevels <= 0) return;
-        archer.pending += granted.gainedLevels;
-        this.fx.push({ t: 'level', owner: archer.id });
+        for (const archer of this.archerList()) this.refreshArcher(archer);
+        this.fx.push({ t: 'level', level: this.level });
+    }
+
+    /** Leaves the arrow where it hit. In a foe, its place is kept in the foe's frame so it rides along. */
+    private embed(arrow: Arrow, direction: Point3, enemy: Enemy | null): void {
+        arrow.stuck = true;
+        arrow.age = 0;
+        arrow.vx = direction.x; arrow.vy = direction.y; arrow.vz = direction.z;
+        if (!enemy) return;
+        const cos = Math.cos(enemy.facing);
+        const sin = Math.sin(enemy.facing);
+        const dx = arrow.x - enemy.x;
+        const dz = arrow.z - enemy.z;
+        arrow.enemy = enemy.id;
+        arrow.x = dx * cos - dz * sin;
+        arrow.z = dx * sin + dz * cos;
+        arrow.vx = direction.x * cos - direction.z * sin;
+        arrow.vz = direction.x * sin + direction.z * cos;
     }
 
     private clipBolts(from: Point3, to: Point3): void {
@@ -934,10 +915,9 @@ export class DefenderSim {
     }
 }
 
-function finitePose(pose: Pose): boolean {
+function finitePose(pose: { x: number; z: number; yaw: number; pitch: number; draw: number }): boolean {
     return [pose.x, pose.z, pose.yaw, pose.pitch, pose.draw].every(Number.isFinite);
 }
-
 
 function segmentNear(from: Point3, to: Point3, point: Point3, radius: number): boolean {
     const abx = to.x - from.x;

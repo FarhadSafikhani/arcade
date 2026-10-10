@@ -6,8 +6,8 @@ import { BowView, createArrowMesh } from './bow';
 import { createRig, EnemyRig } from './goblin';
 import type { ArrowView, PlayerView, WorldView } from './net/link';
 import { aimDirection, clamp, eyePosition, leanDistance } from './rules';
-import type { FxEvent } from './sim';
-import { ARROW, ENEMIES, ENEMY_MOTION, LAYOUT, PLAYER, SPELL, type EnemyId } from './tuning';
+import { STATUS, type FxEvent } from './sim';
+import { ARROW, ENEMIES, ENEMY_MOTION, LAYOUT, PLAYER, SKILLS, type EnemyId } from './tuning';
 
 interface ShownEnemy {
     rig: EnemyRig;
@@ -35,6 +35,8 @@ interface Ghost {
     velocity: THREE.Vector3;
     age: number;
     landed: boolean;
+    /** Healing arrows fly through foes. */
+    passesFoes: boolean;
 }
 
 interface ShownBolt { mesh: THREE.Object3D; position: THREE.Vector3; velocity: THREE.Vector3; seen: THREE.Vector3; }
@@ -51,7 +53,7 @@ const boltCoreGeometry = new THREE.SphereGeometry(0.1, 8, 6);
 const boltGlowMaterial = new THREE.MeshBasicMaterial({ color: 0xffb15a });
 const boltCoreMaterial = new THREE.MeshBasicMaterial({ color: 0xfff3c4 });
 const oilGeometry = new THREE.CircleGeometry(1, 22);
-const oilMaterial = new THREE.MeshBasicMaterial({ color: 0x2a2218, transparent: true, opacity: 0.6, depthWrite: false });
+const oilMaterial = new THREE.MeshBasicMaterial({ color: 0x1e1712, transparent: true, opacity: 0.72, depthWrite: false });
 /** Longest a remote arrow or bolt keeps flying on its own between patches. */
 const MAX_COAST = 0.2;
 const scratch = { direction: new THREE.Vector3() };
@@ -80,7 +82,7 @@ export class DefenderWorld {
     private readonly archers = new Map<string, ShownArcher>();
     private readonly puffs: Puff[] = [];
     private readonly sparks: Spark[] = [];
-    private readonly arrowPool: THREE.Group[] = [];
+    private readonly arrowPools = new Map<number, THREE.Group[]>();
     private feetX = 0;
     private feetZ = PLAYER.walk.z.min + 0.3;
     private yaw = 0;
@@ -148,15 +150,15 @@ export class DefenderWorld {
     }
 
     /** Flies this archer's arrow at once, from the same eye and aim the server will use. */
-    predict(seq: number, speed: number): void {
+    predict(seq: number, speed: number, kind: number, passesFoes: boolean): void {
         const direction = aimDirection(this.yaw, this.pitch);
         const eye = eyePosition(this.feetX, this.feetZ, this.yaw, this.pitch);
         const position = new THREE.Vector3(eye.x, eye.y, eye.z).addScaledVector(toVector(direction), ARROW.spawnOffset);
-        const mesh = this.takeArrow();
+        const mesh = this.takeArrow(kind);
         mesh.position.copy(position);
         mesh.quaternion.setFromUnitVectors(ARROW_FORWARD, toVector(direction));
         this.scene.add(mesh);
-        this.ghosts.set(seq, { mesh, position, velocity: toVector(direction).multiplyScalar(speed), age: 0, landed: false });
+        this.ghosts.set(seq, { mesh, position, velocity: toVector(direction).multiplyScalar(speed), age: 0, landed: false, passesFoes });
     }
 
     /** Brings the scene in line with the view. `smooth` eases remote motion between network patches. */
@@ -256,11 +258,14 @@ export class DefenderWorld {
             rig.root.position.set(shown.x, 0, shown.z);
             rig.root.rotation.y = shown.facing;
             rig.setHealth(state.maxHealth > 0 ? Math.max(0, state.health) / state.maxHealth : 1);
+            rig.setStatus((state.status & STATUS.bleeding) !== 0, (state.status & STATUS.chilled) !== 0, state.mode === 'frozen');
             if (state.mode === 'dying') {
                 shown.deathTime += dt;
                 rig.die(Math.min(1, shown.deathTime / ENEMY_MOTION.deathDuration));
                 return;
             }
+            // Frozen foes hold whatever pose the frost caught them in.
+            if (state.mode === 'frozen') return;
             rig.channel(state.mode === 'casting' ? state.charge : 0);
             if (state.mode === 'striking') rig.strike(shown.clock);
             else if (state.mode === 'stunned') rig.walk(shown.clock, 0.2);
@@ -274,7 +279,7 @@ export class DefenderWorld {
             let shown = this.arrows.get(id);
             if (!shown) {
                 shown = {
-                    mesh: this.takeArrow(),
+                    mesh: this.takeArrow(state.kind),
                     seen: { x: NaN, y: NaN, z: NaN, stuck: false, enemy: '' },
                     position: new THREE.Vector3(), velocity: new THREE.Vector3(), coast: 0,
                 };
@@ -329,7 +334,7 @@ export class DefenderWorld {
             fly(end, ghost.velocity, dt);
             const travel = end.clone().sub(start);
             const distance = travel.length();
-            const stop = distance > 0 ? this.firstHit(start, travel.divideScalar(distance), distance) : null;
+            const stop = distance > 0 ? this.firstHit(start, travel.divideScalar(distance), distance, ghost.passesFoes) : null;
             ghost.position.copy(stop ?? end);
             ghost.mesh.position.copy(ghost.position);
             orient(ghost.mesh, ghost.velocity);
@@ -339,11 +344,11 @@ export class DefenderWorld {
     }
 
     /** Where a predicted arrow first meets stone or a foe as drawn, if anywhere along this step. */
-    private firstHit(start: THREE.Vector3, direction: THREE.Vector3, distance: number): THREE.Vector3 | null {
+    private firstHit(start: THREE.Vector3, direction: THREE.Vector3, distance: number, passesFoes: boolean): THREE.Vector3 | null {
         let best = distance;
         const hit = this.physics.castRay(new RAPIER.Ray(start, direction), distance, true);
         if (hit) best = hit.timeOfImpact;
-        for (const enemy of this.enemies.values()) {
+        for (const enemy of passesFoes ? [] : this.enemies.values()) {
             const kind = ENEMIES[enemy.rig.style];
             const center = new THREE.Vector3(enemy.x, kind.height / 2, enemy.z);
             const along = center.clone().sub(start).dot(direction);
@@ -386,7 +391,7 @@ export class DefenderWorld {
             const mesh = new THREE.Mesh(oilGeometry, oilMaterial);
             mesh.rotation.x = -Math.PI / 2;
             mesh.position.set(state.x, 0.08, state.z);
-            mesh.scale.set(3.3, SPELL.oil.reach, 1);
+            mesh.scale.set(SKILLS.tar.halfWidth, SKILLS.tar.reach, 1);
             this.scene.add(mesh);
             this.oils.set(id, mesh);
         });
@@ -513,8 +518,9 @@ export class DefenderWorld {
         this.sparks.length = 0;
     }
 
-    private takeArrow(): THREE.Group {
-        const arrow = this.arrowPool.pop() ?? createArrowMesh();
+    private takeArrow(kind = 0): THREE.Group {
+        const arrow = this.arrowPools.get(kind)?.pop() ?? createArrowMesh(kind);
+        arrow.userData.kind = kind;
         arrow.scale.setScalar(1);
         arrow.visible = true;
         return arrow;
@@ -522,7 +528,13 @@ export class DefenderWorld {
 
     private releaseArrow(mesh: THREE.Group): void {
         mesh.removeFromParent();
-        this.arrowPool.push(mesh);
+        const kind = Number(mesh.userData.kind ?? 0);
+        let pool = this.arrowPools.get(kind);
+        if (!pool) {
+            pool = [];
+            this.arrowPools.set(kind, pool);
+        }
+        pool.push(mesh);
     }
 }
 

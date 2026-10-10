@@ -20,8 +20,12 @@ Defender runs solo in the page, or co-op through a Colyseus server that owns the
 ```sh
 npm run server          # co-op server on http://localhost:2567 (routes under /ws)
 npm run dev             # then open /arcade/games/defender/ and choose "Defend together"
-npm run smoke:defender  # two scripted archers join, start a run, and shoot
+npm run smoke:defender  # two scripted archers join, level up, learn a skill, and cast it
 ```
+
+To try co-op alone, `npx tsx scripts/bot-defender.ts --room <code>` adds a bot archer to your room. Start the
+server with `DEFENDER_CHEATS=1` and pass `--levels N` to skip the team ahead for testing skills; the cheat
+is off unless that variable is set.
 
 Co-op is live at https://defender-production.up.railway.app (Railway project `defender`, service
 `defender`). One Node service serves the page at `/` and the Colyseus server at `/ws`. GitHub Pages

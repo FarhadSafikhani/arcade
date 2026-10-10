@@ -10,7 +10,7 @@ type Fields = Record<string, unknown>;
 
 /**
  * One gate, up to four archers. The room owns the only real simulation: clients
- * send poses, shots, casts, and card picks, and receive the replicated state plus
+ * send poses, shots, casts, and skill points, and receive the replicated state plus
  * a batch of effects after every patch.
  */
 export class DefenderRoom extends Room<{ state: DefenderState }> {
@@ -37,8 +37,11 @@ export class DefenderRoom extends Room<{ state: DefenderState }> {
         this.onMessage('cast', (client: Client, message: ClientMessages['cast']) => {
             this.sim.cast(client.sessionId, Math.floor(message.slot), message.yaw, message.pitch);
         });
-        this.onMessage('pick', (client: Client, message: ClientMessages['pick']) => {
-            this.sim.pick(client.sessionId, Math.floor(message.index));
+        if (process.env.DEFENDER_CHEATS === '1') {
+            this.onMessage('cheat', (_client: Client, message: { levels?: number }) => this.sim.grantLevels(Number(message?.levels) || 1));
+        }
+        this.onMessage('learn', (client: Client, message: ClientMessages['learn']) => {
+            if (typeof message?.skill === 'string') this.sim.learn(client.sessionId, message.skill);
         });
 
         this.setSimulationInterval(() => {
@@ -76,15 +79,18 @@ export class DefenderRoom extends Room<{ state: DefenderState }> {
     private publish(): void {
         const sim = this.sim;
         const state = this.state;
-        assign(state, { phase: sim.phase, wave: sim.wave, gate: sim.gate, gateMax: sim.gateMax, breakLeft: sim.breakLeft });
+        assign(state, {
+            phase: sim.phase, wave: sim.wave, gate: sim.gate, gateMax: sim.gateMax, breakLeft: sim.breakLeft,
+            level: sim.level, xp: sim.xp,
+        });
         mirror(state.enemies, sim.enemies, () => new EnemyState(), (target, enemy) => assign(target, {
             kind: enemy.kind, x: enemy.x, z: enemy.z, facing: enemy.facing, mode: enemy.mode,
-            health: enemy.health, maxHealth: enemy.maxHealth, pace: enemy.pace, charge: enemy.charge,
+            health: enemy.health, maxHealth: enemy.maxHealth, pace: enemy.pace, charge: enemy.charge, status: enemy.status,
         }));
         mirror(state.arrows, sim.arrows, () => new ArrowState(), (target, arrow) => {
             // A stuck arrow never moves again, so it costs nothing after its last patch.
             assign(target, {
-                owner: arrow.owner, seq: arrow.seq, x: arrow.x, y: arrow.y, z: arrow.z,
+                owner: arrow.owner, seq: arrow.seq, kind: arrow.kind, x: arrow.x, y: arrow.y, z: arrow.z,
                 vx: arrow.vx, vy: arrow.vy, vz: arrow.vz, stuck: arrow.stuck, enemy: arrow.enemy,
             });
         });
@@ -95,13 +101,14 @@ export class DefenderRoom extends Room<{ state: DefenderState }> {
         mirror(state.players, sim.players, () => new PlayerState(), (target, player) => {
             assign(target, {
                 name: player.name, slot: player.slot, x: player.x, z: player.z, yaw: player.yaw, pitch: player.pitch,
-                draw: player.draw, level: player.level, xp: player.xp, pending: player.pending,
-                drawTime: player.drawTime, nock: player.nock, drawMove: player.drawMove,
+                draw: player.draw, points: player.points, drawTime: player.drawTime, nock: player.nock,
             });
-            list(target.offer, player.offer);
-            list(target.spells, player.spells);
+            list(target.actives, player.actives);
             list(target.cooldowns, player.cooldowns.map(left => Math.round(left * 10) / 10));
             list(target.cooldownMax, player.cooldownMax);
+            list(target.buffs, player.buffs);
+            list(target.buffLeft, player.buffLeft.map(left => Math.round(left * 10) / 10));
+            list(target.buffMax, player.buffMax);
             for (const key of [...target.ranks.keys()]) if (!player.ranks.has(key)) target.ranks.delete(key);
             for (const [key, rank] of player.ranks) if (target.ranks.get(key) !== rank) target.ranks.set(key, rank);
         });

@@ -1,6 +1,7 @@
 /**
  * Co-op smoke test: two archers join one room through the same /ws routing the
- * game host uses, start a run, and shoot down the bridge until goblins fall.
+ * game host uses, start a run, and shoot down the bridge until the team levels.
+ * Then one archer spends a skill point and fires the skill.
  * Run against a live server: `npm run server`, then `npx tsx scripts/smoke-defender-coop.ts`.
  */
 import { Client } from '@colyseus/sdk';
@@ -34,12 +35,12 @@ await wait(1500);
 console.log('phase', second.state.phase, 'wave', second.state.wave, 'enemies', second.state.enemies.size);
 if (second.state.phase !== 'playing') throw new Error('run should be playing');
 
-// Look straight down the bridge, slightly down, and loose full draws until something dies.
+// Aim at the foe nearest the gate and loose full draws until the team levels.
 let seq = 0;
 let arrowsSeen = 0;
 let killed = false;
 const start = Date.now();
-while (Date.now() - start < 25000 && !killed) {
+while (Date.now() - start < 90000 && second.state.level < 2) {
     for (const room of [first, second]) {
         const me = room.state.players.get(room.sessionId)!;
         let target: { x: number; z: number } | null = null;
@@ -57,12 +58,25 @@ while (Date.now() - start < 25000 && !killed) {
     }
     await wait(1000);
     arrowsSeen = Math.max(arrowsSeen, second.state.arrows.size);
-    second.state.players.forEach(player => { if (player.xp > 0 || player.level > 1) killed = true; });
+    if (second.state.xp > 0 || second.state.level > 1) killed = true;
 }
 const mine = second.state.players.get(second.sessionId)!;
-console.log('arrows seen', arrowsSeen, 'fx events', fx, 'bo level', mine.level, 'xp', mine.xp.toFixed(1), 'gate', second.state.gate.toFixed(1));
+console.log('arrows seen', arrowsSeen, 'fx events', fx, 'team level', second.state.level,
+    'bo points', mine.points, 'gate', second.state.gate.toFixed(1));
+if (!killed) throw new Error('no foe fell to the archers');
+if (second.state.level < 2 || mine.points !== 2) throw new Error('the team should reach level 2 with two points each');
+
+// Spend a point on an active and fire it.
+second.send('learn', { skill: 'concuss' });
+await wait(400);
+console.log('bo learned', [...mine.actives].join(','), 'points left', mine.points);
+if ([...mine.actives][0] !== 'concuss' || mine.points !== 1) throw new Error('the point should go into Concussive Shot');
+while (second.state.phase !== 'playing') await wait(250);
+second.send('cast', { slot: 0, yaw: 0, pitch: -0.3 });
+await wait(400);
+console.log('concussive cooldown', [...mine.cooldowns][0]);
+if (!([...mine.cooldowns][0] > 0)) throw new Error('casting should start the cooldown');
 await first.leave();
 await second.leave();
-if (!killed) throw new Error('no foe fell to the archers');
 console.log('co-op smoke passed');
 process.exit(0);

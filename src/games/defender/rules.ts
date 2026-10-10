@@ -122,8 +122,32 @@ export function shieldBlocks(vx: number, vy: number, vz: number, faceX: number, 
     return intoFace > 0.78;
 }
 
+/** Experience a whole wave pays out, solo. Every foe must fall before the next wave, so this is exact. */
+export function waveXp(wave: number): number {
+    return wavePlan(wave, 1).reduce((total, group) => total + group.count * ENEMIES[group.id].xp, 0);
+}
+
+/**
+ * Experience to leave `level`. Through the plateau, level N costs a little under wave N's
+ * payout, so each early wave is worth at least one level. After it, costs outgrow waves.
+ */
 export function xpToAdvance(level: number): number {
-    return XP.base + (Math.max(1, Math.floor(level)) - 1) * XP.perLevel;
+    const n = Math.max(1, Math.floor(level));
+    if (n <= XP.plateauLevel) return Math.round(waveXp(n) * XP.waveShare);
+    return Math.round(waveXp(XP.plateauLevel) * XP.waveShare * XP.lateGrowth ** (n - XP.plateauLevel));
+}
+
+/**
+ * One foe's share of the team's experience. A bigger crowd of archers fights a bigger
+ * wave, so each kill pays less and the team levels at the solo pace.
+ */
+export function killXp(kind: EnemyKind, players: number): number {
+    return kind.xp / crowdFactor(players);
+}
+
+/** Skill points the whole run has granted by this level. */
+export function pointsAt(level: number): number {
+    return (Math.max(1, Math.floor(level)) - 1) * XP.pointsPerLevel;
 }
 
 export function grantXp(xp: number, level: number, gained: number): { xp: number; level: number; gainedLevels: number } {

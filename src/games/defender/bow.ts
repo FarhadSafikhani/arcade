@@ -21,14 +21,37 @@ const arrowMaterials = {
     fletchB: new THREE.MeshStandardMaterial({ color: FLETCH_B, roughness: 0.9, side: THREE.DoubleSide }),
 };
 
-/** An arrow with its tip at the origin, pointing along +Z. */
-export function createArrowMesh(): THREE.Group {
+/** Glowing heads and dyed fletching for the skill arrows, by `ArrowKind`: healing, frost, power. */
+const ARROW_DYES: Record<number, { head: number; fletch: number }> = {
+    1: { head: 0x7fe07a, fletch: 0x9be38a },
+    2: { head: 0xaee6ff, fletch: 0xd4f1ff },
+    3: { head: 0xffb347, fletch: 0xf2c53d },
+};
+const dyed = new Map<number, { head: THREE.Material; fletch: THREE.Material }>();
+
+function arrowLook(kind: number): { head: THREE.Material; fletchA: THREE.Material; fletchB: THREE.Material } {
+    const dye = ARROW_DYES[kind];
+    if (!dye) return arrowMaterials;
+    let found = dyed.get(kind);
+    if (!found) {
+        found = {
+            head: new THREE.MeshStandardMaterial({ color: dye.head, emissive: dye.head, emissiveIntensity: 0.9, roughness: 0.4 }),
+            fletch: new THREE.MeshStandardMaterial({ color: dye.fletch, emissive: dye.fletch, emissiveIntensity: 0.35, roughness: 0.9, side: THREE.DoubleSide }),
+        };
+        dyed.set(kind, found);
+    }
+    return { head: found.head, fletchA: found.fletch, fletchB: arrowMaterials.fletchB };
+}
+
+/** An arrow with its tip at the origin, pointing along +Z. `kind` dyes a skill arrow. */
+export function createArrowMesh(kind = 0): THREE.Group {
+    const look = arrowLook(kind);
     const arrow = new THREE.Group();
     const shaft = new THREE.Mesh(arrowParts.shaft, arrowMaterials.shaft);
-    const head = new THREE.Mesh(arrowParts.head, arrowMaterials.head);
+    const head = new THREE.Mesh(arrowParts.head, look.head);
     arrow.add(shaft, head);
     for (let index = 0; index < 3; index++) {
-        const fletch = new THREE.Mesh(arrowParts.fletch, index === 0 ? arrowMaterials.fletchA : arrowMaterials.fletchB);
+        const fletch = new THREE.Mesh(arrowParts.fletch, index === 0 ? look.fletchA : look.fletchB);
         fletch.rotation.z = (index / 3) * Math.PI * 2;
         arrow.add(fletch);
     }

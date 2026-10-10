@@ -1,8 +1,9 @@
-import { cardView, emptyBuild, isSpell, spellName, type CardId, type PassiveId, type RunBuild, type SpellId } from './cards';
 import { DefenderAudio } from './audio';
 import { LocalLink, NetLink, type Link, type PlayerView } from './net/link';
 import { arrowSpeed, drawFraction, readBestWave, stepFeet, walkSpeed, xpToAdvance } from './rules';
 import type { FxEvent } from './sim';
+import { ArrowKind, isSkill, SKILL_DEFS, type Ranks, type SkillId } from './skills';
+import { SkillTreeView } from './tree';
 import { ARCHER_COLORS, BEST_WAVE_KEY, BOW, NET, PLAYER, type EnemyId } from './tuning';
 import { DefenderWorld } from './world';
 
@@ -24,15 +25,15 @@ const MOVE_KEYS: Record<string, { forward?: number; right?: number }> = {
     KeyA: { right: -1 }, ArrowLeft: { right: -1 },
 };
 
-const SPELL_SLOTS: Record<string, number> = {
+const SLOT_LABELS = ['Q', 'E', 'R', 'F', 'G', 'C'];
+const SKILL_SLOTS: Record<string, number> = {
     KeyQ: 0, Digit1: 0,
     KeyE: 1, Digit2: 1,
     KeyR: 2, Digit3: 2,
     KeyF: 3, Digit4: 3,
+    KeyG: 4, Digit5: 4,
+    KeyC: 5, Digit6: 5,
 };
-
-const CARD_KEYS: Record<string, number> = { Digit1: 0, Digit2: 1, Digit3: 2 };
-const SLOT_LABELS = ['Q', 'E', 'R', 'F'];
 const THREAT: Partial<Record<EnemyId, string>> = {
     runner: 'Runners — fast and thin',
     shield: 'Shields — flank them from the towers',
@@ -62,10 +63,12 @@ class DefenderGame {
         wave: element<HTMLElement>('waveNumber'),
         level: element<HTMLElement>('levelLabel'),
         xpFill: element<HTMLElement>('xpFill'),
+        points: element<HTMLButtonElement>('pointsBadge'),
         gatePercent: element<HTMLElement>('gatePercent'),
         gateFill: element<HTMLElement>('gateFill'),
         banner: element<HTMLElement>('banner'),
         spells: element<HTMLElement>('spellBar'),
+        buffs: element<HTMLElement>('buffBar'),
         crew: element<HTMLElement>('crew'),
         loading: element<HTMLElement>('loadingScreen'),
         loadingNote: element<HTMLElement>('loadingNote'),
@@ -85,10 +88,8 @@ class DefenderGame {
         finalWave: element<HTMLElement>('finalWave'),
         finalBest: element<HTMLElement>('finalBest'),
         touchDraw: element<HTMLButtonElement>('touchDraw'),
-        cards: element<HTMLElement>('cardScreen'),
-        cardNote: element<HTMLElement>('cardNote'),
-        cardChoices: element<HTMLElement>('cardChoices'),
     };
+    private readonly tree = new SkillTreeView(element<HTMLElement>('treeScreen'), skill => this.link?.learn(skill));
     private best = readBestWave(localStorage, BEST_WAVE_KEY);
     private phase = '';
     private feetX = 0;
@@ -105,11 +106,11 @@ class DefenderGame {
     private lastFrame = 0;
     private frameId = 0;
     private touchLook: { id: number; x: number; y: number } | null = null;
-    private shown = { wave: -1, gate: -1, banner: '', level: -1, xp: -1, spells: '', crew: '', lobby: '' };
+    private shown = { wave: -1, gate: -1, banner: '', level: -1, xp: -1, points: -1, spells: '', buffs: '', crew: '' };
     private bannerTimer = 0;
-    private offerKey = '';
     private suppressPause = false;
     private spellButtons: HTMLButtonElement[] = [];
+    private buffChips: HTMLElement[] = [];
 
     async init(): Promise<void> {
         this.bindEvents();
@@ -125,8 +126,7 @@ class DefenderGame {
         this.ui.loading.hidden = true;
         this.ui.startBest.textContent = this.best > 0 ? `Best: wave ${this.best}` : '';
         this.ui.nameInput.value = readName();
-        const invited = invitedRoom();
-        if (invited) this.ui.coopButton.textContent = 'Join the defense';
+        if (invitedRoom()) this.ui.coopButton.textContent = 'Join the defense';
         this.setState(GameState.Ready);
         this.lastFrame = performance.now();
         this.frameId = requestAnimationFrame(now => this.frame(now));
@@ -152,8 +152,9 @@ class DefenderGame {
         return this.link?.view.players.get(this.link.me);
     }
 
-    private get choosing(): boolean {
-        return (this.mine?.offer.length ?? 0) > 0;
+    /** True while the skill sheet is up: the bow rests and the mouse is free. */
+    private get studying(): boolean {
+        return this.tree.open;
     }
 
     private setState(state: GameState): void {
@@ -164,6 +165,7 @@ class DefenderGame {
         this.ui.pause.hidden = state !== GameState.Paused;
         this.ui.gameOver.hidden = state !== GameState.GameOver;
         this.ui.coopButton.disabled = state === GameState.Connecting;
+        if (state !== GameState.Playing && state !== GameState.WaveBreak) this.tree.hide();
     }
 
     private bindEvents(): void {
@@ -177,6 +179,10 @@ class DefenderGame {
         this.ui.restartButton.addEventListener('click', () => this.beginRun(), { signal });
         element('leaveButton').addEventListener('click', () => this.leaveRoom(''), { signal });
         element('againButton').addEventListener('click', () => this.beginRun(), { signal });
+        this.ui.points.addEventListener('click', event => {
+            event.stopPropagation();
+            this.toggleTree();
+        }, { signal });
 
         document.addEventListener('pointerlockchange', () => {
             const locked = document.pointerLockElement === this.world?.canvas;
@@ -185,6 +191,7 @@ class DefenderGame {
                     this.suppressPause = false;
                     return;
                 }
+                if (this.studying) return;
                 this.pause();
             } else if (locked && this.state === GameState.Paused) this.continueRun();
         }, { signal });
@@ -197,7 +204,7 @@ class DefenderGame {
             if (this.active && document.pointerLockElement) this.look(event.movementX, event.movementY, PLAYER.lookSensitivity);
         }, { signal });
         document.addEventListener('mousedown', event => {
-            if (!this.active || !document.pointerLockElement || this.choosing) return;
+            if (!this.active || !document.pointerLockElement || this.studying) return;
             if (event.button === 0) this.triggerHeld = true;
             if (event.button === 2) this.cancelDraw();
         }, { signal });
@@ -208,17 +215,21 @@ class DefenderGame {
 
         document.addEventListener('keydown', event => {
             if (event.target instanceof HTMLInputElement) return;
+            if ((event.code === 'KeyT' || event.code === 'KeyK') && this.active && !event.repeat) {
+                event.preventDefault();
+                this.toggleTree();
+                return;
+            }
+            if (event.code === 'Escape' && this.studying) {
+                this.closeTree();
+                return;
+            }
             if (event.code === 'KeyP' && this.active) {
                 document.exitPointerLock();
                 this.pause();
                 return;
             }
-            if (this.choosing && this.active && event.code in CARD_KEYS) {
-                event.preventDefault();
-                this.link?.pick(CARD_KEYS[event.code]);
-                return;
-            }
-            if (!this.choosing && event.code in SPELL_SLOTS && !event.repeat) this.trySpell(SPELL_SLOTS[event.code]);
+            if (!this.studying && event.code in SKILL_SLOTS && !event.repeat) this.trySkill(SKILL_SLOTS[event.code]);
             if (MOVE_KEYS[event.code]) {
                 this.keys.add(event.code);
                 if (this.active) event.preventDefault();
@@ -238,14 +249,14 @@ class DefenderGame {
             this.touchLook.y = event.clientY;
         }, { signal });
         this.stage.addEventListener('click', () => {
-            if (this.active && !this.choosing && !document.pointerLockElement) this.requestLock();
+            if (this.active && !this.studying && !document.pointerLockElement) this.requestLock();
         }, { signal });
         const endTouch = (event: PointerEvent) => { if (this.touchLook?.id === event.pointerId) this.touchLook = null; };
         this.stage.addEventListener('pointerup', endTouch, { signal });
         this.stage.addEventListener('pointercancel', endTouch, { signal });
         this.ui.touchDraw.addEventListener('pointerdown', event => {
             event.preventDefault();
-            if (this.active && !this.choosing) this.triggerHeld = true;
+            if (this.active && !this.studying) this.triggerHeld = true;
         }, { signal });
         this.ui.touchDraw.addEventListener('pointerup', () => this.releaseTrigger(), { signal });
         this.ui.touchDraw.addEventListener('pointercancel', () => this.cancelDraw(), { signal });
@@ -258,7 +269,7 @@ class DefenderGame {
 
     private requestLock(): void {
         const canvas = this.world?.canvas;
-        if (!canvas || matchMedia('(pointer: coarse)').matches || this.choosing) return;
+        if (!canvas || matchMedia('(pointer: coarse)').matches || this.studying) return;
         try {
             const request = canvas.requestPointerLock() as unknown as Promise<void> | undefined;
             request?.catch?.(() => { this.ui.pauseNote.textContent = 'Click Resume again to lock the mouse.'; });
@@ -305,11 +316,10 @@ class DefenderGame {
         if (this.link && this.link !== link) this.link.leave();
         this.link = link;
         this.phase = '';
-        this.offerKey = '';
         this.world?.clear();
         this.shown.spells = '';
+        this.shown.buffs = '';
         this.shown.crew = '';
-        this.shown.lobby = '';
         this.ui.restartButton.hidden = link.online;
         element('leaveButton').hidden = !link.online;
         this.ui.crew.hidden = !link.online;
@@ -322,7 +332,7 @@ class DefenderGame {
         link.onClose = null;
         link.leave();
         this.world?.clear();
-        this.closeCards();
+        this.tree.hide();
         this.cancelDraw();
         if (document.pointerLockElement) document.exitPointerLock();
         history.replaceState(null, '', inviteUrl(''));
@@ -360,11 +370,11 @@ class DefenderGame {
         this.pitch = -0.22;
         this.cancelDraw();
         this.nockTimer = 0;
-        this.offerKey = '';
         this.shown.level = -1;
         this.shown.xp = -1;
         this.shown.spells = '';
-        this.closeCards();
+        this.shown.buffs = '';
+        this.tree.hide();
         this.world?.clear();
     }
 
@@ -375,7 +385,6 @@ class DefenderGame {
         this.keys.clear();
         this.touchLook = null;
         this.ui.pauseNote.textContent = this.link?.online ? 'The fight goes on without you.' : '';
-        this.ui.cards.hidden = true;
         this.setState(GameState.Paused);
     }
 
@@ -389,7 +398,35 @@ class DefenderGame {
     private continueRun(): void {
         this.lastFrame = performance.now();
         this.setState(this.resumeState);
-        if (this.choosing) this.ui.cards.hidden = false;
+    }
+
+    /** Opens the skill sheet over the fight. Solo play holds still while it is open. */
+    private toggleTree(): void {
+        if (this.studying) this.closeTree();
+        else if (this.active) {
+            this.cancelDraw();
+            this.keys.clear();
+            this.tree.show();
+            this.paintTree();
+            if (document.pointerLockElement) {
+                this.suppressPause = true;
+                document.exitPointerLock();
+            }
+        }
+    }
+
+    private closeTree(): void {
+        if (!this.studying) return;
+        this.tree.hide();
+        this.lastFrame = performance.now();
+        if (this.active) this.requestLock();
+    }
+
+    private paintTree(): void {
+        const view = this.link?.view;
+        const mine = this.mine;
+        if (!view || !mine) return;
+        this.tree.update(ranksOf(mine), view.level, mine.points);
     }
 
     private look(deltaX: number, deltaY: number, sensitivity: number): void {
@@ -400,21 +437,24 @@ class DefenderGame {
     private releaseTrigger(): void {
         this.triggerHeld = false;
         const mine = this.mine;
-        if (!this.drawing || !this.link || !mine || this.choosing) return;
+        if (!this.drawing || !this.link || !mine || this.studying) return;
         const draw = drawFraction(this.drawHeld, BOW.drawTime * mine.drawTime);
         this.seq += 1;
         this.link.loose({ draw, yaw: this.yaw, pitch: this.pitch, x: this.feetX, z: this.feetZ, seq: this.seq });
         // Online, the shot flies here at once; the server's copy replaces it where it lands.
-        // Twin String and Barrage extras show when the server sends them.
-        if (this.link.online) this.world?.predict(this.seq, arrowSpeed(draw));
+        if (this.link.online) {
+            const healing = [...mine.buffs].includes('mending');
+            const kind = healing ? ArrowKind.Healing : (mine.ranks.get('winter') ?? 0) > 0 ? ArrowKind.Frost : ArrowKind.Plain;
+            this.world?.predict(this.seq, arrowSpeed(draw), kind, healing);
+        }
         this.audio.shot(draw);
         this.drawing = false;
         this.drawHeld = 0;
         this.nockTimer = BOW.nockDelay * mine.nock;
     }
 
-    private trySpell(slot: number): void {
-        if (!this.link || this.state !== GameState.Playing || this.choosing) return;
+    private trySkill(slot: number): void {
+        if (!this.link || this.state !== GameState.Playing || this.studying) return;
         this.link.cast(slot, this.yaw, this.pitch);
     }
 
@@ -437,17 +477,17 @@ class DefenderGame {
         if (link) {
             this.followPhase(link.view.phase);
             if (this.active && mine) this.steer(dt, mine);
-            const paused = !link.online && this.state === GameState.Paused;
-            const events = link.update(dt, paused || !this.active);
+            const held = !link.online && (this.state === GameState.Paused || this.studying);
+            const events = link.update(dt, held || !this.active);
             if (this.link === link) {
                 this.applyEffects(events);
-                this.followCards();
                 this.updateHud();
+                if (this.studying) this.paintTree();
             }
         }
 
         this.bannerTimer = Math.max(0, this.bannerTimer - dt);
-        if (this.bannerTimer === 0 && this.state !== GameState.WaveBreak && !this.choosing) this.showBanner('', 0);
+        if (this.bannerTimer === 0 && this.state !== GameState.WaveBreak) this.showBanner('', 0);
         const draw = this.drawing && mine ? drawFraction(this.drawHeld, BOW.drawTime * mine.drawTime) : 0;
         this.ui.root.style.setProperty('--draw', draw.toFixed(3));
         world.setPose(this.feetX, this.feetZ, this.yaw, this.pitch, this.moved);
@@ -464,7 +504,7 @@ class DefenderGame {
             this.feetZ = mine.z;
         }
         this.nockTimer = Math.max(0, this.nockTimer - dt);
-        if (this.triggerHeld && !this.drawing && this.nocked && !this.choosing) {
+        if (this.triggerHeld && !this.drawing && this.nocked && !this.studying) {
             this.drawing = true;
             this.drawHeld = 0;
         }
@@ -477,9 +517,8 @@ class DefenderGame {
             right += MOVE_KEYS[code]?.right ?? 0;
         }
         const length = Math.hypot(forward, right);
-        this.moved = 0;
-        if (length > 0 && this.state !== GameState.Paused) {
-            const pace = walkSpeed(this.drawing) * (this.drawing ? mine.drawMove : 1) * dt;
+        if (length > 0 && !this.studying) {
+            const pace = walkSpeed(this.drawing) * dt;
             const sin = Math.sin(this.yaw);
             const cos = Math.cos(this.yaw);
             const dx = (-sin * forward + cos * right) / length * pace;
@@ -506,14 +545,12 @@ class DefenderGame {
         if (phase === 'playing' && (before === 'lobby' || before === 'over' || before === '')) this.onRunStart();
         if (phase === 'lobby') {
             this.cancelDraw();
-            this.closeCards();
             if (document.pointerLockElement) document.exitPointerLock();
             this.setState(this.link?.online ? GameState.Lobby : GameState.Ready);
             return;
         }
         if (phase === 'over') {
             this.cancelDraw();
-            this.closeCards();
             this.setState(GameState.GameOver);
             if (document.pointerLockElement) document.exitPointerLock();
             return;
@@ -532,19 +569,27 @@ class DefenderGame {
                 case 'hit': hits++; break;
                 case 'kill': kills++; break;
                 case 'block': this.audio.blocked(); break;
+                case 'freeze': this.audio.blocked(); break;
                 case 'stick': this.audio.stick(); break;
                 case 'gate': this.audio.gateHit(); break;
+                case 'heal':
+                    if (event.amount > 0) {
+                        this.audio.level();
+                        if (this.bannerTimer <= 0) this.showBanner('The gate mends', 1);
+                    }
+                    break;
                 case 'loose':
                     if (event.owner !== me) this.audio.shot(event.draw * 0.5);
                     break;
                 case 'spell':
-                    if (event.owner === me) this.audio.spell();
+                    if (event.owner === me) {
+                        this.audio.spell();
+                        if (SKILL_DEFS[event.skill]?.buff) this.showBanner(SKILL_DEFS[event.skill].name, 1.2);
+                    }
                     break;
                 case 'level':
-                    if (event.owner === me) {
-                        this.audio.level();
-                        if (this.bannerTimer <= 0) this.showBanner('Level up', 1.2);
-                    }
+                    this.audio.level();
+                    this.showBanner(`Level ${event.level} — press T to spend your points`, 2.4);
                     break;
                 case 'wave': {
                     const fresh = event.fresh ? THREAT[event.fresh] : undefined;
@@ -571,68 +616,15 @@ class DefenderGame {
         this.world?.effects(events);
     }
 
-    /** Opens the card sheet whenever the sim deals this archer a fresh offer, and closes it after a pick. */
-    private followCards(): void {
-        const offer = [...(this.mine?.offer ?? [])];
-        const key = offer.join(',');
-        if (key === this.offerKey) return;
-        this.offerKey = key;
-        if (offer.length === 0) {
-            this.closeCards();
-            if (this.active) this.requestLock();
-            return;
-        }
-        this.cancelDraw();
-        if (document.pointerLockElement) {
-            this.suppressPause = true;
-            document.exitPointerLock();
-        }
-        this.showBanner('', 0);
-        this.renderCards(offer as CardId[]);
-    }
-
-    private renderCards(offer: CardId[]): void {
-        const mine = this.mine;
-        const pending = mine?.pending ?? 0;
-        this.ui.cardChoices.replaceChildren();
-        this.ui.cardNote.textContent = pending > 1 ? `${pending} upgrades waiting. Keys 1 to 3.` : 'Keys 1 to 3.';
-        const build = buildOf(mine);
-        offer.forEach((id, index) => {
-            const view = cardView(id, build);
-            const button = document.createElement('button');
-            button.type = 'button';
-            button.className = 'card-choice';
-            const kind = document.createElement('span');
-            kind.className = 'card-kind';
-            kind.textContent = view.kind === 'spell' ? 'Spell' : 'Passive';
-            const name = document.createElement('span');
-            name.className = 'card-name';
-            name.textContent = `${index + 1}  ${view.name}`;
-            const detail = document.createElement('span');
-            detail.className = 'card-detail';
-            detail.textContent = view.detail;
-            button.append(kind, name, detail);
-            button.addEventListener('click', event => {
-                event.stopPropagation();
-                this.link?.pick(index);
-            });
-            this.ui.cardChoices.append(button);
-        });
-        this.ui.cards.hidden = this.state === GameState.Paused;
-    }
-
-    private closeCards(): void {
-        this.ui.cards.hidden = true;
-        this.ui.cardChoices.replaceChildren();
-    }
-
-    private refreshSpells(spells: string[]): void {
+    /** The bar of learned actives, keyed Q E R F G C in the order they were learned. */
+    private refreshSpells(actives: string[]): void {
         this.ui.spells.replaceChildren();
         this.spellButtons = [];
-        spells.forEach((id, index) => {
+        actives.forEach((id, index) => {
+            const def = isSkill(id) ? SKILL_DEFS[id] : null;
             const button = document.createElement('button');
             button.type = 'button';
-            button.className = 'spell';
+            button.className = `spell${def?.buff ? ' spell-buff' : ''}`;
             const cool = document.createElement('span');
             cool.className = 'spell-cool';
             const key = document.createElement('span');
@@ -640,18 +632,49 @@ class DefenderGame {
             key.textContent = SLOT_LABELS[index] ?? String(index + 1);
             const name = document.createElement('span');
             name.className = 'spell-name';
-            name.textContent = spellName(id as SpellId);
+            name.textContent = def?.name ?? id;
             const time = document.createElement('span');
             time.className = 'spell-time';
             button.append(cool, key, name, time);
             button.addEventListener('click', event => {
                 event.stopPropagation();
-                this.trySpell(index);
+                this.trySkill(index);
             });
             this.ui.spells.append(button);
             this.spellButtons.push(button);
         });
-        this.ui.spells.hidden = spells.length === 0;
+        this.ui.spells.hidden = actives.length === 0;
+    }
+
+    /** Running buffs, each with a draining ring and seconds left. */
+    private paintBuffs(mine: PlayerView): void {
+        const buffs = [...mine.buffs];
+        const left = [...mine.buffLeft];
+        const max = [...mine.buffMax];
+        const key = buffs.join(',');
+        if (key !== this.shown.buffs) {
+            this.shown.buffs = key;
+            this.buffChips = buffs.map(id => {
+                const chip = document.createElement('div');
+                chip.className = `buff buff-${id}`;
+                const name = document.createElement('span');
+                name.className = 'buff-name';
+                name.textContent = isSkill(id) ? SKILL_DEFS[id].name : id;
+                const time = document.createElement('span');
+                time.className = 'buff-time';
+                chip.append(name, time);
+                return chip;
+            });
+            this.ui.buffs.replaceChildren(...this.buffChips);
+            this.ui.buffs.hidden = buffs.length === 0;
+        }
+        this.buffChips.forEach((chip, index) => {
+            const remaining = left[index] ?? 0;
+            const total = max[index] ?? 0;
+            chip.style.setProperty('--left', total > 0 ? String(clamp01(remaining / total)) : '0');
+            const time = chip.querySelector('.buff-time');
+            if (time) time.textContent = `${Math.max(0, remaining).toFixed(1)}s`;
+        });
     }
 
     private updateHud(): void {
@@ -662,19 +685,24 @@ class DefenderGame {
             this.shown.wave = view.wave;
             this.ui.wave.textContent = String(Math.max(1, view.wave));
         }
+        const need = xpToAdvance(view.level);
+        const xpMark = view.level * 100000 + Math.floor(view.xp);
+        if (this.shown.level !== view.level || this.shown.xp !== xpMark) {
+            this.shown.level = view.level;
+            this.shown.xp = xpMark;
+            this.ui.level.textContent = `Lv ${view.level}`;
+            this.ui.xpFill.style.setProperty('--xp', need > 0 ? String(clamp01(view.xp / need)) : '0');
+        }
         if (mine) {
-            const need = xpToAdvance(mine.level);
-            const xpMark = mine.level * 1000 + Math.floor(mine.xp);
-            if (this.shown.level !== mine.level || this.shown.xp !== xpMark) {
-                this.shown.level = mine.level;
-                this.shown.xp = xpMark;
-                this.ui.level.textContent = `Lv ${mine.level}`;
-                this.ui.xpFill.style.setProperty('--xp', need > 0 ? String(mine.xp / need) : '0');
+            if (this.shown.points !== mine.points) {
+                this.shown.points = mine.points;
+                this.ui.points.textContent = mine.points > 0 ? `+${mine.points} skill points · T` : 'Skills · T';
+                this.ui.points.classList.toggle('has-points', mine.points > 0);
             }
-            const spells = [...mine.spells];
-            if (this.shown.spells !== spells.join(',')) {
-                this.shown.spells = spells.join(',');
-                this.refreshSpells(spells);
+            const actives = [...mine.actives];
+            if (this.shown.spells !== actives.join(',')) {
+                this.shown.spells = actives.join(',');
+                this.refreshSpells(actives);
             }
             const left = [...mine.cooldowns];
             const max = [...mine.cooldownMax];
@@ -685,6 +713,7 @@ class DefenderGame {
                 const time = button.querySelector('.spell-time');
                 if (time) time.textContent = remaining > 0.05 ? remaining.toFixed(1) : '';
             });
+            this.paintBuffs(mine);
         }
         const gate = view.gateMax > 0 ? Math.ceil((view.gate / view.gateMax) * 100) : 100;
         if (this.shown.gate !== gate) {
@@ -693,12 +722,8 @@ class DefenderGame {
             this.ui.gateFill.style.setProperty('--gate', String(gate / 100));
             this.ui.root.classList.toggle('is-gate-low', gate <= 30);
         }
-        if (this.state === GameState.WaveBreak && !this.choosing) {
-            let waiting = 0;
-            view.players.forEach(player => { if (player.offer.length > 0) waiting++; });
-            this.showBanner(waiting > 0
-                ? `Waiting for ${waiting === 1 ? 'an archer' : `${waiting} archers`} to choose`
-                : `Wave ${view.wave + 1} in ${Math.max(1, Math.ceil(view.breakLeft))}`, 0);
+        if (this.state === GameState.WaveBreak && this.bannerTimer <= 0) {
+            this.showBanner(`Wave ${view.wave + 1} in ${Math.max(1, Math.ceil(view.breakLeft))}`, 0);
         }
         if (this.link?.online) this.paintCrew();
     }
@@ -723,8 +748,7 @@ class DefenderGame {
         this.ui.lobbyArchers.replaceChildren(...rows.map(row => row.cloneNode(true)));
         this.ui.lobbyCode.textContent = link.roomId;
         this.ui.lobbyCopy.textContent = 'Copy invite link';
-        const lobbyNote = element<HTMLElement>('lobbyNote');
-        lobbyNote.textContent = `${names.length} of ${NET.maxArchers} archers. Anyone can open the gate.`;
+        element<HTMLElement>('lobbyNote').textContent = `${names.length} of ${NET.maxArchers} archers. Anyone can open the gate.`;
     }
 
     private showBanner(text: string, seconds: number): void {
@@ -736,15 +760,11 @@ class DefenderGame {
     }
 }
 
-/** Enough of an archer's build to name their next cards. */
-function buildOf(player: PlayerView | undefined): RunBuild {
-    const build = emptyBuild();
-    build.spells = [...(player?.spells ?? [])] as SpellId[];
-    player?.ranks.forEach((rank, id) => {
-        if (isSpell(id as CardId)) build.spellRanks[id as SpellId] = rank;
-        else build.ranks[id as PassiveId] = rank;
-    });
-    return build;
+/** An archer's replicated ranks as the skills module reads them. */
+function ranksOf(player: PlayerView): Ranks {
+    const ranks: Ranks = {};
+    player.ranks.forEach((rank, id) => { if (isSkill(id)) ranks[id as SkillId] = rank; });
+    return ranks;
 }
 
 function invitedRoom(): string {
@@ -767,3 +787,4 @@ function clamp01(value: number): number {
 }
 
 void new DefenderGame().init();
+

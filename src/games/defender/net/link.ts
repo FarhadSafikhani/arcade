@@ -13,15 +13,16 @@ export interface Table<T> {
 
 export type Seq<T> = Iterable<T> & { readonly length: number };
 
-export interface EnemyView { kind: string; x: number; z: number; facing: number; mode: string; health: number; maxHealth: number; pace: number; charge: number; }
-export interface ArrowView { owner: string; seq: number; x: number; y: number; z: number; vx: number; vy: number; vz: number; stuck: boolean; enemy: string; }
+export interface EnemyView { kind: string; x: number; z: number; facing: number; mode: string; health: number; maxHealth: number; pace: number; charge: number; status: number; }
+export interface ArrowView { owner: string; seq: number; kind: number; x: number; y: number; z: number; vx: number; vy: number; vz: number; stuck: boolean; enemy: string; }
 export interface BoltView { x: number; y: number; z: number; vx: number; vy: number; vz: number; }
 export interface OilView { x: number; z: number; }
 export interface PlayerView {
     name: string; slot: number; x: number; z: number; yaw: number; pitch: number; draw: number;
-    level: number; xp: number; pending: number;
-    offer: Seq<string>; spells: Seq<string>; cooldowns: Seq<number>; cooldownMax: Seq<number>; ranks: Table<number>;
-    drawTime: number; nock: number; drawMove: number;
+    points: number; ranks: Table<number>;
+    actives: Seq<string>; cooldowns: Seq<number>; cooldownMax: Seq<number>;
+    buffs: Seq<string>; buffLeft: Seq<number>; buffMax: Seq<number>;
+    drawTime: number; nock: number;
 }
 
 /** Everything a client draws and shows. The local sim and the replicated room state both satisfy it. */
@@ -31,6 +32,9 @@ export interface WorldView {
     gate: number;
     gateMax: number;
     breakLeft: number;
+    /** The team's shared level and experience toward the next one. */
+    level: number;
+    xp: number;
     enemies: Table<EnemyView>;
     arrows: Table<ArrowView>;
     bolts: Table<BoltView>;
@@ -50,7 +54,8 @@ export interface Link {
     pose(pose: Pose): void;
     loose(shot: Loose): void;
     cast(slot: number, yaw: number, pitch: number): void;
-    pick(index: number): void;
+    /** Spends one skill point. */
+    learn(skill: string): void;
     /** Advances a local sim (unless paused) and returns effects since the last call. */
     update(dt: number, paused: boolean): FxEvent[];
     leave(): void;
@@ -94,8 +99,8 @@ export class LocalLink implements Link {
         this.sim.cast(this.me, slot, yaw, pitch);
     }
 
-    pick(index: number): void {
-        this.sim.pick(this.me, index);
+    learn(skill: string): void {
+        this.sim.learn(this.me, skill);
     }
 
     update(dt: number, paused: boolean): FxEvent[] {
@@ -194,8 +199,8 @@ export class NetLink implements Link {
         this.send('cast', { slot, yaw, pitch });
     }
 
-    pick(index: number): void {
-        this.send('pick', { index });
+    learn(skill: string): void {
+        this.send('learn', { skill });
     }
 
     update(): FxEvent[] {

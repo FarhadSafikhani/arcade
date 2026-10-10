@@ -39,7 +39,8 @@ Standard first-person archery. Mouse first; touch works but is not tuned.
 | Release left click | Loose the arrow |
 | Right click | Ease off without shooting. The arrow stays nocked. |
 | WASD or arrow keys | Walk the gate walkway and out onto either tower. Slower while drawing. |
-| Q E R F or 1 2 3 4 | Cast the spell in that slot. Slots fill when you pick a spell card. |
+| Q E R F G C or 1 to 6 | Use the active skill in that slot. Slots fill in the order you learn actives. |
+| T or K | Open the skill trees. Solo play holds still while they are open; co-op does not. |
 | Esc or P | Pause |
 
 A quick tap still fires a weak arrow. After each shot there is a short nock delay before the next draw can start. Ammunition is unlimited.
@@ -68,18 +69,23 @@ Touch: drag to look, hold the Draw button to pull, release to loose. No walking.
   - **Shield bearers** block arrows coming into the front of the shield. A shot from the side or from behind, including from the towers, gets through. Arrows falling steeply from above also get through.
   - **Brutes** are slow, huge, and brutal on the gate.
   - **Casters** stop short of the gate and throw fire at it. Shoot the fire out of the air.
-- **Experience and cards.** Kills fill a bar. Levels are spent during the wave break, one card at a time, never mid-wave. Each offer is three cards: a passive, or a spell. You carry up to four spells. A fifth spell replaces the oldest. Passives stack. Taking a spell you already own shortens its cooldown.
+- **Experience.** One pool for the whole team, and the team levels together. Every foe must fall before the next wave, so a wave's experience is fixed, and level costs are pinned to it: each of the first ten waves pays at least one level, so the team is level 11 after wave 10. Past that, costs outgrow waves and levelling slows to about one every wave and a half by wave 13. In co-op each kill pays less, because bigger crowds bring more foes, so the team levels at the solo pace. `npx tsx scripts/xp-curve.ts` prints the curve.
+- **Skill trees.** Two points per level, spent any time on two Diablo II style trees. Each tree has two paths of three skills and one ultimate. A skill opens at its tier's character level (1, 3, 6, 10) and with a point in the skill above it. The ultimate needs a point at the end of either path.
+  - **Marksman, damage.** *Bleed path:* Barbed Arrows (hits bleed), Lingering Wounds (bleeds last longer, and bleeding foes take more), Ricochet (hits leap to the next foe, carrying the bleed). *Burst path:* Quick Hands (attack speed), Heavy Draw (full draws hit harder and shove), Power Shot (active: pierces the whole file, ignores shields). *Ultimate:* Rapid Fire, a buff worth +50% attack speed at max rank.
+  - **Warden, control and support.** *Slow path:* Chilling Arrows (hits slow), Tar Pit (active: a slick that slows the crowd), Frostbite (chilled foes take more from everyone). *Support path:* Concussive Shot (active: stuns the target and those beside it), Mending Arrows (buff: arrows heal and fly through foes; each one that lands at the gate restores up to 10% of it), Shockwave (active: shoves the crowd at the gate back, stunned). *Ultimate:* Winter's Grip, which permanently makes every arrow a frost arrow; three hits within four seconds freeze a foe solid, and frozen shield bearers cannot block.
+  - Archers have no health, since foes only ever attack the gate, so the gate is the ally Mending Arrows heals.
+  - Running buffs show above the skill bar with a draining bar. Foes show what ails them: frost turns their skin icy, a bleed pulses red.
 - **Gate.** Has health. Each striking goblin wears it down. The gate darkens and shakes as it takes damage. At zero the run ends.
 
 Physics uses Rapier as the collision world: static colliders for every surface, kinematic bodies for goblins. Arrow flight is integrated in code and swept with ray casts each step, which keeps hits exact at any speed and keeps the flight model easy to tune.
 
 ## Waves
 
-The run is endless. Each wave sends more foes, with more health, more speed, and shorter gaps between spawns, up to fixed caps. Runners join on wave 2, shield bearers on wave 3, brutes on wave 4, and casters on wave 5. When the last foe of a wave falls, a short break counts down to the next wave. If a level is waiting, the countdown holds while you pick a card. Standing still on wave 1 loses.
+The run is endless. Each wave sends more foes, with more health, more speed, and shorter gaps between spawns, up to fixed caps. Runners join on wave 2, shield bearers on wave 3, brutes on wave 4, and casters on wave 5. When the last foe of a wave falls, a short break counts down to the next wave. Standing still on wave 1 loses.
 
 Best wave reached is saved in `localStorage`.
 
-The wave break is a real game state. Upgrade choices will happen there.
+The wave break is a real game state.
 
 ## States
 
@@ -92,8 +98,8 @@ Co-op adds a lobby: Ready → Lobby → Playing. In co-op, pausing only frees yo
 Up to four archers hold one gate together. The server runs the only simulation (Colyseus, server-authoritative) and replicates it to every client.
 
 - **Shared:** the gate, the wave, every foe, arrow, fire bolt, and oil slick.
-- **Each archer's own:** position, level, experience, cards, spells, and cooldowns. Every kill teaches every archer, so the team levels together, and each archer picks their own cards. The wave break waits until everyone has chosen.
-- **More archers, bigger waves.** Each archer past the first adds 25% more foes (`WAVES.extraPerArcher`) and 80% more health to every foe (`WAVES.healthPerArcher`). Mason's Bond from each archer strengthens the one gate; the best Gate Wright on the wall sets how much of each blow lands.
+- **Each archer's own:** position, skill points, skills, cooldowns, and buffs. The level is the team's; each archer spends their own points. Late joiners arrive with every point the team's level has earned.
+- **More archers, bigger waves.** Each archer past the first adds 25% more foes (`WAVES.extraPerArcher`) and 80% more health to every foe (`WAVES.healthPerArcher`).
 - **Feel.** Your own walking and aiming never wait for the network. Your arrow flies on your screen the moment you loose it, and the server's copy takes over where it lands. The server checks every stride and shot: no walking off the wall, no shooting faster than the nock allows, no draw longer than the time held.
 - **Joining.** "Defend together" joins any open room. The room code goes into the page URL (`?room=`), so the address bar is the invite link. Late joiners start at level 1.
 
@@ -118,7 +124,8 @@ Out of scope: side paths, allied tower archers, enemies swimming or climbing, an
 | --- | --- |
 | [tuning.ts](tuning.ts) | Every number: layout, player, bow, arrow, foes, waves, gate, spells |
 | [rules.ts](rules.ts) | Pure rules: draw, standing room, shields, waves, experience, gate damage |
-| [cards.ts](cards.ts) | Passives, spells, the deal, and the modifiers a run is carrying |
+| [skills.ts](skills.ts) | The two skill trees: every skill, its requirements, its effect by rank, and the shot it puts on an arrow |
+| [tree.ts](tree.ts) | The skill tree sheet |
 | [castle.ts](castle.ts) | Castle, bridge, moat, banks, courtyard, towers, lights, colliders |
 | [look.ts](look.ts) | Painted textures and the moat shader |
 | [goblin.ts](goblin.ts) | Foe rigs: goblin, runner, brute, shield bearer, caster |
