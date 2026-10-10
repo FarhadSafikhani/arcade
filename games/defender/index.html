@@ -24,13 +24,16 @@
                         <span id="levelLabel">Lv 1</span>
                         <div class="xp-bar"><div id="xpFill" class="xp-fill"></div></div>
                     </div>
+                    <button id="pointsBadge" class="points-badge" type="button">Skills · T</button>
                 </div>
                 <div class="hud-gate">
                     <span class="hud-gate-label">Gate <span id="gatePercent">100%</span></span>
                     <div class="gate-bar"><div id="gateFill" class="gate-fill"></div></div>
                 </div>
+                <ul id="crew" class="crew" aria-label="Archers on the wall" hidden></ul>
                 <div class="crosshair" aria-hidden="true"><span class="crosshair-ring"></span><span class="crosshair-dot"></span></div>
                 <p id="banner" class="banner" role="status" hidden></p>
+                <div id="buffBar" class="buff-bar" aria-label="Active buffs" hidden></div>
                 <div id="spellBar" class="spell-bar" hidden></div>
                 <button id="touchDraw" class="touch-draw" type="button" hidden>Draw</button>
             </div>
@@ -53,11 +56,29 @@
                         <li><kbd>Release</kbd> Loose</li>
                         <li><kbd>Right click</kbd> Ease off</li>
                         <li><kbd>WASD</kbd> Walk the wall and towers</li>
-                        <li><kbd>Q E R F</kbd> Cast a spell</li>
+                        <li><kbd>T</kbd> Skill trees</li>
+                        <li><kbd>Q E R F G C</kbd> Use a skill</li>
                         <li><kbd>Esc</kbd> Pause</li>
                     </ul>
-                    <button id="startButton" class="primary" type="button">Defend the gate</button>
+                    <button id="startButton" class="primary" type="button">Defend alone</button>
+                    <div class="coop-row">
+                        <label class="name-field">Name <input id="nameInput" type="text" maxlength="16" placeholder="Archer" autocomplete="nickname"></label>
+                        <button id="coopButton" type="button">Defend together</button>
+                    </div>
+                    <p id="startNote" class="note" role="status"></p>
                     <p id="startBest" class="note"></p>
+                </div>
+            </section>
+
+            <section id="lobbyScreen" class="overlay" aria-labelledby="lobbyTitle" hidden>
+                <div class="panel">
+                    <h2 id="lobbyTitle" class="title">The wall</h2>
+                    <p class="tagline">Room <span id="lobbyCode" class="room-code"></span></p>
+                    <ul id="lobbyArchers" class="crew-list"></ul>
+                    <p id="lobbyNote" class="note" role="status"></p>
+                    <button id="lobbyStart" class="primary" type="button">Open the gate</button>
+                    <button id="lobbyCopy" type="button">Copy invite link</button>
+                    <button id="lobbyLeave" type="button">Leave</button>
                 </div>
             </section>
 
@@ -66,6 +87,7 @@
                     <h2 id="pauseTitle" class="title">Paused</h2>
                     <button id="resumeButton" class="primary" type="button">Resume</button>
                     <button id="restartButton" type="button">Restart</button>
+                    <button id="leaveButton" type="button" hidden>Leave the room</button>
                     <a class="button" href="/arcade/">Arcade</a>
                     <p id="pauseNote" class="note" role="status"></p>
                 </div>
@@ -74,20 +96,14 @@
             <section id="gameOverScreen" class="overlay" aria-labelledby="gameOverTitle" hidden>
                 <div class="panel">
                     <h2 id="gameOverTitle" class="title">The gate has fallen</h2>
-                    <p class="result">You held until wave <strong id="finalWave">1</strong></p>
+                    <p class="result">The wall held until wave <strong id="finalWave">1</strong></p>
                     <p class="note">Best: wave <span id="finalBest">1</span></p>
                     <button id="againButton" class="primary" type="button">Defend again</button>
                     <a class="button" href="/arcade/">Arcade</a>
                 </div>
             </section>
 
-            <section id="cardScreen" class="card-screen" aria-labelledby="cardTitle" hidden>
-                <div class="card-sheet">
-                    <h2 id="cardTitle" class="card-title">Choose an upgrade</h2>
-                    <p id="cardNote" class="note">Keys 1 to 3.</p>
-                    <div id="cardChoices" class="card-choices"></div>
-                </div>
-            </section>
+            <section id="treeScreen" class="card-screen tree-screen" aria-label="Skill trees" hidden></section>
         </div>
     </main>
     <script type="module" src="/src/games/defender/game.ts"></script>

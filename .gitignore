@@ -91,3 +91,6 @@ UserSettings/
 *.mdb
 *.opendb
 *.VC.db 
+
+# Defender game-host release builds
+releases/

@@ -41,6 +41,8 @@ type Vec3 = readonly [number, number, number];
 interface BuildContext {
     root: THREE.Group;
     physics: RAPIER.World;
+    /** Colliders only: no painted textures, water, or lights. Used by the server. */
+    headless: boolean;
 }
 
 const SURFACES = new Map<number, Surface>([
@@ -61,15 +63,17 @@ const SURFACES = new Map<number, Surface>([
     [PALETTE.iron, 'iron'],
 ]);
 
-function material(color: number): THREE.MeshStandardMaterial {
-    return textured(color, SURFACES.get(color) ?? 'flat');
+const plain = new THREE.MeshBasicMaterial();
+
+function material(context: BuildContext, color: number): THREE.Material {
+    return context.headless ? plain : textured(color, SURFACES.get(color) ?? 'flat');
 }
 
 const unitBox = new THREE.BoxGeometry(1, 1, 1);
 
 function block(context: BuildContext, size: Vec3, center: Vec3, color: number | THREE.Material,
     options: { collide?: boolean; shadow?: boolean; parent?: THREE.Object3D; rotationY?: number } = {}): THREE.Mesh {
-    const mesh = new THREE.Mesh(unitBox, typeof color === 'number' ? material(color) : color);
+    const mesh = new THREE.Mesh(unitBox, typeof color === 'number' ? material(context, color) : color);
     mesh.scale.set(...size);
     mesh.position.set(...center);
     mesh.rotation.y = options.rotationY ?? 0;
@@ -91,7 +95,7 @@ function cylinder(context: BuildContext, radius: number, bottom: number, top: nu
     color: number, options: { collide?: boolean; segments?: number; radiusTop?: number } = {}): THREE.Mesh {
     const height = top - bottom;
     const geometry = new THREE.CylinderGeometry(options.radiusTop ?? radius, radius, height, options.segments ?? 28);
-    const mesh = new THREE.Mesh(geometry, material(color));
+    const mesh = new THREE.Mesh(geometry, material(context, color));
     mesh.position.set(x, bottom + height / 2, z);
     mesh.castShadow = true;
     mesh.receiveShadow = true;
@@ -135,13 +139,13 @@ function banner(context: BuildContext, x: number, z: number, baseY: number, pole
     flag.position.set(x + reach, baseY + poleHeight - 0.15, z);
     context.root.add(flag);
     block(context, [Math.abs(reach) + 0.5, 0.06, 0.06], [-reach / 2, 0, 0], PALETTE.wood, { collide: false, parent: flag });
-    block(context, [0.8, 1.5, 0.04], [0, -0.8, 0], emblemMaterial(), { collide: false, parent: flag });
+    block(context, [0.8, 1.5, 0.04], [0, -0.8, 0], context.headless ? plain : emblemMaterial(), { collide: false, parent: flag });
     context.physics.createCollider(RAPIER.ColliderDesc.cuboid(0.07, poleHeight / 2, 0.07)
         .setTranslation(x, baseY + poleHeight / 2, z));
 }
 
 function wallBanner(context: BuildContext, x: number, top: number, z: number): void {
-    block(context, [1.0, 2.4, 0.05], [x, top - 1.2, z], emblemMaterial(), { collide: false });
+    block(context, [1.0, 2.4, 0.05], [x, top - 1.2, z], context.headless ? plain : emblemMaterial(), { collide: false });
 }
 
 function brazier(context: BuildContext, x: number, y: number, z: number, flames: THREE.Object3D[]): void {
@@ -179,14 +183,14 @@ const trunkGeometry = new THREE.CylinderGeometry(0.18, 0.26, 1, 6);
 const rockGeometry = new THREE.DodecahedronGeometry(1, 0);
 
 function tree(context: BuildContext, x: number, z: number, scale: number, pine: boolean): void {
-    const trunk = new THREE.Mesh(trunkGeometry, material(PALETTE.trunk));
+    const trunk = new THREE.Mesh(trunkGeometry, material(context, PALETTE.trunk));
     trunk.scale.set(scale, scale * (pine ? 1.2 : 1.8), scale);
     trunk.position.set(x, 0.15 + trunk.scale.y / 2, z);
     trunk.castShadow = true;
     context.root.add(trunk);
     if (pine) {
         for (let tier = 0; tier < 3; tier++) {
-            const cone = new THREE.Mesh(coneGeometry, material(PALETTE.pine));
+            const cone = new THREE.Mesh(coneGeometry, material(context, PALETTE.pine));
             const size = scale * (1.7 - tier * 0.4);
             cone.scale.set(size, scale * 1.9, size);
             cone.position.set(x, 0.15 + scale * (1.9 + tier * 1.05), z);
@@ -194,7 +198,7 @@ function tree(context: BuildContext, x: number, z: number, scale: number, pine: 
             context.root.add(cone);
         }
     } else {
-        const canopy = new THREE.Mesh(canopyGeometry, material(PALETTE.leaf));
+        const canopy = new THREE.Mesh(canopyGeometry, material(context, PALETTE.leaf));
         canopy.scale.set(scale * 1.7, scale * 1.5, scale * 1.7);
         canopy.position.set(x, 0.15 + scale * 3.1, z);
         canopy.castShadow = true;
@@ -203,7 +207,7 @@ function tree(context: BuildContext, x: number, z: number, scale: number, pine: 
 }
 
 function rock(context: BuildContext, x: number, z: number, scale: number, turn: number): void {
-    const mesh = new THREE.Mesh(rockGeometry, material(PALETTE.rock));
+    const mesh = new THREE.Mesh(rockGeometry, material(context, PALETTE.rock));
     mesh.scale.set(scale * 1.3, scale, scale);
     mesh.rotation.set(turn, turn * 2, 0);
     mesh.position.set(x, 0.1, z);
@@ -250,9 +254,17 @@ function addLights(scene: THREE.Scene): void {
  * Every surface an arrow can stick in gets a fixed Rapier collider. The water has none.
  */
 export function buildCastle(scene: THREE.Scene, physics: RAPIER.World): CastleScene {
-    const root = new THREE.Group();
+    return raiseCastle(scene, { root: new THREE.Group(), physics, headless: false });
+}
+
+/** The same colliders the client builds, with nothing to draw. The server flies arrows against these. */
+export function buildCastleColliders(physics: RAPIER.World): void {
+    raiseCastle(new THREE.Scene(), { root: new THREE.Group(), physics, headless: true });
+}
+
+function raiseCastle(scene: THREE.Scene, context: BuildContext): CastleScene {
+    const root = context.root;
     scene.add(root);
-    const context: BuildContext = { root, physics };
     const flames: THREE.Object3D[] = [];
     const front = LAYOUT.wallFrontZ;
     const back = LAYOUT.wallBackZ;
@@ -262,13 +274,14 @@ export function buildCastle(scene: THREE.Scene, physics: RAPIER.World): CastleSc
     const courtyardEnd = back + LAYOUT.courtyardDepth;
     const bridgeEnd = front - LAYOUT.bridgeLength;
 
-    scene.background = new THREE.Color(PALETTE.sky);
-    scene.fog = new THREE.Fog(PALETTE.fog, 90, 260);
-    scene.add(skyDome());
-    addLights(scene);
-
-    const water = createWater(LAYOUT.waterY);
-    root.add(water.mesh);
+    const water = context.headless ? null : createWater(LAYOUT.waterY);
+    if (water) {
+        scene.background = new THREE.Color(PALETTE.sky);
+        scene.fog = new THREE.Fog(PALETTE.fog, 90, 260);
+        scene.add(skyDome());
+        addLights(scene);
+        root.add(water.mesh);
+    }
 
     // Banks around the moat. Top surface sits at y = 0.15.
     block(context, [500, 3, 200], [0, -1.35, bridgeEnd - 100], PALETTE.grass, { shadow: false });
@@ -343,7 +356,7 @@ export function buildCastle(scene: THREE.Scene, physics: RAPIER.World): CastleSc
     // The gate, framed by a stone arch, with banners on either side.
     const gate = new THREE.Group();
     root.add(gate);
-    const gateMaterial = gateWoodMaterial();
+    const gateMaterial = context.headless ? new THREE.MeshStandardMaterial() : gateWoodMaterial();
     block(context, [LAYOUT.gateHalfWidth * 2, LAYOUT.gateHeight, 0.16], [0, LAYOUT.gateHeight / 2, front - 0.08], gateMaterial, { parent: gate });
     for (const y of [0.8, 1.8, 2.8]) {
         block(context, [LAYOUT.gateHalfWidth * 2 + 0.05, 0.12, 0.03], [0, y, front - 0.17], PALETTE.iron, { collide: false, parent: gate });
@@ -379,7 +392,7 @@ export function buildCastle(scene: THREE.Scene, physics: RAPIER.World): CastleSc
         }
         tree(context, side * 13, back + 12, 0.9, true);
         tree(context, side * 19, back + 30, 1.0, true);
-        const tent = new THREE.Mesh(new THREE.ConeGeometry(1.6, 2.2, 4), material(PALETTE.banner));
+        const tent = new THREE.Mesh(new THREE.ConeGeometry(1.6, 2.2, 4), material(context, PALETTE.banner));
         tent.position.set(side * 18, 1.1, back + 18);
         tent.rotation.y = Math.PI / 4;
         tent.castShadow = true;
@@ -396,7 +409,7 @@ export function buildCastle(scene: THREE.Scene, physics: RAPIER.World): CastleSc
     banner(context, 0, keepZ, 6.5, 3.4, 0.6);
 
     // Lily pads at the foot of the wall, as in the references.
-    const padMaterial = material(PALETTE.grassDark);
+    const padMaterial = material(context, PALETTE.grassDark);
     const padGeometry = new THREE.CylinderGeometry(0.45, 0.45, 0.04, 10);
     for (let index = 0; index < 22; index++) {
         const pad = new THREE.Mesh(padGeometry, padMaterial);
@@ -407,8 +420,8 @@ export function buildCastle(scene: THREE.Scene, physics: RAPIER.World): CastleSc
         root.add(pad);
     }
 
-    const bloomMaterial = material(0xf4e7a8);
-    const petalMaterial = material(0xf2f6ea);
+    const bloomMaterial = material(context, 0xf4e7a8);
+    const petalMaterial = material(context, 0xf2f6ea);
     const bloom = new THREE.SphereGeometry(0.16, 6, 5);
     for (let index = 0; index < 48; index++) {
         const flower = new THREE.Mesh(bloom, index % 3 === 0 ? petalMaterial : bloomMaterial);
@@ -419,7 +432,7 @@ export function buildCastle(scene: THREE.Scene, physics: RAPIER.World): CastleSc
         root.add(flower);
     }
 
-    return { gate, gateMaterial, flames, update: seconds => water.update(seconds) };
+    return { gate, gateMaterial, flames, update: seconds => water?.update(seconds) };
 }
 
 /** A round fighting platform you can walk onto, low on the side that faces the gate. */
@@ -429,7 +442,7 @@ function flankTower(context: BuildContext, side: number, footing: number, top: n
     const radius = LAYOUT.towerRadius;
     cylinder(context, radius, footing, top, x, z, PALETTE.stone);
     cylinder(context, radius + 0.16, LAYOUT.waterY - 0.15, LAYOUT.waterY + 0.5, x, z, PALETTE.stoneDark, { collide: false });
-    const floor = new THREE.Mesh(new THREE.CircleGeometry(radius - 0.04, 28), material(PALETTE.stoneFloor));
+    const floor = new THREE.Mesh(new THREE.CircleGeometry(radius - 0.04, 28), material(context, PALETTE.stoneFloor));
     floor.rotation.x = -Math.PI / 2;
     floor.position.set(x, top + 0.025, z);
     floor.receiveShadow = true;

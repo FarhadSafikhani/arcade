@@ -13,6 +13,40 @@ npm run dev
 npm run build
 npm run preview
 
+## Defender co-op
+
+Defender runs solo in the page, or co-op through a Colyseus server that owns the simulation.
+
+```sh
+npm run server          # co-op server on http://localhost:2567 (routes under /ws)
+npm run dev             # then open /arcade/games/defender/ and choose "Defend together"
+npm run smoke:defender  # two scripted archers join, level up, learn a skill, and cast it
+```
+
+To try co-op alone, `npx tsx scripts/bot-defender.ts --room <code>` adds a bot archer to your room. Start the
+server with `DEFENDER_CHEATS=1` and pass `--levels N` to skip the team ahead for testing skills; the cheat
+is off unless that variable is set.
+
+Co-op is live at https://defender-production.up.railway.app (Railway project `defender`, service
+`defender`). One Node service serves the page at `/` and the Colyseus server at `/ws`. GitHub Pages
+serves only static files, so the arcade copy of Defender there is solo only: "Defend together" reports
+that it cannot reach a server.
+
+To deploy a new version, build the folder and upload it:
+
+```sh
+npm run release:defender -- --output releases/defender/<release-id>
+cd releases/defender/<release-id>
+railway link --project defender --service defender   # once per folder
+railway up --service defender --ci
+```
+
+The same builder can target the RareCandy game host instead (`--target rarecandy`), which publishes
+under `/defender/` with `tools/publish-game.mjs` from netherglaive/rarecandy-games.
+
+Bump `PROTOCOL` in `src/games/defender/net/schema.ts` whenever the wire format changes, so open tabs
+from an older build refuse the new server instead of misreading it.
+
 ## Deploy to GitHub Pages
 
 `npm run deploy` bumps the patch version (or reuses an uncommitted version bump),

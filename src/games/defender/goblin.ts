@@ -3,6 +3,10 @@ import type { EnemyId, EnemyKind } from './tuning';
 
 const HIT_FLASH = new THREE.Color(0xff3020);
 const BLOCK_FLASH = new THREE.Color(0xd7e4ef);
+const CHILL_TINT = new THREE.Color(0x8fd0ff);
+const FROZEN_TINT = new THREE.Color(0xd4f1ff);
+const BLEED_GLOW = new THREE.Color(0x9a1010);
+const MARK_GLOW = new THREE.Color(0xe0457b);
 
 const geometry = {
     leg: new THREE.BoxGeometry(0.14, 0.42, 0.16).translate(0, -0.21, 0),
@@ -67,11 +71,18 @@ export class EnemyRig {
     private readonly ringMaterial: THREE.MeshBasicMaterial | null = null;
     private flash = 0;
     private blockFlash = 0;
+    private readonly skinColor = new THREE.Color();
+    private chilled = false;
+    private frozen = false;
+    private bleeding = false;
+    private marked = false;
+    private pulse = 0;
 
     constructor(kind: EnemyKind) {
         this.style = kind.id;
         const look = LOOK[kind.id];
         this.skin = new THREE.MeshStandardMaterial({ color: look.skin, roughness: 0.8, emissive: 0x000000 });
+        this.skinColor.setHex(look.skin);
         const cloth = paint(look.cloth);
         const legs = paint(look.legs);
         this.root.add(this.hips);
@@ -262,11 +273,31 @@ export class EnemyRig {
         this.blockFlash = 1;
     }
 
+    /** What ails the foe: frost turns the skin icy, a bleed pulses dark red, a Hunter's Mark glows rose. */
+    setStatus(bleeding: boolean, chilled: boolean, frozen: boolean, marked = false): void {
+        if (chilled !== this.chilled || frozen !== this.frozen) {
+            this.chilled = chilled;
+            this.frozen = frozen;
+            this.skin.color.copy(this.skinColor);
+            if (frozen) this.skin.color.lerp(FROZEN_TINT, 0.75);
+            else if (chilled) this.skin.color.lerp(CHILL_TINT, 0.4);
+        }
+        this.bleeding = bleeding;
+        this.marked = marked;
+    }
+
     update(dt: number, camera: THREE.Camera): void {
+        this.pulse += dt;
         if (this.flash > 0) {
             this.flash = Math.max(0, this.flash - dt * 6);
             this.skin.emissive.copy(HIT_FLASH).multiplyScalar(this.flash * 0.9);
-        }
+        } else if (this.marked) {
+            this.skin.emissive.copy(MARK_GLOW).multiplyScalar(0.35 + Math.sin(this.pulse * 5) * 0.12);
+        } else if (this.bleeding) {
+            this.skin.emissive.copy(BLEED_GLOW).multiplyScalar(0.25 + Math.sin(this.pulse * 7) * 0.15);
+        } else if (this.frozen) {
+            this.skin.emissive.copy(FROZEN_TINT).multiplyScalar(0.18);
+        } else this.skin.emissive.setScalar(0);
         if (this.shieldFace && this.blockFlash > 0) {
             this.blockFlash = Math.max(0, this.blockFlash - dt * 4);
             this.shieldFace.emissive.copy(BLOCK_FLASH).multiplyScalar(this.blockFlash);

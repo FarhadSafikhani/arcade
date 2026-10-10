@@ -10,10 +10,10 @@ const transpile = path => ts.transpileModule(readFileSync(new URL(path, import.m
 
 const tuningJs = transpile('../src/games/defender/tuning.ts');
 const rulesJs = transpile('../src/games/defender/rules.ts').replace("from './tuning'", `from '${moduleUrl(tuningJs)}'`);
-const cardsJs = transpile('../src/games/defender/cards.ts').replace("from './tuning'", `from '${moduleUrl(tuningJs)}'`);
-const { BOW, ENEMIES, GOBLIN, LAYOUT, PLAYER, WAVES } = await import(moduleUrl(tuningJs));
+const skillsJs = transpile('../src/games/defender/skills.ts').replace("from './tuning'", `from '${moduleUrl(tuningJs)}'`);
+const { BOW, ENEMIES, GOBLIN, LAYOUT, PLAYER, SKILLS, WAVES } = await import(moduleUrl(tuningJs));
 const rules = await import(moduleUrl(rulesJs));
-const cards = await import(moduleUrl(cardsJs));
+const skills = await import(moduleUrl(skillsJs));
 
 test('draw eases from nothing to full and stays clamped', () => {
     assert.equal(rules.drawFraction(0), 0);
@@ -115,26 +115,112 @@ test('later waves add runners, shields, brutes, and casters without outrunning t
     assert.ok(rushed.health > ENEMIES.runner.health);
 });
 
-test('a deal offers three different cards, and spells occupy four slots', () => {
-    const build = cards.emptyBuild();
-    const dealt = cards.dealCards(() => 0.1, build);
-    assert.equal(dealt.length, 3);
-    assert.equal(new Set(dealt).size, 3);
-    cards.applyCard(build, 'sharpened');
-    cards.applyCard(build, 'sharpened');
-    assert.equal(cards.combatMods(build).damage, 1.24);
-    for (const id of ['volley', 'bolt', 'blast', 'rain', 'repel']) cards.applyCard(build, id);
-    assert.equal(build.spells.length, 4);
-    assert.equal(build.spells.includes('volley'), false);
-    assert.equal(build.spells[0], 'bolt');
-    const slower = cards.spellCooldown('bolt', build);
-    cards.applyCard(build, 'bolt');
-    assert.ok(cards.spellCooldown('bolt', build) < slower);
-});
-
 test('best wave reads defensively from storage', () => {
     assert.equal(rules.readBestWave({ getItem: () => '7' }, 'key'), 7);
     assert.equal(rules.readBestWave({ getItem: () => null }, 'key'), 0);
     assert.equal(rules.readBestWave({ getItem: () => 'nope' }, 'key'), 0);
     assert.equal(rules.readBestWave({ getItem: () => { throw new Error('blocked'); } }, 'key'), 0);
+});
+
+test('the aim the server fires along matches the camera, and the eye leans only where stone allows', () => {
+    const level = rules.aimDirection(0, 0);
+    assert.ok(Math.abs(level.x) < 1e-9 && Math.abs(level.y) < 1e-9 && Math.abs(level.z + 1) < 1e-9, 'yaw 0 looks down the bridge (-Z)');
+    const up = rules.aimDirection(0, 0.5);
+    assert.ok(up.y > 0, 'positive pitch looks up');
+    const standing = rules.eyePosition(0, PLAYER.walk.z.max, 0, 0);
+    assert.equal(standing.z, PLAYER.walk.z.max, 'looking level does not lean');
+    const leaning = rules.eyePosition(0, PLAYER.walk.z.min, 0, -PLAYER.pitchLimit);
+    assert.ok(leaning.z < PLAYER.walk.z.min && leaning.z >= PLAYER.leanLimitZ, 'looking down leans out, but not past the limit');
+    const turned = rules.turnAboutY({ x: 0, y: 0, z: -1 }, Math.PI / 2);
+    assert.ok(Math.abs(turned.x + 1) < 1e-9, 'turning a quarter left swings -Z to -X');
+});
+
+test('walking slides along the wall instead of stopping dead', () => {
+    const edge = PLAYER.walk.z.min;
+    const slid = rules.stepFeet(0, edge, 0.3, -0.5);
+    assert.equal(slid.z, edge, 'cannot step off the front of the walkway');
+    assert.ok(Math.abs(slid.x - 0.3) < 1e-9, 'but still moves sideways');
+});
+
+test('more archers on the wall draw bigger waves', () => {
+    assert.deepEqual(rules.spawnList(4, 1), rules.spawnList(4), 'solo waves are unchanged');
+    assert.ok(rules.spawnList(4, 3).length > rules.spawnList(4, 2).length);
+    assert.ok(rules.spawnList(4, 2).length > rules.spawnList(4, 1).length);
+});
+
+test('each extra archer adds a quarter more foes and four fifths more health', () => {
+    assert.equal(rules.crowdFactor(1), 1);
+    assert.equal(rules.crowdFactor(2), 1.25);
+    assert.equal(rules.crowdFactor(4), 1.75);
+    assert.equal(rules.wavePlan(8, 1)[0].count, 12);
+    assert.equal(rules.wavePlan(8, 2)[0].count, 15);
+    assert.equal(rules.scaleEnemy(GOBLIN, 1, 1).health, GOBLIN.health);
+    assert.equal(rules.scaleEnemy(GOBLIN, 1, 2).health, Math.round(GOBLIN.health * 1.8));
+    assert.equal(rules.scaleEnemy(GOBLIN, 1, 3).health, Math.round(GOBLIN.health * 2.6));
+});
+
+test('the shared team levels at least once a wave through wave 10, then slows', () => {
+    let xp = 0;
+    let level = 1;
+    for (let wave = 1; wave <= 10; wave++) {
+        const before = level;
+        ({ xp, level } = rules.grantXp(xp, level, rules.waveXp(wave)));
+        assert.ok(level >= before + 1, `wave ${wave} should pay at least a level`);
+    }
+    assert.equal(level, 11, 'ten waves, ten levels');
+    assert.equal(rules.pointsAt(level), 20, 'two points a level');
+    const after10 = level;
+    for (let wave = 11; wave <= 20; wave++) ({ xp, level } = rules.grantXp(xp, level, rules.waveXp(wave)));
+    assert.ok(level - after10 < 10, 'waves 11 to 20 pay fewer than one level each');
+    assert.ok(rules.xpToAdvance(15) > rules.waveXp(15), 'by wave 15 a wave no longer buys a level');
+});
+
+test('a bigger crowd of archers shares each kill so the team levels at the solo pace', () => {
+    assert.equal(rules.killXp(GOBLIN, 1), GOBLIN.xp);
+    assert.equal(rules.killXp(GOBLIN, 3), GOBLIN.xp / rules.crowdFactor(3));
+});
+
+test('skill trees open by level and by the skill above, and never past their max', () => {
+    const ranks = {};
+    assert.equal(skills.learnBlock(ranks, 'barbed', 1, 2), null, 'tier one opens at level 1');
+    assert.match(skills.learnBlock(ranks, 'lingering', 1, 2), /level/, 'tier two waits for its level');
+    assert.match(skills.learnBlock(ranks, 'lingering', SKILLS.tierLevels[1], 2), /Needs/, 'and for the skill above it');
+    ranks.barbed = 1;
+    assert.equal(skills.learnBlock(ranks, 'lingering', SKILLS.tierLevels[1], 2), null);
+    assert.equal(skills.learnBlock(ranks, 'barbed', 1, 0), 'No points');
+    ranks.barbed = skills.SKILL_DEFS.barbed.max;
+    assert.equal(skills.learnBlock(ranks, 'barbed', 20, 5), 'Mastered');
+    assert.match(skills.learnBlock({ power: 1 }, 'rapid', SKILLS.tierLevels[3] - 1, 5), /level/, 'the ultimate waits for its level');
+    assert.equal(skills.learnBlock({ power: 1 }, 'rapid', SKILLS.tierLevels[3], 5), null, 'either path opens the ultimate');
+    assert.equal(skills.learnBlock({ shockwave: 1 }, 'winter', SKILLS.tierLevels[3], 5), null);
+    assert.equal(skills.spentPoints({ barbed: 3, quick: 2 }), 5);
+});
+
+test('each tree has two paths and an ultimate, with the actives the bar can hold', () => {
+    for (const tree of skills.TREES) {
+        const own = skills.SKILL_IDS.filter(id => skills.SKILL_DEFS[id].tree === tree.id);
+        assert.equal(own.length, 7);
+        assert.equal(own.filter(id => skills.SKILL_DEFS[id].tier === 3).length, 1);
+    }
+    const actives = skills.SKILL_IDS.filter(id => skills.SKILL_DEFS[id].kind === 'active');
+    assert.ok(actives.length <= SKILLS.slots, 'every active fits on the bar');
+    for (const id of actives) assert.ok(skills.skillCooldown(id, 1) > 0, `${id} has a cooldown`);
+});
+
+test('maxed Rapid Fire is +50% attack speed, and heavy hits only land on a full draw', () => {
+    assert.equal(SKILLS.rapid.attackSpeed[skills.SKILL_DEFS.rapid.max - 1], 0.5);
+    const kit = skills.kitOf({ heavy: 5, barbed: 2 });
+    const full = skills.shotFromKit(kit, 30, 60, 1);
+    const tap = skills.shotFromKit(kit, 30, 60, 0.5);
+    assert.ok(full.damage > tap.damage && full.knockback > 0 && tap.knockback === 0);
+    assert.ok(full.bleedDps > 0, 'Barbed Arrows bleed');
+});
+
+test("Winter's Grip makes every arrow a frost arrow, and a maxed Hunter's Mark adds half again", () => {
+    const kit = skills.kitOf({ winter: 1 });
+    const shot = skills.shotFromKit(kit, 30, 60, 1);
+    assert.equal(shot.kind, skills.ArrowKind.Frost);
+    assert.ok(shot.chillSlow > 0 && shot.winter === 1);
+    const max = skills.SKILL_DEFS.mark.max;
+    assert.ok(Math.abs(SKILLS.mark.bonus + SKILLS.mark.bonusPer * (max - 1) - 0.5) < 1e-9);
 });

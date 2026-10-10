@@ -70,6 +70,45 @@ export function canLean(x: number, z: number): boolean {
     return onTower(x, z, LAYOUT.towerLeanExtra);
 }
 
+export interface Point3 { x: number; y: number; z: number; }
+
+/** Where the archer's eye sits, leaning over the battlements as far as the stone allows. */
+export function eyePosition(feetX: number, feetZ: number, yaw: number, pitch: number): Point3 {
+    const lean = leanDistance(pitch);
+    const dirX = -Math.sin(yaw);
+    const dirZ = -Math.cos(yaw);
+    let used = 0;
+    for (let step = 8; step >= 0; step--) {
+        const distance = lean * (step / 8);
+        if (canLean(feetX + dirX * distance, feetZ + dirZ * distance)) {
+            used = distance;
+            break;
+        }
+    }
+    return { x: feetX + dirX * used, y: LAYOUT.walkwayY + PLAYER.eyeHeight, z: feetZ + dirZ * used };
+}
+
+/** Unit aim for a camera turned by `yaw` then tilted by `pitch` (Euler order YXZ). */
+export function aimDirection(yaw: number, pitch: number): Point3 {
+    const cos = Math.cos(pitch);
+    return { x: -Math.sin(yaw) * cos, y: Math.sin(pitch), z: -Math.cos(yaw) * cos };
+}
+
+/** Turns a vector about the vertical axis, as `applyAxisAngle(UP, angle)` does. */
+export function turnAboutY(vector: Point3, angle: number): Point3 {
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    return { x: vector.x * cos + vector.z * sin, y: vector.y, z: -vector.x * sin + vector.z * cos };
+}
+
+/** Walking from one spot to another, sliding along whichever axis still has room. */
+export function stepFeet(x: number, z: number, dx: number, dz: number): { x: number; z: number } {
+    if (canStand(x + dx, z + dz)) return { x: x + dx, z: z + dz };
+    if (canStand(x + dx, z)) return { x: x + dx, z };
+    if (canStand(x, z + dz)) return { x, z: z + dz };
+    return { x, z };
+}
+
 /**
  * A shield faces `faceX, faceZ`. The shot is blocked when it travels into that face
  * and is not dropping almost straight down.
@@ -83,8 +122,32 @@ export function shieldBlocks(vx: number, vy: number, vz: number, faceX: number, 
     return intoFace > 0.78;
 }
 
+/** Experience a whole wave pays out, solo. Every foe must fall before the next wave, so this is exact. */
+export function waveXp(wave: number): number {
+    return wavePlan(wave, 1).reduce((total, group) => total + group.count * ENEMIES[group.id].xp, 0);
+}
+
+/**
+ * Experience to leave `level`. Through the plateau, level N costs a little under wave N's
+ * payout, so each early wave is worth at least one level. After it, costs outgrow waves.
+ */
 export function xpToAdvance(level: number): number {
-    return XP.base + (Math.max(1, Math.floor(level)) - 1) * XP.perLevel;
+    const n = Math.max(1, Math.floor(level));
+    if (n <= XP.plateauLevel) return Math.round(waveXp(n) * XP.waveShare);
+    return Math.round(waveXp(XP.plateauLevel) * XP.waveShare * XP.lateGrowth ** (n - XP.plateauLevel));
+}
+
+/**
+ * One foe's share of the team's experience. A bigger crowd of archers fights a bigger
+ * wave, so each kill pays less and the team levels at the solo pace.
+ */
+export function killXp(kind: EnemyKind, players: number): number {
+    return kind.xp / crowdFactor(players);
+}
+
+/** Skill points the whole run has granted by this level. */
+export function pointsAt(level: number): number {
+    return (Math.max(1, Math.floor(level)) - 1) * XP.pointsPerLevel;
 }
 
 export function grantXp(xp: number, level: number, gained: number): { xp: number; level: number; gainedLevels: number } {
@@ -99,12 +162,17 @@ export function grantXp(xp: number, level: number, gained: number): { xp: number
     return { xp: nextXp, level: nextLevel, gainedLevels };
 }
 
-/** Health, speed, and hitting power for one kind on a given wave. Experience does not scale. */
-export function scaleEnemy(kind: EnemyKind, wave: number): EnemyKind {
+/** How many times tougher every foe is with extra archers on the wall. */
+export function toughnessFactor(players: number): number {
+    return 1 + WAVES.healthPerArcher * Math.max(0, Math.floor(players) - 1);
+}
+
+/** Health, speed, and hitting power for one kind on a given wave and crowd of archers. Experience does not scale. */
+export function scaleEnemy(kind: EnemyKind, wave: number, players = 1): EnemyKind {
     const level = Math.max(1, Math.floor(wave)) - 1;
     return {
         ...kind,
-        health: Math.round(kind.health * (1 + WAVES.healthGrowth * level)),
+        health: Math.round(kind.health * (1 + WAVES.healthGrowth * level) * toughnessFactor(players)),
         speed: Math.min(kind.speedCap, kind.speed * (1 + WAVES.speedGrowth * level * 0.65)),
         gateDamagePerSecond: kind.gateDamagePerSecond * (1 + WAVES.gateDamageGrowth * level),
         castDamage: kind.castDamage * (1 + WAVES.gateDamageGrowth * level),
@@ -117,20 +185,27 @@ export interface WaveGroup {
     count: number;
 }
 
-/** Who arrives this wave. Later waves add runners, shields, brutes, then casters. */
-export function wavePlan(wave: number): WaveGroup[] {
+/** How many times a wave's numbers grow with extra archers on the wall. */
+export function crowdFactor(players: number): number {
+    return 1 + WAVES.extraPerArcher * Math.max(0, Math.floor(players) - 1);
+}
+
+/** Who arrives this wave. Later waves add runners, shields, brutes, then casters. More archers draw more foes. */
+export function wavePlan(wave: number, players = 1): WaveGroup[] {
     const n = Math.max(1, Math.floor(wave));
+    const crowd = crowdFactor(players);
     const plan: WaveGroup[] = [{ id: 'goblin', count: 4 + n }];
     if (n >= 2) plan.push({ id: 'runner', count: 1 + Math.floor((n - 2) / 2) });
     if (n >= 3) plan.push({ id: 'shield', count: 1 + Math.floor((n - 3) / 3) });
     if (n >= 4) plan.push({ id: 'brute', count: 1 + Math.floor((n - 4) / 4) });
     if (n >= 5) plan.push({ id: 'caster', count: 1 + Math.floor((n - 5) / 4) });
+    for (const group of plan) group.count = Math.round(group.count * crowd);
     return plan;
 }
 
 /** Round-robin spawn order so a new kind shows up early in the wave, not after the last goblin. */
-export function spawnList(wave: number): EnemyId[] {
-    const queues = wavePlan(wave).map(group => ({ id: group.id, left: group.count }));
+export function spawnList(wave: number, players = 1): EnemyId[] {
+    const queues = wavePlan(wave, players).map(group => ({ id: group.id, left: group.count }));
     const list: EnemyId[] = [];
     while (queues.some(group => group.left > 0)) {
         for (const group of queues) {
