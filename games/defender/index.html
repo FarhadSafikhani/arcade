@@ -18,13 +18,20 @@
                     <img src="/assets/brand/defender.svg" alt="">
                     <span>Defender</span>
                 </a>
-                <div class="hud-wave" aria-live="polite">Wave <span id="waveNumber">1</span></div>
+                <div class="hud-center">
+                    <div class="hud-wave" aria-live="polite">Wave <span id="waveNumber">1</span></div>
+                    <div class="hud-xp">
+                        <span id="levelLabel">Lv 1</span>
+                        <div class="xp-bar"><div id="xpFill" class="xp-fill"></div></div>
+                    </div>
+                </div>
                 <div class="hud-gate">
                     <span class="hud-gate-label">Gate <span id="gatePercent">100%</span></span>
                     <div class="gate-bar"><div id="gateFill" class="gate-fill"></div></div>
                 </div>
                 <div class="crosshair" aria-hidden="true"><span class="crosshair-ring"></span><span class="crosshair-dot"></span></div>
                 <p id="banner" class="banner" role="status" hidden></p>
+                <div id="spellBar" class="spell-bar" hidden></div>
                 <button id="touchDraw" class="touch-draw" type="button" hidden>Draw</button>
             </div>
 
@@ -39,12 +46,14 @@
                 <div class="panel">
                     <h1 id="startTitle" class="title">Defender</h1>
                     <p class="tagline">Hold the gate.</p>
+                    <p class="note">Walk out onto the towers beside the bridge. Shields block arrows from the front, and the towers let you shoot around them.</p>
                     <ul class="controls">
                         <li><kbd>Mouse</kbd> Aim</li>
                         <li><kbd>Hold left</kbd> Draw the bow</li>
                         <li><kbd>Release</kbd> Loose</li>
                         <li><kbd>Right click</kbd> Ease off</li>
-                        <li><kbd>WASD</kbd> Walk the walkway</li>
+                        <li><kbd>WASD</kbd> Walk the wall and towers</li>
+                        <li><kbd>Q E R F</kbd> Cast a spell</li>
                         <li><kbd>Esc</kbd> Pause</li>
                     </ul>
                     <button id="startButton" class="primary" type="button">Defend the gate</button>
@@ -69,6 +78,14 @@
                     <p class="note">Best: wave <span id="finalBest">1</span></p>
                     <button id="againButton" class="primary" type="button">Defend again</button>
                     <a class="button" href="/arcade/">Arcade</a>
+                </div>
+            </section>
+
+            <section id="cardScreen" class="card-screen" aria-labelledby="cardTitle" hidden>
+                <div class="card-sheet">
+                    <h2 id="cardTitle" class="card-title">Choose an upgrade</h2>
+                    <p id="cardNote" class="note">Keys 1 to 3.</p>
+                    <div id="cardChoices" class="card-choices"></div>
                 </div>
             </section>
         </div>

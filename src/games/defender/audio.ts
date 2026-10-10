@@ -49,6 +49,22 @@ export class DefenderAudio {
         this.noiseBurst({ duration: 0.12, frequency: 500, endFrequency: 250, q: 0.7, gain: 0.25 });
     }
 
+    blocked(): void {
+        this.tone({ type: 'square', frequency: 210, endFrequency: 90, duration: 0.07, gain: 0.07 });
+        this.noiseBurst({ duration: 0.05, frequency: 1600, endFrequency: 700, q: 1.1, gain: 0.16 });
+    }
+
+    level(): void {
+        this.tone({ type: 'triangle', frequency: 523, duration: 0.1, gain: 0.1 });
+        this.tone({ type: 'triangle', frequency: 659, duration: 0.16, gain: 0.1, delay: 0.08 });
+        this.tone({ type: 'triangle', frequency: 784, duration: 0.22, gain: 0.1, delay: 0.16 });
+    }
+
+    spell(): void {
+        this.tone({ type: 'sawtooth', frequency: 392, endFrequency: 880, duration: 0.18, gain: 0.05, lowpass: 1600 });
+        this.tone({ type: 'triangle', frequency: 660, duration: 0.12, gain: 0.08, delay: 0.02 });
+    }
+
     waveStart(): void {
         this.tone({ type: 'sawtooth', frequency: 196, duration: 0.42, gain: 0.08, lowpass: 900 });
         this.tone({ type: 'sawtooth', frequency: 294, duration: 0.6, gain: 0.08, lowpass: 900, delay: 0.32 });

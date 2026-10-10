@@ -1,19 +1,20 @@
 import * as THREE from 'three';
 import RAPIER from '@dimforge/rapier3d-compat';
+import { createWater, emblemMaterial, gateWoodMaterial, textured, type Surface } from './look';
 import { LAYOUT } from './tuning';
 
 /** Greybox palette, pulled from the reference paintings. */
 export const PALETTE = {
-    sky: 0xa9dcf2,
-    horizon: 0xe4f3f4,
-    fog: 0xcfeaf5,
-    stone: 0xdccdb0,
-    stoneDark: 0xb8a684,
-    stoneFloor: 0xcbbd9f,
-    bridge: 0xd3c5a7,
-    water: 0x26b4c8,
-    grass: 0x82bf4f,
-    grassDark: 0x5f9a3c,
+    sky: 0x7ec8ef,
+    horizon: 0xf6e2b0,
+    fog: 0xc9e6f4,
+    stone: 0xe7d5b6,
+    stoneDark: 0xc6b08e,
+    stoneFloor: 0xddd0b2,
+    bridge: 0xe4d6b8,
+    water: 0x2ec8d8,
+    grass: 0x6fbf45,
+    grassDark: 0x4f9a38,
     dirt: 0xc9a46a,
     wood: 0x7a4f2c,
     gateWood: 0x6b4426,
@@ -32,6 +33,7 @@ export interface CastleScene {
     gate: THREE.Group;
     gateMaterial: THREE.MeshStandardMaterial;
     flames: THREE.Object3D[];
+    update(seconds: number): void;
 }
 
 type Vec3 = readonly [number, number, number];
@@ -41,29 +43,46 @@ interface BuildContext {
     physics: RAPIER.World;
 }
 
-const materials = new Map<number, THREE.MeshStandardMaterial>();
+const SURFACES = new Map<number, Surface>([
+    [PALETTE.stone, 'stone'],
+    [PALETTE.stoneDark, 'stone'],
+    [PALETTE.stoneFloor, 'paver'],
+    [PALETTE.bridge, 'paver'],
+    [PALETTE.rock, 'stone'],
+    [PALETTE.grass, 'grass'],
+    [PALETTE.grassDark, 'grass'],
+    [PALETTE.leaf, 'foliage'],
+    [PALETTE.pine, 'foliage'],
+    [PALETTE.dirt, 'dirt'],
+    [PALETTE.wood, 'wood'],
+    [PALETTE.trunk, 'wood'],
+    [PALETTE.gateWood, 'wood'],
+    [PALETTE.banner, 'cloth'],
+    [PALETTE.iron, 'iron'],
+]);
+
 function material(color: number): THREE.MeshStandardMaterial {
-    let found = materials.get(color);
-    if (!found) {
-        found = new THREE.MeshStandardMaterial({ color, roughness: 0.92, metalness: 0 });
-        materials.set(color, found);
-    }
-    return found;
+    return textured(color, SURFACES.get(color) ?? 'flat');
 }
 
 const unitBox = new THREE.BoxGeometry(1, 1, 1);
 
 function block(context: BuildContext, size: Vec3, center: Vec3, color: number | THREE.Material,
-    options: { collide?: boolean; shadow?: boolean; parent?: THREE.Object3D } = {}): THREE.Mesh {
+    options: { collide?: boolean; shadow?: boolean; parent?: THREE.Object3D; rotationY?: number } = {}): THREE.Mesh {
     const mesh = new THREE.Mesh(unitBox, typeof color === 'number' ? material(color) : color);
     mesh.scale.set(...size);
     mesh.position.set(...center);
+    mesh.rotation.y = options.rotationY ?? 0;
     mesh.castShadow = options.shadow ?? true;
     mesh.receiveShadow = true;
     (options.parent ?? context.root).add(mesh);
     if (options.collide ?? true) {
-        context.physics.createCollider(RAPIER.ColliderDesc.cuboid(size[0] / 2, size[1] / 2, size[2] / 2)
-            .setTranslation(...center));
+        const description = RAPIER.ColliderDesc.cuboid(size[0] / 2, size[1] / 2, size[2] / 2).setTranslation(...center);
+        if (options.rotationY) {
+            const turn = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), options.rotationY);
+            description.setRotation({ x: turn.x, y: turn.y, z: turn.z, w: turn.w });
+        }
+        context.physics.createCollider(description);
     }
     return mesh;
 }
@@ -116,20 +135,21 @@ function banner(context: BuildContext, x: number, z: number, baseY: number, pole
     flag.position.set(x + reach, baseY + poleHeight - 0.15, z);
     context.root.add(flag);
     block(context, [Math.abs(reach) + 0.5, 0.06, 0.06], [-reach / 2, 0, 0], PALETTE.wood, { collide: false, parent: flag });
-    block(context, [0.8, 1.5, 0.04], [0, -0.8, 0], PALETTE.banner, { collide: false, parent: flag });
-    block(context, [0.32, 0.32, 0.05], [0, -0.7, -0.01], PALETTE.bannerMark, { collide: false, parent: flag, shadow: false });
+    block(context, [0.8, 1.5, 0.04], [0, -0.8, 0], emblemMaterial(), { collide: false, parent: flag });
     context.physics.createCollider(RAPIER.ColliderDesc.cuboid(0.07, poleHeight / 2, 0.07)
         .setTranslation(x, baseY + poleHeight / 2, z));
 }
 
 function wallBanner(context: BuildContext, x: number, top: number, z: number): void {
-    block(context, [1.0, 2.4, 0.05], [x, top - 1.2, z], PALETTE.banner, { collide: false });
-    block(context, [0.4, 0.4, 0.06], [x, top - 1.0, z - 0.01], PALETTE.bannerMark, { collide: false, shadow: false });
+    block(context, [1.0, 2.4, 0.05], [x, top - 1.2, z], emblemMaterial(), { collide: false });
 }
 
 function brazier(context: BuildContext, x: number, y: number, z: number, flames: THREE.Object3D[]): void {
     cylinder(context, 0.08, y, y + 0.7, x, z, PALETTE.iron, { collide: false, segments: 8 });
     cylinder(context, 0.22, y + 0.7, y + 0.95, x, z, PALETTE.iron, { collide: false, radiusTop: 0.34, segments: 12 });
+    const glow = new THREE.PointLight(0xff9a3a, 1.6, 7, 2);
+    glow.position.set(x, y + 1.2, z);
+    context.root.add(glow);
     const flame = new THREE.Group();
     flame.position.set(x, y + 0.95, z);
     const outer = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.55, 8), new THREE.MeshBasicMaterial({ color: PALETTE.flame }));
@@ -210,8 +230,8 @@ function skyDome(): THREE.Mesh {
 
 function addLights(scene: THREE.Scene): void {
     // Sun high behind the archer's left shoulder, so the bridge and goblins face the light.
-    scene.add(new THREE.HemisphereLight(0xfff6e0, 0xb59f7a, 2.0));
-    const sun = new THREE.DirectionalLight(0xfff0d2, 2.4);
+    scene.add(new THREE.HemisphereLight(0xfff6e4, 0x7faf58, 1.55));
+    const sun = new THREE.DirectionalLight(0xfff1d4, 2.65);
     sun.position.set(-30, 55, 24);
     sun.target.position.set(0, 0, -12);
     sun.castShadow = true;
@@ -243,16 +263,12 @@ export function buildCastle(scene: THREE.Scene, physics: RAPIER.World): CastleSc
     const bridgeEnd = front - LAYOUT.bridgeLength;
 
     scene.background = new THREE.Color(PALETTE.sky);
-    scene.fog = new THREE.Fog(PALETTE.fog, 70, 240);
+    scene.fog = new THREE.Fog(PALETTE.fog, 90, 260);
     scene.add(skyDome());
     addLights(scene);
 
-    const water = new THREE.Mesh(new THREE.PlaneGeometry(600, 600),
-        new THREE.MeshStandardMaterial({ color: PALETTE.water, roughness: 0.18, metalness: 0.05 }));
-    water.rotation.x = -Math.PI / 2;
-    water.position.y = LAYOUT.waterY;
-    water.receiveShadow = true;
-    root.add(water);
+    const water = createWater(LAYOUT.waterY);
+    root.add(water.mesh);
 
     // Banks around the moat. Top surface sits at y = 0.15.
     block(context, [500, 3, 200], [0, -1.35, bridgeEnd - 100], PALETTE.grass, { shadow: false });
@@ -306,19 +322,28 @@ export function buildCastle(scene: THREE.Scene, physics: RAPIER.World): CastleSc
     block(context, [LAYOUT.walkwayHalfLength * 2, 0.02, back - 0.3], [0, wallTop + 0.01, (back - 0.3) / 2], PALETTE.stoneFloor,
         { collide: false, shadow: false });
 
-    // Front parapet with crenels and merlons, and a lower rear parapet over the courtyard.
-    block(context, [outer * 2, LAYOUT.crenelHeight, 0.4], [0, wallTop + LAYOUT.crenelHeight / 2, (front + LAYOUT.parapetInnerZ) / 2], PALETTE.stone);
+    // Front parapet, with a gap where each tower joins the walkway.
+    const parapetZ = (front + LAYOUT.parapetInnerZ) / 2;
+    const parapetDepth = 0.4;
+    const mouth = Math.sqrt(Math.max(0, LAYOUT.towerRadius ** 2 - (parapetZ - LAYOUT.towerZ) ** 2));
+    const gapNear = LAYOUT.towerX - mouth;
+    const gapFar = LAYOUT.towerX + mouth;
     const merlonRise = LAYOUT.merlonHeight - LAYOUT.crenelHeight;
-    for (let x = -outer + LAYOUT.merlonSpacing / 2; x < outer; x += LAYOUT.merlonSpacing) {
-        block(context, [LAYOUT.merlonWidth, merlonRise, 0.4],
-            [x, wallTop + LAYOUT.crenelHeight + merlonRise / 2, (front + LAYOUT.parapetInnerZ) / 2], PALETTE.stone);
+    for (const [from, to] of [[-outer, -gapFar], [-gapNear, gapNear], [gapFar, outer]] as const) {
+        if (to - from < 0.4) continue;
+        block(context, [to - from, LAYOUT.crenelHeight, parapetDepth],
+            [(from + to) / 2, wallTop + LAYOUT.crenelHeight / 2, parapetZ], PALETTE.stone);
+        for (let x = from + LAYOUT.merlonSpacing / 2; x < to; x += LAYOUT.merlonSpacing) {
+            block(context, [LAYOUT.merlonWidth, merlonRise, parapetDepth],
+                [x, wallTop + LAYOUT.crenelHeight + merlonRise / 2, parapetZ], PALETTE.stone);
+        }
     }
     block(context, [LAYOUT.walkwayHalfLength * 2, 0.9, 0.3], [0, wallTop + 0.45, back - 0.15], PALETTE.stone);
 
     // The gate, framed by a stone arch, with banners on either side.
     const gate = new THREE.Group();
     root.add(gate);
-    const gateMaterial = material(PALETTE.gateWood).clone();
+    const gateMaterial = gateWoodMaterial();
     block(context, [LAYOUT.gateHalfWidth * 2, LAYOUT.gateHeight, 0.16], [0, LAYOUT.gateHeight / 2, front - 0.08], gateMaterial, { parent: gate });
     for (const y of [0.8, 1.8, 2.8]) {
         block(context, [LAYOUT.gateHalfWidth * 2 + 0.05, 0.12, 0.03], [0, y, front - 0.17], PALETTE.iron, { collide: false, parent: gate });
@@ -329,16 +354,10 @@ export function buildCastle(scene: THREE.Scene, physics: RAPIER.World): CastleSc
     }
     block(context, [LAYOUT.gateHalfWidth * 2 + 1.2, 0.6, 0.4], [0, LAYOUT.gateHeight + 0.3, front - 0.1], PALETTE.stoneDark);
 
-    // Flanking towers that cap the walkway.
-    for (const side of [-1, 1]) {
-        const x = side * LAYOUT.towerX;
-        cylinder(context, LAYOUT.towerRadius, footing, LAYOUT.towerHeight, x, 1.6, PALETTE.stone);
-        cylinder(context, LAYOUT.towerRadius + 0.15, LAYOUT.waterY - 0.2, LAYOUT.waterY + 0.6, x, 1.6, PALETTE.stoneDark, { collide: false });
-        towerCrown(context, x, 1.6, LAYOUT.towerRadius, LAYOUT.towerHeight);
-        block(context, [0.25, 1.0, 0.1], [x, 6.6, 1.6 - LAYOUT.towerRadius - 0.02], PALETTE.iron, { collide: false });
-        banner(context, x, 1.6, LAYOUT.towerHeight, 3, -side * 0.6);
-        brazier(context, side * 7.6, wallTop, 0.5, flames);
-    }
+    // Open towers at walkway height, projecting over the moat on either side of the bridge.
+    for (const side of [-1, 1]) flankTower(context, side, footing, wallTop, flames);
+    brazier(context, -3.5, wallTop, 0.55, flames);
+    brazier(context, 3.5, wallTop, 0.55, flames);
 
     // Courtyard behind the walkway: ground, enclosing walls, corner towers, keep, stairs.
     block(context, [outer * 2, 1, courtyardEnd - back], [0, -0.5, (back + courtyardEnd) / 2], PALETTE.stoneFloor, { shadow: false });
@@ -388,5 +407,49 @@ export function buildCastle(scene: THREE.Scene, physics: RAPIER.World): CastleSc
         root.add(pad);
     }
 
-    return { gate, gateMaterial, flames };
+    const bloomMaterial = material(0xf4e7a8);
+    const petalMaterial = material(0xf2f6ea);
+    const bloom = new THREE.SphereGeometry(0.16, 6, 5);
+    for (let index = 0; index < 48; index++) {
+        const flower = new THREE.Mesh(bloom, index % 3 === 0 ? petalMaterial : bloomMaterial);
+        const side = random() < 0.5 ? -1 : 1;
+        flower.position.set(side * (8 + random() * 36), 0.22, bridgeEnd - 4 - random() * 28);
+        flower.scale.setScalar(0.6 + random() * 0.8);
+        flower.castShadow = false;
+        root.add(flower);
+    }
+
+    return { gate, gateMaterial, flames, update: seconds => water.update(seconds) };
+}
+
+/** A round fighting platform you can walk onto, low on the side that faces the gate. */
+function flankTower(context: BuildContext, side: number, footing: number, top: number, flames: THREE.Object3D[]): void {
+    const x = side * LAYOUT.towerX;
+    const z = LAYOUT.towerZ;
+    const radius = LAYOUT.towerRadius;
+    cylinder(context, radius, footing, top, x, z, PALETTE.stone);
+    cylinder(context, radius + 0.16, LAYOUT.waterY - 0.15, LAYOUT.waterY + 0.5, x, z, PALETTE.stoneDark, { collide: false });
+    const floor = new THREE.Mesh(new THREE.CircleGeometry(radius - 0.04, 28), material(PALETTE.stoneFloor));
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.set(x, top + 0.025, z);
+    floor.receiveShadow = true;
+    context.root.add(floor);
+
+    const count = 14;
+    const radial = radius - 0.2;
+    for (let index = 0; index < count; index++) {
+        const angle = (index / count) * Math.PI * 2;
+        const px = x + Math.cos(angle) * radial;
+        const pz = z + Math.sin(angle) * radial;
+        const south = Math.sin(angle) > 0.15;
+        const overWalkway = Math.abs(px) < LAYOUT.walkwayHalfLength - 0.3;
+        if (south && overWalkway) continue;
+        const outward = Math.cos(angle) * side;
+        const tall = outward > 0.45 && Math.sin(angle) > -0.35;
+        const height = tall ? 1.02 : 0.46;
+        block(context, [0.78, height, 0.46], [px, top + height / 2, pz], PALETTE.stone,
+            { rotationY: Math.PI / 2 - angle });
+    }
+    banner(context, x + side * (radius - 0.85), z + 0.15, top, 2.6, side * 0.55);
+    brazier(context, x + side * 1.15, top, z - 0.35, flames);
 }
