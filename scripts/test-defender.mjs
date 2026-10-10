@@ -216,11 +216,11 @@ test('maxed Rapid Fire is +50% attack speed, and heavy hits only land on a full 
     assert.ok(full.bleedDps > 0, 'Barbed Arrows bleed');
 });
 
-test("Winter's Grip makes every arrow a frost arrow, and Mending heals a tenth of the gate at max", () => {
+test("Winter's Grip makes every arrow a frost arrow, and a maxed Hunter's Mark adds half again", () => {
     const kit = skills.kitOf({ winter: 1 });
     const shot = skills.shotFromKit(kit, 30, 60, 1);
     assert.equal(shot.kind, skills.ArrowKind.Frost);
     assert.ok(shot.chillSlow > 0 && shot.winter === 1);
-    const max = skills.SKILL_DEFS.mending.max;
-    assert.ok(Math.abs(SKILLS.mending.heal + SKILLS.mending.healPer * (max - 1) - 0.1) < 1e-9);
+    const max = skills.SKILL_DEFS.mark.max;
+    assert.ok(Math.abs(SKILLS.mark.bonus + SKILLS.mark.bonusPer * (max - 1) - 0.5) < 1e-9);
 });

@@ -8,13 +8,13 @@ import { SKILLS } from './tuning';
  * Marksman deals the damage: the left path bleeds and spreads, the right path draws
  * fast and hits hard, and Rapid Fire speeds every shot.
  * Warden holds the line: the left path slows and softens, the right path stuns,
- * shoves, and mends the gate, and Winter's Grip turns every arrow to frost.
+ * shoves, and marks foes for the kill, and Winter's Grip turns every arrow to frost.
  */
 
 export type TreeId = 'marksman' | 'warden';
 export type SkillId =
     | 'barbed' | 'lingering' | 'ricochet' | 'quick' | 'heavy' | 'power' | 'rapid'
-    | 'chill' | 'tar' | 'frostbite' | 'concuss' | 'mending' | 'shockwave' | 'winter';
+    | 'chill' | 'tar' | 'frostbite' | 'concuss' | 'mark' | 'shockwave' | 'winter';
 
 export interface SkillDef {
     id: SkillId;
@@ -102,13 +102,13 @@ export const SKILL_DEFS: Record<SkillId, SkillDef> = {
         blurb: 'A blunt arrow that stuns the foe it hits and those beside it.',
         effect: rank => `Stuns for ${secs(by(SKILLS.concuss.stun, SKILLS.concuss.stunPer, rank))} within ${SKILLS.concuss.radius}m. Cooldown ${secs(skillCooldown('concuss', rank))}.`,
     },
-    mending: {
-        id: 'mending', tree: 'warden', name: 'Mending Arrows', kind: 'active', buff: true, max: 5, tier: 1, column: 1, requires: ['concuss'],
-        blurb: 'For a while your arrows heal. They pass through foes; land one at the gate to mend it.',
-        effect: rank => `Each arrow that lands at the gate restores ${pct(by(SKILLS.mending.heal, SKILLS.mending.healPer, rank))} of its strength, for ${secs(by(SKILLS.mending.duration, SKILLS.mending.durationPer, rank))}. Cooldown ${secs(SKILLS.mending.cooldown)}.`,
+    mark: {
+        id: 'mark', tree: 'warden', name: "Hunter's Mark", kind: 'active', buff: true, max: 5, tier: 1, column: 1, requires: ['concuss'],
+        blurb: 'For a while your arrows mark what they hit. Marked foes take more from every archer.',
+        effect: rank => `For ${secs(by(SKILLS.mark.duration, SKILLS.mark.durationPer, rank))}, hits mark foes for ${secs(SKILLS.mark.markTime)}: they take ${pct(by(SKILLS.mark.bonus, SKILLS.mark.bonusPer, rank))} more damage. Cooldown ${secs(SKILLS.mark.cooldown)}.`,
     },
     shockwave: {
-        id: 'shockwave', tree: 'warden', name: 'Shockwave', kind: 'active', buff: false, max: 5, tier: 2, column: 1, requires: ['mending'],
+        id: 'shockwave', tree: 'warden', name: 'Shockwave', kind: 'active', buff: false, max: 5, tier: 2, column: 1, requires: ['mark'],
         blurb: 'Blast the crowd at the gate back down the bridge, stunned.',
         effect: rank => `Shoves foes ${by(SKILLS.shockwave.distance, SKILLS.shockwave.distancePer, rank).toFixed(1)}m and stuns for ${secs(by(SKILLS.shockwave.stun, SKILLS.shockwave.stunPer, rank))}. Cooldown ${secs(skillCooldown('shockwave', rank))}.`,
     },
@@ -155,7 +155,7 @@ export function skillCooldown(id: SkillId, rank: number): number {
         case 'rapid': return SKILLS.rapid.cooldown;
         case 'tar': return by(SKILLS.tar.cooldown, SKILLS.tar.cooldownPer, r);
         case 'concuss': return by(SKILLS.concuss.cooldown, SKILLS.concuss.cooldownPer, r);
-        case 'mending': return SKILLS.mending.cooldown;
+        case 'mark': return SKILLS.mark.cooldown;
         case 'shockwave': return by(SKILLS.shockwave.cooldown, SKILLS.shockwave.cooldownPer, r);
         default: return 0;
     }
@@ -198,7 +198,7 @@ export function kitOf(ranks: Ranks): Kit {
 }
 
 /** How an arrow looks in flight. */
-export enum ArrowKind { Plain = 0, Healing = 1, Frost = 2, Power = 3 }
+export enum ArrowKind { Plain = 0, Mark = 1, Frost = 2, Power = 3 }
 
 /** Everything an arrow carries to whatever it hits. */
 export interface ShotProfile {
@@ -218,8 +218,8 @@ export interface ShotProfile {
     stun: number;
     stunRadius: number;
     knockback: number;
-    /** A healing arrow mends this share of the gate where it lands, and passes through foes. */
-    heal: number;
+    /** Hunter's Mark: foes hit take this much more damage from everyone while marked. 0 leaves no mark. */
+    mark: number;
     kind: ArrowKind;
 }
 
@@ -242,7 +242,7 @@ export function shotFromKit(kit: Kit, damage: number, speed: number, draw: numbe
         stun: 0,
         stunRadius: 0,
         knockback: full ? kit.heavyShove : 0,
-        heal: 0,
+        mark: 0,
         kind: kit.winter > 0 ? ArrowKind.Frost : ArrowKind.Plain,
     };
 }

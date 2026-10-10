@@ -35,8 +35,6 @@ interface Ghost {
     velocity: THREE.Vector3;
     age: number;
     landed: boolean;
-    /** Healing arrows fly through foes. */
-    passesFoes: boolean;
 }
 
 interface ShownBolt { mesh: THREE.Object3D; position: THREE.Vector3; velocity: THREE.Vector3; seen: THREE.Vector3; }
@@ -150,7 +148,7 @@ export class DefenderWorld {
     }
 
     /** Flies this archer's arrow at once, from the same eye and aim the server will use. */
-    predict(seq: number, speed: number, kind: number, passesFoes: boolean): void {
+    predict(seq: number, speed: number, kind: number): void {
         const direction = aimDirection(this.yaw, this.pitch);
         const eye = eyePosition(this.feetX, this.feetZ, this.yaw, this.pitch);
         const position = new THREE.Vector3(eye.x, eye.y, eye.z).addScaledVector(toVector(direction), ARROW.spawnOffset);
@@ -158,7 +156,7 @@ export class DefenderWorld {
         mesh.position.copy(position);
         mesh.quaternion.setFromUnitVectors(ARROW_FORWARD, toVector(direction));
         this.scene.add(mesh);
-        this.ghosts.set(seq, { mesh, position, velocity: toVector(direction).multiplyScalar(speed), age: 0, landed: false, passesFoes });
+        this.ghosts.set(seq, { mesh, position, velocity: toVector(direction).multiplyScalar(speed), age: 0, landed: false });
     }
 
     /** Brings the scene in line with the view. `smooth` eases remote motion between network patches. */
@@ -258,7 +256,8 @@ export class DefenderWorld {
             rig.root.position.set(shown.x, 0, shown.z);
             rig.root.rotation.y = shown.facing;
             rig.setHealth(state.maxHealth > 0 ? Math.max(0, state.health) / state.maxHealth : 1);
-            rig.setStatus((state.status & STATUS.bleeding) !== 0, (state.status & STATUS.chilled) !== 0, state.mode === 'frozen');
+            rig.setStatus((state.status & STATUS.bleeding) !== 0, (state.status & STATUS.chilled) !== 0, state.mode === 'frozen',
+                (state.status & STATUS.marked) !== 0);
             if (state.mode === 'dying') {
                 shown.deathTime += dt;
                 rig.die(Math.min(1, shown.deathTime / ENEMY_MOTION.deathDuration));
@@ -334,7 +333,7 @@ export class DefenderWorld {
             fly(end, ghost.velocity, dt);
             const travel = end.clone().sub(start);
             const distance = travel.length();
-            const stop = distance > 0 ? this.firstHit(start, travel.divideScalar(distance), distance, ghost.passesFoes) : null;
+            const stop = distance > 0 ? this.firstHit(start, travel.divideScalar(distance), distance) : null;
             ghost.position.copy(stop ?? end);
             ghost.mesh.position.copy(ghost.position);
             orient(ghost.mesh, ghost.velocity);
@@ -344,11 +343,11 @@ export class DefenderWorld {
     }
 
     /** Where a predicted arrow first meets stone or a foe as drawn, if anywhere along this step. */
-    private firstHit(start: THREE.Vector3, direction: THREE.Vector3, distance: number, passesFoes: boolean): THREE.Vector3 | null {
+    private firstHit(start: THREE.Vector3, direction: THREE.Vector3, distance: number): THREE.Vector3 | null {
         let best = distance;
         const hit = this.physics.castRay(new RAPIER.Ray(start, direction), distance, true);
         if (hit) best = hit.timeOfImpact;
-        for (const enemy of passesFoes ? [] : this.enemies.values()) {
+        for (const enemy of this.enemies.values()) {
             const kind = ENEMIES[enemy.rig.style];
             const center = new THREE.Vector3(enemy.x, kind.height / 2, enemy.z);
             const along = center.clone().sub(start).dot(direction);

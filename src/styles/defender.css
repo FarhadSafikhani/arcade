@@ -342,7 +342,7 @@ kbd { justify-self: end; padding: 2px 8px; border: 1px solid #c9a46a88; border-r
     width: calc(var(--left) * 100%);
     background: var(--buff);
 }
-.buff-mending { --buff: #9be38a; }
+.buff-mark { --buff: #f07aa6; }
 .buff-rapid { --buff: #f0a08c; }
 .buff-name { color: var(--buff); }
 .buff-time { font: 600 11px var(--defender-body); color: var(--defender-ink); }

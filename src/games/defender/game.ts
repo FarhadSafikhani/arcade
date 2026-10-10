@@ -443,9 +443,9 @@ class DefenderGame {
         this.link.loose({ draw, yaw: this.yaw, pitch: this.pitch, x: this.feetX, z: this.feetZ, seq: this.seq });
         // Online, the shot flies here at once; the server's copy replaces it where it lands.
         if (this.link.online) {
-            const healing = [...mine.buffs].includes('mending');
-            const kind = healing ? ArrowKind.Healing : (mine.ranks.get('winter') ?? 0) > 0 ? ArrowKind.Frost : ArrowKind.Plain;
-            this.world?.predict(this.seq, arrowSpeed(draw), kind, healing);
+            const marking = [...mine.buffs].includes('mark');
+            const kind = marking ? ArrowKind.Mark : (mine.ranks.get('winter') ?? 0) > 0 ? ArrowKind.Frost : ArrowKind.Plain;
+            this.world?.predict(this.seq, arrowSpeed(draw), kind);
         }
         this.audio.shot(draw);
         this.drawing = false;
@@ -572,12 +572,6 @@ class DefenderGame {
                 case 'freeze': this.audio.blocked(); break;
                 case 'stick': this.audio.stick(); break;
                 case 'gate': this.audio.gateHit(); break;
-                case 'heal':
-                    if (event.amount > 0) {
-                        this.audio.level();
-                        if (this.bannerTimer <= 0) this.showBanner('The gate mends', 1);
-                    }
-                    break;
                 case 'loose':
                     if (event.owner !== me) this.audio.shot(event.draw * 0.5);
                     break;

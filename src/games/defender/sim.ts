@@ -20,7 +20,7 @@ export type Phase = 'lobby' | 'playing' | 'break' | 'over';
 export type EnemyMode = 'walking' | 'striking' | 'casting' | 'stunned' | 'frozen' | 'dying';
 
 /** Bits in `SimEnemy.status`, so a foe can show what ails it. */
-export const STATUS = { bleeding: 1, chilled: 2, frozen: 4 } as const;
+export const STATUS = { bleeding: 1, chilled: 2, frozen: 4, marked: 8 } as const;
 
 /** Something worth a flash, a puff, or a sound. Sent to clients alongside the state. */
 export type FxEvent =
@@ -32,7 +32,6 @@ export type FxEvent =
     | { t: 'puff'; x: number; y: number; z: number; color: number; r: number }
     | { t: 'spark'; ax: number; az: number; bx: number; bz: number }
     | { t: 'gate' }
-    | { t: 'heal'; amount: number }
     | { t: 'loose'; owner: string; draw: number }
     | { t: 'spell'; owner: string; skill: SkillId }
     | { t: 'wave'; wave: number; fresh: EnemyId | '' }
@@ -116,6 +115,8 @@ interface Enemy extends SimEnemy {
     castTimer: number;
     bleed: number;
     bleedDps: number;
+    marked: number;
+    markBonus: number;
     chill: number;
     chillMul: number;
     frostbite: number;
@@ -142,8 +143,7 @@ interface Archer extends SimPlayer {
     lastPose: number;
 }
 
-const BUFFS: SkillId[] = ['rapid', 'mending'];
-const GATE_POINT = { x: 0, y: LAYOUT.gateHeight / 2, z: LAYOUT.wallFrontZ };
+const BUFFS: SkillId[] = ['rapid', 'mark'];
 
 export class DefenderSim {
     readonly enemies = new Map<string, SimEnemy>();
@@ -273,11 +273,10 @@ export class DefenderSim {
             archer.z = shot.z;
         }
         const profile = shotFromKit(archer.kit, arrowDamage(draw), arrowSpeed(draw), draw);
-        const mending = archer.timers.mending ?? 0;
-        if (mending > 0) {
-            const rank = rankOf(archer.skills, 'mending');
-            profile.heal = SKILLS.mending.heal + SKILLS.mending.healPer * (rank - 1);
-            profile.kind = ArrowKind.Healing;
+        if ((archer.timers.mark ?? 0) > 0) {
+            const rank = rankOf(archer.skills, 'mark');
+            profile.mark = SKILLS.mark.bonus + SKILLS.mark.bonusPer * (rank - 1);
+            profile.kind = ArrowKind.Mark;
         }
         this.fire(archer, profile, Math.max(0, Math.floor(shot.seq)));
         this.fx.push({ t: 'loose', owner: id, draw });
@@ -423,7 +422,7 @@ export class DefenderSim {
 
     private buffLength(skill: SkillId, rank: number): number {
         if (skill === 'rapid') return SKILLS.rapid.duration;
-        if (skill === 'mending') return SKILLS.mending.duration + SKILLS.mending.durationPer * (rank - 1);
+        if (skill === 'mark') return SKILLS.mark.duration + SKILLS.mark.durationPer * (rank - 1);
         return 0;
     }
 
@@ -487,7 +486,7 @@ export class DefenderSim {
                 this.shockwave(SKILLS.shockwave.distance + SKILLS.shockwave.distancePer * (r - 1), SKILLS.shockwave.stun + SKILLS.shockwave.stunPer * (r - 1));
                 break;
             case 'rapid':
-            case 'mending':
+            case 'mark':
                 archer.timers[id] = this.buffLength(id, r);
                 break;
             default:
@@ -541,7 +540,7 @@ export class DefenderSim {
             spec: kind, body, collider, laneX: x,
             speed: kind.speed * jitter,
             clock: this.random() * 10, deathTime: 0, castTimer: kind.castInterval,
-            bleed: 0, bleedDps: 0, chill: 0, chillMul: 1, frostbite: 0, frozen: 0, frostHits: 0, frostSince: 0, stun: 0,
+            bleed: 0, bleedDps: 0, marked: 0, markBonus: 0, chill: 0, chillMul: 1, frostbite: 0, frozen: 0, frostHits: 0, frostSince: 0, stun: 0,
         };
         this.enemies.set(id, enemy);
         this.enemyByCollider.set(collider.handle, enemy);
@@ -557,6 +556,10 @@ export class DefenderSim {
                 enemy.bleed = Math.max(0, enemy.bleed - dt);
                 if (this.wound(enemy, enemy.bleedDps * dt, false)) continue;
             }
+            if (enemy.marked > 0) {
+                enemy.marked = Math.max(0, enemy.marked - dt);
+                if (enemy.marked === 0) enemy.markBonus = 0;
+            }
             if (enemy.chill > 0) {
                 enemy.chill = Math.max(0, enemy.chill - dt);
                 if (enemy.chill === 0) {
@@ -564,7 +567,7 @@ export class DefenderSim {
                     enemy.frostbite = 0;
                 }
             }
-            enemy.status = (enemy.bleed > 0 ? STATUS.bleeding : 0) | (enemy.chill > 0 ? STATUS.chilled : 0) | (enemy.frozen > 0 ? STATUS.frozen : 0);
+            enemy.status = (enemy.bleed > 0 ? STATUS.bleeding : 0) | (enemy.chill > 0 ? STATUS.chilled : 0) | (enemy.frozen > 0 ? STATUS.frozen : 0) | (enemy.marked > 0 ? STATUS.marked : 0);
             if (enemy.mode === 'dying') {
                 enemy.deathTime += dt;
                 if (enemy.deathTime >= ENEMY_MOTION.deathDuration) this.removeEnemy(enemy);
@@ -699,8 +702,7 @@ export class DefenderSim {
         const direction = distance > 0
             ? { x: (next.x - start.x) / distance, y: (next.y - start.y) / distance, z: (next.z - start.z) / distance }
             : { x: 0, y: -1, z: 0 };
-        const healing = arrow.profile.heal > 0;
-        if (!healing) this.clipBolts(start, next);
+        this.clipBolts(start, next);
 
         let traveled = 0;
         let guard = 0;
@@ -716,8 +718,7 @@ export class DefenderSim {
                 undefined,
                 undefined,
                 undefined,
-                // Healing arrows fly through foes to reach the gate.
-                collider => !arrow.ignore.has(collider.handle) && !(healing && this.enemyByCollider.has(collider.handle)),
+                collider => !arrow.ignore.has(collider.handle),
             );
             if (!hit) break;
             const impact = traveled + hit.timeOfImpact;
@@ -729,7 +730,6 @@ export class DefenderSim {
             arrow.x = point.x; arrow.y = point.y; arrow.z = point.z;
             const enemy = this.enemyByCollider.get(hit.collider.handle);
             if (!enemy) {
-                if (healing) this.mendAt(point, arrow.profile.heal);
                 this.embed(arrow, direction, null);
                 this.fx.push({ t: 'stick' });
                 return true;
@@ -753,21 +753,7 @@ export class DefenderSim {
         }
 
         arrow.x = next.x; arrow.y = next.y; arrow.z = next.z;
-        if (healing && next.y < LAYOUT.waterY) this.mendAt(next, arrow.profile.heal);
         return !(next.y < LAYOUT.waterY || arrow.age > ARROW.lifetime);
-    }
-
-    /** A healing arrow that lands at the gate mends it. */
-    private mendAt(point: Point3, share: number): void {
-        const near = Math.hypot(point.x - GATE_POINT.x, point.y - GATE_POINT.y, point.z - GATE_POINT.z) <= SKILLS.mending.gateReach;
-        if (!near) {
-            this.puff(point.x, point.y + 0.2, point.z, 0x9be38a, 0.25);
-            return;
-        }
-        const amount = Math.min(this.gateMax - this.gate, share * this.gateMax);
-        this.gate += amount;
-        this.puff(point.x, point.y + 0.3, point.z, 0x9be38a, 0.9);
-        this.fx.push({ t: 'heal', amount });
     }
 
     /** A direct hit: stun splash, the wound itself, then maybe a leap to the next foe. */
@@ -809,6 +795,12 @@ export class DefenderSim {
         let damage = amount;
         if (enemy.bleed > 0) damage *= 1 + profile.wound;
         if (enemy.chill > 0) damage *= 1 + enemy.frostbite;
+        if (enemy.marked > 0) damage *= 1 + enemy.markBonus;
+        // The mark lands after the blow that brings it, so it pays off from the next hit on.
+        if (profile.mark > 0) {
+            enemy.marked = SKILLS.mark.markTime;
+            enemy.markBonus = Math.max(enemy.markBonus, profile.mark);
+        }
         if (profile.bleedDps > 0) {
             enemy.bleed = Math.max(enemy.bleed, profile.bleedTime);
             enemy.bleedDps = Math.max(enemy.bleedDps, profile.bleedDps);

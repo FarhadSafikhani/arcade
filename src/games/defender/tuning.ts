@@ -226,7 +226,7 @@ export const SKILLS = {
     frostbite: { damagePer: 0.06 },
     // Warden: support path
     concuss: { cooldown: 9, cooldownPer: -0.5, damage: 12, stun: 0.8, stunPer: 0.2, radius: 1.8, speed: 60 },
-    mending: { cooldown: 20, duration: 5, durationPer: 1, heal: 0.06, healPer: 0.01, gateReach: 3.6 },
+    mark: { cooldown: 18, duration: 5, durationPer: 1, bonus: 0.3, bonusPer: 0.05, markTime: 4 },
     shockwave: { cooldown: 16, cooldownPer: -0.8, distance: 4, distancePer: 0.4, stun: 0.6, stunPer: 0.12, range: 9 },
     // Warden ultimate
     winter: { slow: 0.6, chillTime: 2.4, hits: 3, window: 4, freeze: [1.2, 1.6, 2.0] },

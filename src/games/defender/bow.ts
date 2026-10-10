@@ -21,9 +21,9 @@ const arrowMaterials = {
     fletchB: new THREE.MeshStandardMaterial({ color: FLETCH_B, roughness: 0.9, side: THREE.DoubleSide }),
 };
 
-/** Glowing heads and dyed fletching for the skill arrows, by `ArrowKind`: healing, frost, power. */
+/** Glowing heads and dyed fletching for the skill arrows, by `ArrowKind`: mark, frost, power. */
 const ARROW_DYES: Record<number, { head: number; fletch: number }> = {
-    1: { head: 0x7fe07a, fletch: 0x9be38a },
+    1: { head: 0xe0457b, fletch: 0xf07aa6 },
     2: { head: 0xaee6ff, fletch: 0xd4f1ff },
     3: { head: 0xffb347, fletch: 0xf2c53d },
 };
