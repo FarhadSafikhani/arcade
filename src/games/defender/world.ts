@@ -1,139 +1,92 @@
 import * as THREE from 'three';
 import RAPIER from '@dimforge/rapier3d-compat';
-import { CombatMods, emptyMods, rolledDamage, ShotProfile, SpellId } from './cards';
+import { ArcherRig } from './archer';
 import { buildCastle, CastleScene } from './castle';
 import { BowView, createArrowMesh } from './bow';
 import { createRig, EnemyRig } from './goblin';
-import { canLean, canStand, clamp, leanDistance, shieldBlocks } from './rules';
-import { ARROW, ENEMY_MOTION, LAYOUT, PLAYER, SPELL } from './tuning';
-import type { EnemyKind } from './tuning';
+import type { ArrowView, PlayerView, WorldView } from './net/link';
+import { aimDirection, clamp, eyePosition, leanDistance } from './rules';
+import type { FxEvent } from './sim';
+import { ARROW, ENEMIES, ENEMY_MOTION, LAYOUT, PLAYER, SPELL, type EnemyId } from './tuning';
 
-interface FlyingArrow {
-    mesh: THREE.Group;
-    position: THREE.Vector3;
-    velocity: THREE.Vector3;
-    profile: ShotProfile;
-    age: number;
-    ignore: Set<number>;
-}
-
-interface StuckArrow {
-    mesh: THREE.Group;
-    age: number;
-}
-
-interface Bolt {
-    mesh: THREE.Object3D;
-    position: THREE.Vector3;
-    velocity: THREE.Vector3;
-    damage: number;
-}
-
-interface Puff {
-    mesh: THREE.Mesh;
-    age: number;
-}
-
-interface Spark {
-    line: THREE.Line;
-    age: number;
-}
-
-type EnemyState = 'walking' | 'striking' | 'casting' | 'dying';
-
-interface Enemy {
+interface ShownEnemy {
     rig: EnemyRig;
-    kind: EnemyKind;
-    body: RAPIER.RigidBody;
-    collider: RAPIER.Collider;
     x: number;
     z: number;
-    laneX: number;
-    health: number;
-    maxHealth: number;
-    speed: number;
-    gateDamagePerSecond: number;
-    state: EnemyState;
+    facing: number;
     clock: number;
     deathTime: number;
-    castTimer: number;
-    burn: number;
-    burnDps: number;
-    slow: number;
-    slowMul: number;
-    stun: number;
 }
 
-export interface StepReport {
-    hits: number;
-    kills: number;
-    sticks: number;
-    blocks: number;
-    /** Raw experience from kills this step, before Keen Eye. */
-    xp: number;
-    /** Flat gate damage from spells and caster bolts. */
-    gateDamage: number;
-    strikeRates: number[];
+interface ShownArrow {
+    mesh: THREE.Group;
+    /** Last values the server sent, to notice a fresh patch. */
+    seen: { x: number; y: number; z: number; stuck: boolean; enemy: string };
+    position: THREE.Vector3;
+    velocity: THREE.Vector3;
+    /** Seconds since the last fresh patch; dead reckoning stops after a short while. */
+    coast: number;
 }
 
-export interface MoveInput {
-    forward: number;
-    right: number;
+/** An arrow this archer just loosed, flown here before the server's copy arrives. */
+interface Ghost {
+    mesh: THREE.Group;
+    position: THREE.Vector3;
+    velocity: THREE.Vector3;
+    age: number;
+    landed: boolean;
 }
 
-export interface SpellResult {
-    heal: number;
-}
+interface ShownBolt { mesh: THREE.Object3D; position: THREE.Vector3; velocity: THREE.Vector3; seen: THREE.Vector3; }
+
+interface ShownArcher { rig: ArcherRig; x: number; z: number; yaw: number; pitch: number; }
+
+interface Puff { mesh: THREE.Mesh; age: number; }
+interface Spark { line: THREE.Line; age: number; }
 
 const ARROW_FORWARD = new THREE.Vector3(0, 0, 1);
-const UP = new THREE.Vector3(0, 1, 0);
 const puffGeometry = new THREE.SphereGeometry(1, 10, 8);
 const boltGlowGeometry = new THREE.SphereGeometry(0.22, 10, 8);
 const boltCoreGeometry = new THREE.SphereGeometry(0.1, 8, 6);
 const boltGlowMaterial = new THREE.MeshBasicMaterial({ color: 0xffb15a });
 const boltCoreMaterial = new THREE.MeshBasicMaterial({ color: 0xfff3c4 });
-const scratch = {
-    direction: new THREE.Vector3(),
-    next: new THREE.Vector3(),
-    start: new THREE.Vector3(),
-    origin: new THREE.Vector3(),
-    point: new THREE.Vector3(),
-    aim: new THREE.Vector3(),
-    matrix: new THREE.Matrix4(),
-};
+const oilGeometry = new THREE.CircleGeometry(1, 22);
+const oilMaterial = new THREE.MeshBasicMaterial({ color: 0x2a2218, transparent: true, opacity: 0.6, depthWrite: false });
+/** Longest a remote arrow or bolt keeps flying on its own between patches. */
+const MAX_COAST = 0.2;
+const scratch = { direction: new THREE.Vector3() };
 
-/** Three.js scene plus a Rapier collision world for one Defender run. */
+/**
+ * Draws a Defender run: the castle, every foe, arrow, bolt, slick, and other archer
+ * in a `WorldView`, plus this archer's first-person bow. Holds no game rules.
+ * Online, it smooths remote motion and flies this archer's own arrows ahead of the server.
+ */
 export class DefenderWorld {
     readonly canvas: HTMLCanvasElement;
     private readonly renderer: THREE.WebGLRenderer;
     private readonly scene = new THREE.Scene();
     private readonly camera: THREE.PerspectiveCamera;
     private readonly bowView: BowView;
+    /** Static colliders only, so predicted arrows stop at the stone. */
     private readonly physics: RAPIER.World;
     private readonly castle: CastleScene;
-    private readonly gateColor = new THREE.Color();
     private readonly gateFresh: THREE.Color;
     private readonly gateBroken = new THREE.Color(0x2a1a10);
-    private readonly enemies: Enemy[] = [];
-    private readonly enemyByCollider = new Map<number, Enemy>();
-    private readonly flying: FlyingArrow[] = [];
-    private readonly stuck: StuckArrow[] = [];
-    private readonly bolts: Bolt[] = [];
+    private readonly enemies = new Map<string, ShownEnemy>();
+    private readonly arrows = new Map<string, ShownArrow>();
+    private readonly ghosts = new Map<number, Ghost>();
+    private readonly bolts = new Map<string, ShownBolt>();
+    private readonly oils = new Map<string, THREE.Mesh>();
+    private readonly archers = new Map<string, ShownArcher>();
     private readonly puffs: Puff[] = [];
     private readonly sparks: Spark[] = [];
     private readonly arrowPool: THREE.Group[] = [];
-    private readonly feet = new THREE.Vector2(0, PLAYER.walk.z.min + 0.3);
-    private readonly oilMesh: THREE.Mesh;
-    private mods: CombatMods = emptyMods();
-    private oil: { x: number; z: number; left: number } | null = null;
-    private brand = 0;
-    private barrage = 0;
-    private casterSide = 1;
+    private feetX = 0;
+    private feetZ = PLAYER.walk.z.min + 0.3;
     private yaw = 0;
     private pitch = -0.22;
     private walkPhase = 0;
     private gateShake = 0;
-    private time = 0;
 
     private constructor(container: HTMLElement) {
         this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
@@ -152,13 +105,8 @@ export class DefenderWorld {
         this.bowView = new BowView(PLAYER.fov);
         this.physics = new RAPIER.World({ x: 0, y: 0, z: 0 });
         this.castle = buildCastle(this.scene, this.physics);
+        this.physics.step();
         this.gateFresh = this.castle.gateMaterial.color.clone();
-        this.oilMesh = new THREE.Mesh(new THREE.CircleGeometry(1, 22), new THREE.MeshBasicMaterial({
-            color: 0x2a2218, transparent: true, opacity: 0.6, depthWrite: false,
-        }));
-        this.oilMesh.rotation.x = -Math.PI / 2;
-        this.oilMesh.visible = false;
-        this.scene.add(this.oilMesh);
         this.resize(container.clientWidth, container.clientHeight);
         this.placeCamera();
     }
@@ -176,197 +124,80 @@ export class DefenderWorld {
         this.bowView.setAspect(width / height);
     }
 
-    /** Passive bonuses used when a spell builds its shot. */
-    setMods(mods: CombatMods): void {
-        this.mods = mods;
-    }
-
-    get barrageLeft(): number {
-        return this.barrage;
-    }
-
-    reset(): void {
-        for (const enemy of [...this.enemies]) this.removeEnemy(enemy);
-        for (const arrow of this.flying) this.releaseArrow(arrow.mesh);
-        for (const arrow of this.stuck) this.releaseArrow(arrow.mesh);
-        for (const bolt of this.bolts) bolt.mesh.removeFromParent();
-        this.clearFlourishes();
-        this.flying.length = 0;
-        this.stuck.length = 0;
-        this.bolts.length = 0;
-        this.feet.set(0, PLAYER.walk.z.min + 0.3);
-        this.yaw = 0;
-        this.pitch = -0.22;
-        this.brand = 0;
-        this.barrage = 0;
-        this.oil = null;
-        this.oilMesh.visible = false;
-        this.casterSide = 1;
-        this.mods = emptyMods();
-        this.setGateHealth(1);
+    /** Where this archer stands and looks. `moved` is how far the feet went this frame, for the bow's sway. */
+    setPose(x: number, z: number, yaw: number, pitch: number, moved: number): void {
+        this.feetX = x;
+        this.feetZ = z;
+        this.yaw = yaw;
+        this.pitch = pitch;
+        this.walkPhase = moved > 0 ? this.walkPhase + moved * 2.4 : 0;
         this.placeCamera();
     }
 
-    look(deltaX: number, deltaY: number, sensitivity: number): void {
-        this.yaw -= deltaX * sensitivity;
-        this.pitch = clamp(this.pitch - deltaY * sensitivity, -PLAYER.pitchLimit, PLAYER.pitchLimit);
+    /** Throws away everything shown, ready for another run or another room. */
+    clear(): void {
+        for (const id of [...this.enemies.keys()]) this.dropEnemy(id);
+        for (const id of [...this.arrows.keys()]) this.dropArrow(id);
+        for (const seq of [...this.ghosts.keys()]) this.dropGhost(seq);
+        for (const id of [...this.bolts.keys()]) this.dropBolt(id);
+        for (const mesh of this.oils.values()) mesh.removeFromParent();
+        this.oils.clear();
+        for (const id of [...this.archers.keys()]) this.dropArcher(id);
+        this.clearFlourishes();
+        this.setGateHealth(1);
     }
 
-    move(input: MoveInput, speed: number, dt: number): void {
-        const length = Math.hypot(input.forward, input.right);
-        if (length <= 0) {
-            this.walkPhase = 0;
-            return;
-        }
-        const forward = input.forward / length;
-        const right = input.right / length;
-        const sin = Math.sin(this.yaw);
-        const cos = Math.cos(this.yaw);
-        const dx = (-sin * forward + cos * right) * speed * dt;
-        const dz = (-cos * forward - sin * right) * speed * dt;
-        const nextX = this.feet.x + dx;
-        const nextZ = this.feet.y + dz;
-        if (canStand(nextX, nextZ)) this.feet.set(nextX, nextZ);
-        else if (canStand(nextX, this.feet.y)) this.feet.x = nextX;
-        else if (canStand(this.feet.x, nextZ)) this.feet.y = nextZ;
-        this.walkPhase += speed * dt * 2.4;
+    /** Flies this archer's arrow at once, from the same eye and aim the server will use. */
+    predict(seq: number, speed: number): void {
+        const direction = aimDirection(this.yaw, this.pitch);
+        const eye = eyePosition(this.feetX, this.feetZ, this.yaw, this.pitch);
+        const position = new THREE.Vector3(eye.x, eye.y, eye.z).addScaledVector(toVector(direction), ARROW.spawnOffset);
+        const mesh = this.takeArrow();
+        mesh.position.copy(position);
+        mesh.quaternion.setFromUnitVectors(ARROW_FORWARD, toVector(direction));
+        this.scene.add(mesh);
+        this.ghosts.set(seq, { mesh, position, velocity: toVector(direction).multiplyScalar(speed), age: 0, landed: false });
     }
 
-    /** Looses an arrow from the eye. `yawOffset` fans it sideways, in radians. */
-    fire(profile: ShotProfile, yawOffset = 0): void {
-        const direction = new THREE.Vector3();
-        this.camera.getWorldDirection(direction);
-        if (yawOffset !== 0) direction.applyAxisAngle(UP, yawOffset);
-        const shot = this.prepare(profile);
-        const position = this.camera.position.clone().addScaledVector(direction, ARROW.spawnOffset);
-        this.launch(shot, position, direction.multiplyScalar(shot.speed));
+    /** Brings the scene in line with the view. `smooth` eases remote motion between network patches. */
+    sync(view: WorldView, me: string, dt: number, smooth: boolean): void {
+        const ease = smooth ? 1 - Math.exp(-dt * 14) : 1;
+        this.syncEnemies(view, dt, ease);
+        this.syncArrows(view, me, dt);
+        this.flyGhosts(dt);
+        this.syncBolts(view, dt);
+        this.syncOils(view);
+        this.syncArchers(view, me, ease);
+        this.setGateHealth(view.gateMax > 0 ? view.gate / view.gateMax : 1);
     }
 
-    cast(id: SpellId): SpellResult {
-        switch (id) {
-            case 'volley': {
-                const shot = this.spellShot(SPELL.volley.damage, SPELL.volley.speed);
-                const span = SPELL.volley.shots - 1;
-                for (let index = 0; index < SPELL.volley.shots; index++) {
-                    this.fire(shot, (index - span / 2) * (SPELL.volley.spread / span));
-                }
-                break;
-            }
-            case 'bolt':
-                this.fire(this.spellShot(SPELL.bolt.damage, SPELL.bolt.speed, { pierce: SPELL.bolt.pierce, ignoreShield: true }));
-                break;
-            case 'blast':
-                this.fire(this.spellShot(SPELL.blast.damage, SPELL.blast.speed, {
-                    explode: SPELL.blast.radius, ignoreShield: true, knockback: 1.4,
-                }));
-                break;
-            case 'rain':
-                this.rain();
-                break;
-            case 'repel':
-                this.repel();
-                break;
-            case 'mend':
-                return { heal: SPELL.mend.heal };
-            case 'brand':
-                this.brand = SPELL.brand.duration;
-                break;
-            case 'frost':
-                this.fire(this.spellShot(SPELL.frost.damage, SPELL.frost.speed, { slow: SPELL.frost.slow, aura: SPELL.frost.aura }));
-                break;
-            case 'spark':
-                this.fire(this.spellShot(SPELL.spark.damage, SPELL.spark.speed, { chain: SPELL.spark.jumps, ignoreShield: true }));
-                break;
-            case 'snipe':
-                this.fire(this.spellShot(SPELL.snipe.damage, SPELL.snipe.speed, {
-                    vs: { ...this.mods.vs, caster: this.mods.vs.caster * SPELL.snipe.casterBonus },
-                }));
-                break;
-            case 'barrage':
-                this.barrage = SPELL.barrage.duration;
-                break;
-            case 'oil': {
-                const aim = this.aimOnBridge();
-                this.oil = { x: aim.x, z: aim.z, left: SPELL.oil.duration };
-                this.oilMesh.visible = true;
-                this.oilMesh.position.set(aim.x, 0.08, aim.z);
-                this.oilMesh.scale.set(3.3, SPELL.oil.reach, 1);
-                break;
-            }
-            default:
-                break;
-        }
-        return { heal: 0 };
-    }
-
-    spawnEnemy(kind: EnemyKind): void {
-        const rig = createRig(kind);
-        let x = (Math.random() * 2 - 1) * ENEMY_MOTION.spawnHalfWidth;
-        if (kind.standoff > 0) {
-            this.casterSide = -this.casterSide;
-            x = this.casterSide * (LAYOUT.bridgeHalfWidth - 1.05);
-        }
-        const z = ENEMY_MOTION.spawnZ;
-        const halfHeight = Math.max(0.05, kind.height / 2 - kind.radius);
-        const body = this.physics.createRigidBody(RAPIER.RigidBodyDesc.kinematicPositionBased()
-            .setTranslation(x, kind.height / 2, z));
-        const collider = this.physics.createCollider(RAPIER.ColliderDesc.capsule(halfHeight, kind.radius), body);
-        const jitter = 1 + (Math.random() * 2 - 1) * ENEMY_MOTION.speedJitter;
-        const enemy: Enemy = {
-            rig, kind, body, collider, x, z, laneX: x,
-            health: kind.health, maxHealth: kind.health,
-            speed: kind.speed * jitter, gateDamagePerSecond: kind.gateDamagePerSecond,
-            state: 'walking', clock: Math.random() * 10, deathTime: 0,
-            castTimer: kind.castInterval, burn: 0, burnDps: 0, slow: 0, slowMul: 1, stun: 0,
-        };
-        rig.root.position.set(x, 0, z);
-        this.scene.add(rig.root);
-        this.enemies.push(enemy);
-        this.enemyByCollider.set(collider.handle, enemy);
-    }
-
-    get aliveCount(): number {
-        return this.enemies.reduce((count, enemy) => count + (enemy.state === 'dying' ? 0 : 1), 0);
-    }
-
-    setGateHealth(fraction: number): void {
-        this.gateColor.copy(this.gateBroken).lerp(this.gateFresh, clamp(fraction, 0, 1));
-        this.castle.gateMaterial.color.copy(this.gateColor);
-    }
-
-    step(dt: number): StepReport {
-        const report: StepReport = { hits: 0, kills: 0, sticks: 0, blocks: 0, xp: 0, gateDamage: 0, strikeRates: [] };
-        this.time += dt;
-        this.brand = Math.max(0, this.brand - dt);
-        this.barrage = Math.max(0, this.barrage - dt);
-        if (this.oil) {
-            this.oil.left -= dt;
-            if (this.oil.left <= 0) {
-                this.oil = null;
-                this.oilMesh.visible = false;
+    effects(events: readonly FxEvent[]): void {
+        for (const event of events) {
+            switch (event.t) {
+                case 'hit':
+                    this.enemies.get(event.enemy)?.rig.hit();
+                    break;
+                case 'block':
+                    this.enemies.get(event.enemy)?.rig.blocked();
+                    break;
+                case 'puff':
+                    this.puff(event.x, event.y, event.z, event.color, event.r);
+                    break;
+                case 'spark':
+                    this.spark(event.ax, event.az, event.bx, event.bz);
+                    break;
+                case 'gate':
+                    this.gateShake = 0.12;
+                    break;
+                default:
+                    break;
             }
         }
-        this.moveEnemies(dt, report);
-        this.moveBolts(dt, report);
-        this.physics.timestep = dt;
-        this.physics.step();
-        this.moveArrows(dt, report);
-        for (let index = this.stuck.length - 1; index >= 0; index--) {
-            const arrow = this.stuck[index];
-            arrow.age += dt;
-            if (arrow.age > ARROW.stuckLifetime) {
-                this.releaseArrow(arrow.mesh);
-                this.stuck.splice(index, 1);
-            }
-        }
-        if (report.strikeRates.length > 0 || report.gateDamage > 0) this.gateShake = 0.12;
-        return report;
     }
 
     render(dt: number, draw: number, nocked: boolean): void {
-        this.placeCamera();
         this.bowView.update(draw, nocked, this.walkPhase, dt);
-        for (const enemy of this.enemies) enemy.rig.update(dt, this.camera);
+        for (const enemy of this.enemies.values()) enemy.rig.update(dt, this.camera);
         const flicker = performance.now() / 1000;
         this.castle.update(flicker);
         this.castle.flames.forEach((flame, index) => {
@@ -383,9 +214,7 @@ export class DefenderWorld {
     }
 
     destroy(): void {
-        for (const enemy of [...this.enemies]) this.removeEnemy(enemy);
-        this.clearFlourishes();
-        for (const bolt of this.bolts) bolt.mesh.removeFromParent();
+        this.clear();
         this.bowView.dispose();
         this.scene.traverse(child => {
             if (child instanceof THREE.Mesh) child.geometry.dispose();
@@ -395,399 +224,231 @@ export class DefenderWorld {
         this.canvas.remove();
     }
 
-    private prepare(profile: ShotProfile): ShotProfile {
-        const shot: ShotProfile = { ...profile, vs: profile.vs };
-        if (this.brand > 0) shot.burn += SPELL.brand.burn;
-        return shot;
-    }
-
-    private spellShot(damage: number, speed: number, extra: Partial<ShotProfile> = {}): ShotProfile {
-        return {
-            damage: damage * this.mods.damage,
-            speed: speed * this.mods.arrowSpeed,
-            pierce: extra.pierce ?? 0,
-            ignoreShield: extra.ignoreShield ?? false,
-            explode: extra.explode ?? 0,
-            burn: extra.burn ?? 0,
-            slow: extra.slow ?? 0,
-            chain: extra.chain ?? 0,
-            knockback: extra.knockback ?? 0,
-            aura: extra.aura ?? 0,
-            vs: extra.vs ?? this.mods.vs,
-            critChance: this.mods.critChance,
-            critMul: this.mods.critMul,
-        };
-    }
-
-    private launch(profile: ShotProfile, position: THREE.Vector3, velocity: THREE.Vector3): void {
-        const mesh = this.takeArrow();
-        mesh.position.copy(position);
-        const direction = scratch.direction.copy(velocity);
-        if (direction.lengthSq() > 0.0001) direction.normalize();
-        else direction.set(0, -1, 0);
-        mesh.quaternion.setFromUnitVectors(ARROW_FORWARD, direction);
-        this.scene.add(mesh);
-        this.flying.push({
-            mesh, position: position.clone(), velocity, profile, age: 0, ignore: new Set(),
-        });
-    }
-
-    private rain(): void {
-        const aim = this.aimOnBridge();
-        for (let index = 0; index < SPELL.rain.arrows; index++) {
-            const shot = this.spellShot(SPELL.rain.damage, 16);
-            const position = new THREE.Vector3(
-                clamp(aim.x + (Math.random() - 0.5) * 6, -LAYOUT.bridgeHalfWidth + 0.3, LAYOUT.bridgeHalfWidth - 0.3),
-                7.5 + Math.random() * 2,
-                aim.z + (Math.random() - 0.5) * 7,
-            );
-            const velocity = new THREE.Vector3((Math.random() - 0.5) * 1.5, -10, (Math.random() - 0.5) * 1.5);
-            this.launch(shot, position, velocity);
-        }
-    }
-
-    private repel(): void {
-        const limit = ENEMY_MOTION.gateStrikeZ - SPELL.repel.range;
-        for (const enemy of this.enemies) {
-            if (enemy.state === 'dying' || enemy.z < limit) continue;
-            enemy.z = Math.max(ENEMY_MOTION.spawnZ + 1, enemy.z - SPELL.repel.distance);
-            enemy.stun = SPELL.repel.stun;
-            if (enemy.state === 'striking' || enemy.state === 'casting') enemy.state = 'walking';
-            enemy.rig.root.position.z = enemy.z;
-        }
-        this.puff(0, 1.2, ENEMY_MOTION.gateStrikeZ - 1, 0xf4e2b0, 1.4);
-    }
-
-    private aimOnBridge(): THREE.Vector3 {
-        const direction = this.camera.getWorldDirection(scratch.aim);
-        if (direction.y > -0.08) return new THREE.Vector3(0, 0.1, -12);
-        const distance = (0.15 - this.camera.position.y) / direction.y;
-        return new THREE.Vector3(
-            clamp(this.camera.position.x + direction.x * distance, -LAYOUT.bridgeHalfWidth + 0.4, LAYOUT.bridgeHalfWidth - 0.4),
-            0.1,
-            clamp(this.camera.position.z + direction.z * distance, LAYOUT.wallFrontZ - LAYOUT.bridgeLength + 2, -1.6),
-        );
-    }
-
     private placeCamera(): void {
-        const lean = leanDistance(this.pitch);
-        const dirX = -Math.sin(this.yaw);
-        const dirZ = -Math.cos(this.yaw);
-        let used = 0;
-        for (let step = 8; step >= 0; step--) {
-            const distance = lean * (step / 8);
-            if (canLean(this.feet.x + dirX * distance, this.feet.y + dirZ * distance)) {
-                used = distance;
-                break;
-            }
-        }
-        this.camera.position.set(this.feet.x + dirX * used, LAYOUT.walkwayY + PLAYER.eyeHeight, this.feet.y + dirZ * used);
+        const eye = eyePosition(this.feetX, this.feetZ, this.yaw, this.pitch);
+        this.camera.position.set(eye.x, eye.y, eye.z);
         this.camera.rotation.set(this.pitch, this.yaw, 0);
         this.camera.updateMatrixWorld();
     }
 
-    private moveEnemies(dt: number, report: StepReport): void {
-        const limitX = LAYOUT.bridgeHalfWidth - 0.2;
-        const doorX = LAYOUT.gateHalfWidth - 0.3;
-        for (let index = this.enemies.length - 1; index >= 0; index--) {
-            const enemy = this.enemies[index];
-            enemy.clock += dt;
-            if (enemy.burn > 0) {
-                enemy.burn -= dt;
-                if (this.wound(enemy, enemy.burnDps * dt, report, false)) continue;
-            }
-            if (enemy.state === 'dying') {
-                enemy.deathTime += dt;
-                enemy.rig.die(enemy.deathTime / ENEMY_MOTION.deathDuration);
-                if (enemy.deathTime >= ENEMY_MOTION.deathDuration) this.removeEnemy(enemy);
-                continue;
-            }
-            if (enemy.stun > 0) {
-                enemy.stun -= dt;
-                enemy.rig.channel(0);
-                enemy.rig.walk(enemy.clock, 0.2);
-                enemy.body.setNextKinematicTranslation({ x: enemy.x, y: enemy.kind.height / 2, z: enemy.z });
-                continue;
-            }
-            if (enemy.state === 'striking') {
-                enemy.rig.channel(0);
-                enemy.rig.strike(enemy.clock);
-                report.strikeRates.push(enemy.gateDamagePerSecond);
-                continue;
-            }
-            if (enemy.state === 'casting') {
-                const charge = 1 - enemy.castTimer / Math.max(0.3, enemy.kind.castInterval);
-                enemy.rig.channel(clamp(charge, 0, 1));
-                enemy.castTimer -= dt;
-                if (enemy.castTimer <= 0) {
-                    this.launchBolt(enemy);
-                    enemy.castTimer = enemy.kind.castInterval;
-                }
-                enemy.body.setNextKinematicTranslation({ x: enemy.x, y: enemy.kind.height / 2, z: enemy.z });
-                continue;
-            }
+    private setGateHealth(fraction: number): void {
+        this.castle.gateMaterial.color.copy(this.gateBroken).lerp(this.gateFresh, clamp(fraction, 0, 1));
+    }
 
-            const goalZ = enemy.kind.standoff > 0
-                ? ENEMY_MOTION.gateStrikeZ - enemy.kind.standoff
-                : ENEMY_MOTION.gateStrikeZ;
-            const toGoal = goalZ - enemy.z;
-            const funnel = enemy.kind.standoff > 0 ? 0 : clamp(1 - toGoal / ENEMY_MOTION.funnelDistance, 0, 1);
-            let desiredX = enemy.laneX + (clamp(enemy.laneX, -doorX, doorX) - enemy.laneX) * funnel;
-            if (enemy.kind.id === 'runner') desiredX += Math.sin(enemy.clock * 4.2 + enemy.laneX * 3) * 0.55;
-            let steerX = (desiredX - enemy.x) * 1.2;
-            let advance = 1;
-            for (const other of this.enemies) {
-                if (other === enemy || other.state === 'dying') continue;
-                const dx = enemy.x - other.x;
-                const dz = enemy.z - other.z;
-                const distance = Math.hypot(dx, dz);
-                const reach = enemy.kind.radius + other.kind.radius + 0.2;
-                if (distance < reach) {
-                    const push = (1 - distance / reach) * ENEMY_MOTION.separationStrength;
-                    steerX += distance > 0.001 ? (dx / distance) * push : (Math.random() - 0.5) * push;
-                }
-                const ahead = other.z - enemy.z;
-                if (ahead > 0 && ahead < reach && Math.abs(dx) < reach * 0.65) {
-                    advance = Math.min(advance, clamp((ahead - reach * 0.45) / (reach * 0.4), 0, 1));
+    private syncEnemies(view: WorldView, dt: number, ease: number): void {
+        for (const id of this.enemies.keys()) if (!view.enemies.get(id)) this.dropEnemy(id);
+        view.enemies.forEach((state, id) => {
+            let shown = this.enemies.get(id);
+            if (!shown) {
+                const kind = ENEMIES[state.kind as EnemyId] ?? ENEMIES.goblin;
+                const rig = createRig(kind);
+                shown = { rig, x: state.x, z: state.z, facing: state.facing, clock: Math.random() * 10, deathTime: 0 };
+                this.scene.add(rig.root);
+                this.enemies.set(id, shown);
+            }
+            const rig = shown.rig;
+            shown.clock += dt;
+            // Knockback and Repel jump a foe back down the bridge; follow that at once rather than gliding.
+            const far = Math.hypot(state.x - shown.x, state.z - shown.z) > 1.2;
+            shown.x += (state.x - shown.x) * (far ? 1 : ease);
+            shown.z += (state.z - shown.z) * (far ? 1 : ease);
+            shown.facing += (state.facing - shown.facing) * ease;
+            rig.root.position.set(shown.x, 0, shown.z);
+            rig.root.rotation.y = shown.facing;
+            rig.setHealth(state.maxHealth > 0 ? Math.max(0, state.health) / state.maxHealth : 1);
+            if (state.mode === 'dying') {
+                shown.deathTime += dt;
+                rig.die(Math.min(1, shown.deathTime / ENEMY_MOTION.deathDuration));
+                return;
+            }
+            rig.channel(state.mode === 'casting' ? state.charge : 0);
+            if (state.mode === 'striking') rig.strike(shown.clock);
+            else if (state.mode === 'stunned') rig.walk(shown.clock, 0.2);
+            else if (state.mode === 'walking') rig.walk(shown.clock, state.pace);
+        });
+    }
+
+    private syncArrows(view: WorldView, me: string, dt: number): void {
+        for (const id of this.arrows.keys()) if (!view.arrows.get(id)) this.dropArrow(id);
+        view.arrows.forEach((state, id) => {
+            let shown = this.arrows.get(id);
+            if (!shown) {
+                shown = {
+                    mesh: this.takeArrow(),
+                    seen: { x: NaN, y: NaN, z: NaN, stuck: false, enemy: '' },
+                    position: new THREE.Vector3(), velocity: new THREE.Vector3(), coast: 0,
+                };
+                this.arrows.set(id, shown);
+            }
+            const fresh = shown.seen.x !== state.x || shown.seen.y !== state.y || shown.seen.z !== state.z
+                || shown.seen.stuck !== state.stuck || shown.seen.enemy !== state.enemy;
+            if (fresh) {
+                Object.assign(shown.seen, { x: state.x, y: state.y, z: state.z, stuck: state.stuck, enemy: state.enemy });
+                shown.coast = 0;
+                if (state.stuck) this.plant(shown, state);
+                else {
+                    shown.position.set(state.x, state.y, state.z);
+                    shown.velocity.set(state.vx, state.vy, state.vz);
                 }
             }
-            let pace = enemy.speed;
-            if (enemy.slow > 0) {
-                enemy.slow = Math.max(0, enemy.slow - dt);
-                pace *= enemy.slowMul;
+            const ghost = state.owner === me && state.seq > 0 ? this.ghosts.get(state.seq) : undefined;
+            if (ghost && state.stuck) this.dropGhost(state.seq);
+            if (!state.stuck) {
+                shown.coast += dt;
+                if (shown.coast <= MAX_COAST) fly(shown.position, shown.velocity, dt);
+                shown.mesh.position.copy(shown.position);
+                orient(shown.mesh, shown.velocity);
+                if (shown.mesh.parent !== this.scene) this.scene.add(shown.mesh);
             }
-            if (this.oil && Math.abs(enemy.z - this.oil.z) < SPELL.oil.reach && Math.abs(enemy.x - this.oil.x) < 3.3) {
-                pace *= SPELL.oil.slow;
-            }
-            steerX = clamp(steerX, -pace, pace);
-            enemy.x = clamp(enemy.x + steerX * dt, -limitX, limitX);
-            enemy.z = Math.min(goalZ, enemy.z + pace * advance * dt);
-            if (enemy.z >= goalZ - 0.001) {
-                enemy.z = goalZ;
-                enemy.state = enemy.kind.standoff > 0 ? 'casting' : 'striking';
-                enemy.castTimer = enemy.kind.castInterval * 0.55;
-            }
-            enemy.rig.channel(0);
-            enemy.rig.root.position.set(enemy.x, 0, enemy.z);
-            enemy.rig.root.rotation.y = Math.atan2(steerX, Math.max(0.2, pace * advance)) * 0.6;
-            enemy.rig.walk(enemy.clock, pace * Math.max(0.3, advance));
-            enemy.body.setNextKinematicTranslation({ x: enemy.x, y: enemy.kind.height / 2, z: enemy.z });
-        }
+            // Our own shot is already on screen as a ghost until the server says where it landed.
+            shown.mesh.visible = !ghost || state.stuck;
+        });
     }
 
-    private launchBolt(enemy: Enemy): void {
-        const position = new THREE.Vector3(enemy.x, 1.2, enemy.z + 0.3);
-        const target = new THREE.Vector3(0, 1.35, ENEMY_MOTION.gateStrikeZ + 0.15);
-        const velocity = target.sub(position.clone()).normalize().multiplyScalar(8.4);
-        const mesh = new THREE.Group();
-        mesh.add(new THREE.Mesh(boltGlowGeometry, boltGlowMaterial), new THREE.Mesh(boltCoreGeometry, boltCoreMaterial));
-        mesh.position.copy(position);
-        this.scene.add(mesh);
-        this.bolts.push({ mesh, position, velocity, damage: enemy.kind.castDamage });
+    /** Fixes a landed arrow in place, riding inside a foe when it hit one. */
+    private plant(shown: ShownArrow, state: ArrowView): void {
+        const mesh = shown.mesh;
+        const host = state.enemy ? this.enemies.get(state.enemy)?.rig.root : undefined;
+        mesh.position.set(state.x, state.y, state.z);
+        mesh.quaternion.setFromUnitVectors(ARROW_FORWARD, scratch.direction.set(state.vx, state.vy, state.vz).normalize());
+        if (host) host.add(mesh);
+        else if (state.enemy) mesh.removeFromParent();
+        else this.scene.add(mesh);
     }
 
-    private moveBolts(dt: number, report: StepReport): void {
-        const gate = scratch.point.set(0, 1.35, ENEMY_MOTION.gateStrikeZ);
-        for (let index = this.bolts.length - 1; index >= 0; index--) {
-            const bolt = this.bolts[index];
-            bolt.position.addScaledVector(bolt.velocity, dt);
-            bolt.mesh.position.copy(bolt.position);
-            if (bolt.position.distanceTo(gate) < 0.75 || bolt.position.z > ENEMY_MOTION.gateStrikeZ) {
-                report.gateDamage += bolt.damage;
-                this.puff(bolt.position.x, bolt.position.y, bolt.position.z, 0xff8a3a, 0.45);
-                bolt.mesh.removeFromParent();
-                this.bolts.splice(index, 1);
-            }
-        }
-    }
-
-    private moveArrows(dt: number, report: StepReport): void {
-        for (let index = this.flying.length - 1; index >= 0; index--) {
-            if (!this.advanceArrow(this.flying[index], dt, report)) this.flying.splice(index, 1);
-        }
-    }
-
-    /** Returns false when the arrow has stuck, expired, or fallen into the moat. */
-    private advanceArrow(arrow: FlyingArrow, dt: number, report: StepReport): boolean {
-        arrow.age += dt;
-        const speed = arrow.velocity.length();
-        arrow.velocity.addScaledVector(arrow.velocity, -ARROW.drag * speed * dt);
-        arrow.velocity.y -= ARROW.gravity * dt;
-        const start = scratch.start.copy(arrow.position);
-        const next = scratch.next.copy(start).addScaledVector(arrow.velocity, dt);
-        const direction = scratch.direction.subVectors(next, start);
-        const distance = direction.length();
-        if (distance > 0) direction.divideScalar(distance);
-        else direction.set(0, -1, 0);
-        this.clipBolts(start, next, report);
-
-        let traveled = 0;
-        let guard = 0;
-        while (distance > 0 && traveled < distance - 0.0001 && guard++ < 6) {
-            const origin = scratch.origin.copy(start).addScaledVector(direction, traveled);
-            const hit = this.physics.castRay(
-                new RAPIER.Ray(origin, direction),
-                distance - traveled,
-                true,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                collider => !arrow.ignore.has(collider.handle),
-            );
-            if (!hit) break;
-            const impact = traveled + hit.timeOfImpact;
-            const point = scratch.point.copy(start).addScaledVector(direction, impact + 0.08);
-            arrow.position.copy(point);
-            const enemy = this.enemyByCollider.get(hit.collider.handle);
-            if (!enemy) {
-                this.burstAt(arrow, point, null, report);
-                this.embed(arrow, direction, null);
-                report.sticks++;
-                return false;
-            }
-            const faceX = Math.sin(enemy.rig.root.rotation.y);
-            const faceZ = Math.cos(enemy.rig.root.rotation.y);
-            const blocked = enemy.kind.shield && !arrow.profile.ignoreShield
-                && shieldBlocks(arrow.velocity.x, arrow.velocity.y, arrow.velocity.z, faceX, faceZ);
-            if (blocked) {
-                report.blocks++;
-                enemy.rig.blocked();
-                this.burstAt(arrow, point, null, report);
-                this.embed(arrow, direction, enemy);
-                return false;
-            }
-            this.hurt(enemy, arrow.profile.damage, arrow.profile, report);
-            this.burstAt(arrow, point, enemy, report);
-            if (arrow.profile.pierce > 0) {
-                arrow.profile.pierce -= 1;
-                arrow.ignore.add(hit.collider.handle);
-                traveled = impact + 0.4;
+    private flyGhosts(dt: number): void {
+        for (const [seq, ghost] of this.ghosts) {
+            ghost.age += dt;
+            if (ghost.age > ARROW.lifetime || (ghost.landed && ghost.age > 1.5)) {
+                this.dropGhost(seq);
                 continue;
             }
-            this.embed(arrow, direction, enemy);
-            return false;
+            if (ghost.landed) continue;
+            const start = ghost.position.clone();
+            const end = start.clone();
+            fly(end, ghost.velocity, dt);
+            const travel = end.clone().sub(start);
+            const distance = travel.length();
+            const stop = distance > 0 ? this.firstHit(start, travel.divideScalar(distance), distance) : null;
+            ghost.position.copy(stop ?? end);
+            ghost.mesh.position.copy(ghost.position);
+            orient(ghost.mesh, ghost.velocity);
+            if (stop) ghost.landed = true;
+            if (ghost.position.y < LAYOUT.waterY) this.dropGhost(seq);
         }
-
-        arrow.position.copy(next);
-        arrow.mesh.position.copy(next);
-        arrow.mesh.quaternion.setFromUnitVectors(ARROW_FORWARD, direction);
-        if (next.y < LAYOUT.waterY || arrow.age > ARROW.lifetime) {
-            this.releaseArrow(arrow.mesh);
-            return false;
-        }
-        return true;
     }
 
-    private burstAt(arrow: FlyingArrow, point: THREE.Vector3, primary: Enemy | null, report: StepReport): void {
-        if (arrow.profile.explode > 0) {
-            this.puff(point.x, point.y, point.z, 0xff8a3a, arrow.profile.explode * 0.45);
-            for (const enemy of this.enemies) {
-                if (enemy === primary || enemy.state === 'dying') continue;
-                if (Math.hypot(enemy.x - point.x, enemy.z - point.z) > arrow.profile.explode + enemy.kind.radius) continue;
-                this.hurt(enemy, arrow.profile.damage * 0.6, { ...arrow.profile, explode: 0, pierce: 0, chain: 0 }, report);
+    /** Where a predicted arrow first meets stone or a foe as drawn, if anywhere along this step. */
+    private firstHit(start: THREE.Vector3, direction: THREE.Vector3, distance: number): THREE.Vector3 | null {
+        let best = distance;
+        const hit = this.physics.castRay(new RAPIER.Ray(start, direction), distance, true);
+        if (hit) best = hit.timeOfImpact;
+        for (const enemy of this.enemies.values()) {
+            const kind = ENEMIES[enemy.rig.style];
+            const center = new THREE.Vector3(enemy.x, kind.height / 2, enemy.z);
+            const along = center.clone().sub(start).dot(direction);
+            if (along < 0 || along > best) continue;
+            const closest = start.clone().addScaledVector(direction, along);
+            const flat = Math.hypot(closest.x - center.x, closest.z - center.z);
+            if (flat <= kind.radius && Math.abs(closest.y - center.y) <= kind.height / 2) best = along;
+        }
+        return best < distance ? start.clone().addScaledVector(direction, best + 0.08) : null;
+    }
+
+    private syncBolts(view: WorldView, dt: number): void {
+        for (const id of this.bolts.keys()) if (!view.bolts.get(id)) this.dropBolt(id);
+        view.bolts.forEach((state, id) => {
+            let shown = this.bolts.get(id);
+            if (!shown) {
+                const mesh = new THREE.Group();
+                mesh.add(new THREE.Mesh(boltGlowGeometry, boltGlowMaterial), new THREE.Mesh(boltCoreGeometry, boltCoreMaterial));
+                this.scene.add(mesh);
+                shown = { mesh, position: new THREE.Vector3(), velocity: new THREE.Vector3(), seen: new THREE.Vector3(NaN, NaN, NaN) };
+                this.bolts.set(id, shown);
             }
+            if (shown.seen.x !== state.x || shown.seen.y !== state.y || shown.seen.z !== state.z) {
+                shown.seen.set(state.x, state.y, state.z);
+                shown.position.set(state.x, state.y, state.z);
+                shown.velocity.set(state.vx, state.vy, state.vz);
+            } else shown.position.addScaledVector(shown.velocity, dt);
+            shown.mesh.position.copy(shown.position);
+        });
+    }
+
+    private syncOils(view: WorldView): void {
+        for (const [id, mesh] of this.oils) {
+            if (view.oils.get(id)) continue;
+            mesh.removeFromParent();
+            this.oils.delete(id);
         }
-        if (arrow.profile.aura > 0) {
-            this.puff(point.x, 0.4, point.z, 0xb7e6ff, arrow.profile.aura * 0.4);
-            for (const enemy of this.enemies) {
-                if (enemy.state === 'dying') continue;
-                if (Math.hypot(enemy.x - point.x, enemy.z - point.z) > arrow.profile.aura + enemy.kind.radius) continue;
-                enemy.slow = Math.max(enemy.slow, 2.6);
-                enemy.slowMul = arrow.profile.slow;
+        view.oils.forEach((state, id) => {
+            if (this.oils.has(id)) return;
+            const mesh = new THREE.Mesh(oilGeometry, oilMaterial);
+            mesh.rotation.x = -Math.PI / 2;
+            mesh.position.set(state.x, 0.08, state.z);
+            mesh.scale.set(3.3, SPELL.oil.reach, 1);
+            this.scene.add(mesh);
+            this.oils.set(id, mesh);
+        });
+    }
+
+    private syncArchers(view: WorldView, me: string, ease: number): void {
+        for (const id of this.archers.keys()) if (id === me || !view.players.get(id)) this.dropArcher(id);
+        view.players.forEach((state: PlayerView, id) => {
+            if (id === me) return;
+            let shown = this.archers.get(id);
+            if (!shown) {
+                shown = { rig: new ArcherRig(state.name, state.slot), x: state.x, z: state.z, yaw: state.yaw, pitch: state.pitch };
+                this.scene.add(shown.rig.root);
+                this.archers.set(id, shown);
             }
-        }
-        if (arrow.profile.chain > 0 && primary) this.chainFrom(primary, arrow.profile, report);
+            const beforeX = shown.x;
+            const beforeZ = shown.z;
+            shown.x += (state.x - shown.x) * ease;
+            shown.z += (state.z - shown.z) * ease;
+            shown.yaw += wrapAngle(state.yaw - shown.yaw) * ease;
+            shown.pitch += (state.pitch - shown.pitch) * ease;
+            const eye = eyePosition(shown.x, shown.z, shown.yaw, shown.pitch);
+            const lean = Math.min(leanDistance(shown.pitch), Math.hypot(eye.x - shown.x, eye.z - shown.z));
+            shown.rig.pose(shown.x, LAYOUT.walkwayY, shown.z, shown.yaw, shown.pitch, state.draw, lean,
+                Math.hypot(shown.x - beforeX, shown.z - beforeZ));
+        });
     }
 
-    private chainFrom(first: Enemy, profile: ShotProfile, report: StepReport): void {
-        const hit = new Set<Enemy>([first]);
-        let current = first;
-        let power = profile.damage * 0.72;
-        for (let jump = 0; jump < profile.chain; jump++) {
-            const next = this.nearest(current, SPELL.spark.range, hit);
-            if (!next) break;
-            this.sparkBetween(current, next);
-            this.hurt(next, power, { ...profile, chain: 0, explode: 0 }, report);
-            hit.add(next);
-            current = next;
-            power *= 0.72;
-        }
+    private dropEnemy(id: string): void {
+        const shown = this.enemies.get(id);
+        if (!shown) return;
+        for (const [arrowId, arrow] of this.arrows) if (arrow.mesh.parent === shown.rig.root) this.dropArrow(arrowId);
+        shown.rig.root.removeFromParent();
+        shown.rig.dispose();
+        this.enemies.delete(id);
     }
 
-    private nearest(from: Enemy, range: number, skip: Set<Enemy>): Enemy | null {
-        let best: Enemy | null = null;
-        let bestDistance = range;
-        for (const enemy of this.enemies) {
-            if (skip.has(enemy) || enemy.state === 'dying') continue;
-            const distance = Math.hypot(enemy.x - from.x, enemy.z - from.z);
-            if (distance < bestDistance) {
-                best = enemy;
-                bestDistance = distance;
-            }
-        }
-        return best;
+    private dropArrow(id: string): void {
+        const shown = this.arrows.get(id);
+        if (!shown) return;
+        this.releaseArrow(shown.mesh);
+        this.arrows.delete(id);
     }
 
-    private hurt(enemy: Enemy, amount: number, profile: ShotProfile, report: StepReport): void {
-        if (enemy.state === 'dying') return;
-        const rolled = rolledDamage({ ...profile, damage: amount }, enemy.kind.id, Math.random());
-        if (profile.burn > 0) {
-            enemy.burn = Math.max(enemy.burn, 3.2);
-            enemy.burnDps = Math.max(enemy.burnDps, profile.burn);
-        }
-        if (profile.slow > 0) {
-            enemy.slow = Math.max(enemy.slow, 2.4);
-            enemy.slowMul = profile.slow;
-        }
-        if (profile.knockback > 0) {
-            const shove = profile.knockback * (enemy.kind.id === 'brute' ? 0.35 : 1);
-            enemy.z = Math.max(ENEMY_MOTION.spawnZ + 1, enemy.z - shove);
-            enemy.rig.root.position.z = enemy.z;
-            if (enemy.state === 'striking') enemy.state = 'walking';
-        }
-        report.hits++;
-        this.wound(enemy, rolled.damage, report);
+    private dropGhost(seq: number): void {
+        const ghost = this.ghosts.get(seq);
+        if (!ghost) return;
+        this.releaseArrow(ghost.mesh);
+        this.ghosts.delete(seq);
     }
 
-    /** Returns true when this blow drops the foe. */
-    private wound(enemy: Enemy, amount: number, report: StepReport, flash = true): boolean {
-        if (enemy.state === 'dying') return false;
-        enemy.health -= amount;
-        if (flash) enemy.rig.hit();
-        enemy.rig.setHealth(Math.max(0, enemy.health) / enemy.maxHealth);
-        if (enemy.health > 0) return false;
-        report.kills++;
-        report.xp += enemy.kind.xp;
-        enemy.state = 'dying';
-        enemy.deathTime = 0;
-        this.enemyByCollider.delete(enemy.collider.handle);
-        this.physics.removeRigidBody(enemy.body);
-        return true;
+    private dropBolt(id: string): void {
+        this.bolts.get(id)?.mesh.removeFromParent();
+        this.bolts.delete(id);
     }
 
-    private clipBolts(from: THREE.Vector3, to: THREE.Vector3, report: StepReport): void {
-        for (let index = this.bolts.length - 1; index >= 0; index--) {
-            const bolt = this.bolts[index];
-            if (!segmentNear(from, to, bolt.position, 0.48)) continue;
-            this.puff(bolt.position.x, bolt.position.y, bolt.position.z, 0xffe7a8, 0.35);
-            bolt.mesh.removeFromParent();
-            this.bolts.splice(index, 1);
-            report.hits++;
-        }
-    }
-
-    private embed(arrow: FlyingArrow, direction: THREE.Vector3, enemy: Enemy | null): void {
-        arrow.mesh.position.copy(arrow.position);
-        arrow.mesh.quaternion.setFromUnitVectors(ARROW_FORWARD, direction);
-        if (enemy) {
-            arrow.mesh.updateMatrixWorld(true);
-            enemy.rig.root.updateMatrixWorld(true);
-            scratch.matrix.copy(enemy.rig.root.matrixWorld).invert().multiply(arrow.mesh.matrixWorld);
-            scratch.matrix.decompose(arrow.mesh.position, arrow.mesh.quaternion, arrow.mesh.scale);
-            enemy.rig.root.add(arrow.mesh);
-        }
-        this.stuck.push({ mesh: arrow.mesh, age: 0 });
+    private dropArcher(id: string): void {
+        const shown = this.archers.get(id);
+        if (!shown) return;
+        shown.rig.root.removeFromParent();
+        shown.rig.dispose();
+        this.archers.delete(id);
     }
 
     private puff(x: number, y: number, z: number, color: number, radius: number): void {
@@ -800,10 +461,10 @@ export class DefenderWorld {
         this.puffs.push({ mesh, age: 0 });
     }
 
-    private sparkBetween(from: Enemy, to: Enemy): void {
+    private spark(ax: number, az: number, bx: number, bz: number): void {
         const geometry = new THREE.BufferGeometry().setFromPoints([
-            new THREE.Vector3(from.x, 0.9, from.z),
-            new THREE.Vector3(to.x, 0.9, to.z),
+            new THREE.Vector3(ax, 0.9, az),
+            new THREE.Vector3(bx, 0.9, bz),
         ]);
         const line = new THREE.Line(geometry, new THREE.LineBasicMaterial({ color: 0xffe7a8, transparent: true, opacity: 1 }));
         this.scene.add(line);
@@ -852,26 +513,10 @@ export class DefenderWorld {
         this.sparks.length = 0;
     }
 
-    private removeEnemy(enemy: Enemy): void {
-        const index = this.enemies.indexOf(enemy);
-        if (index >= 0) this.enemies.splice(index, 1);
-        for (let arrowIndex = this.stuck.length - 1; arrowIndex >= 0; arrowIndex--) {
-            if (this.stuck[arrowIndex].mesh.parent === enemy.rig.root) {
-                this.releaseArrow(this.stuck[arrowIndex].mesh);
-                this.stuck.splice(arrowIndex, 1);
-            }
-        }
-        if (enemy.state !== 'dying') {
-            this.enemyByCollider.delete(enemy.collider.handle);
-            this.physics.removeRigidBody(enemy.body);
-        }
-        enemy.rig.root.removeFromParent();
-        enemy.rig.dispose();
-    }
-
     private takeArrow(): THREE.Group {
         const arrow = this.arrowPool.pop() ?? createArrowMesh();
         arrow.scale.setScalar(1);
+        arrow.visible = true;
         return arrow;
     }
 
@@ -881,16 +526,25 @@ export class DefenderWorld {
     }
 }
 
-function segmentNear(from: THREE.Vector3, to: THREE.Vector3, point: THREE.Vector3, radius: number): boolean {
-    const abx = to.x - from.x;
-    const aby = to.y - from.y;
-    const abz = to.z - from.z;
-    const lengthSq = abx * abx + aby * aby + abz * abz;
-    const t = lengthSq > 0
-        ? Math.max(0, Math.min(1, ((point.x - from.x) * abx + (point.y - from.y) * aby + (point.z - from.z) * abz) / lengthSq))
-        : 0;
-    const dx = from.x + abx * t - point.x;
-    const dy = from.y + aby * t - point.y;
-    const dz = from.z + abz * t - point.z;
-    return dx * dx + dy * dy + dz * dz <= radius * radius;
+/** The sim's flight model: quadratic drag, then gravity. Moves `position` by the new velocity. */
+function fly(position: THREE.Vector3, velocity: THREE.Vector3, dt: number): void {
+    const drag = 1 - ARROW.drag * velocity.length() * dt;
+    velocity.x *= drag;
+    velocity.y = velocity.y * drag - ARROW.gravity * dt;
+    velocity.z *= drag;
+    position.addScaledVector(velocity, dt);
 }
+
+function orient(mesh: THREE.Object3D, velocity: THREE.Vector3): void {
+    if (velocity.lengthSq() < 0.0001) return;
+    mesh.quaternion.setFromUnitVectors(ARROW_FORWARD, scratch.direction.copy(velocity).normalize());
+}
+
+function toVector(point: { x: number; y: number; z: number }): THREE.Vector3 {
+    return new THREE.Vector3(point.x, point.y, point.z);
+}
+
+function wrapAngle(angle: number): number {
+    return Math.atan2(Math.sin(angle), Math.cos(angle));
+}
+

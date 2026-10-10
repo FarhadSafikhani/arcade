@@ -1,6 +1,6 @@
 # Defender design
 
-Defender is a first-person archery defense game. You are an archer on the walkway above a castle gate. A stone bridge crosses the moat to your gate, and waves of goblins rush across it to break the gate down. You shoot them before they reach it. The run ends when the gate falls.
+Defender is a first-person archery defense game, played alone or in co-op with up to four archers. You are an archer on the walkway above a castle gate. A stone bridge crosses the moat to your gate, and waves of goblins rush across it to break the gate down. You shoot them before they reach it. The run ends when the gate falls.
 
 This page is the lasting design: what the game is, how it should feel and look, and which layers come next. Numbers live in [tuning.ts](tuning.ts); this page explains intent, not values.
 
@@ -85,6 +85,20 @@ The wave break is a real game state. Upgrade choices will happen there.
 
 Ready → Playing → Wave break → Playing … → Game over. Pause can interrupt Playing or Wave break and returns to the same state. Losing pointer lock or hiding the tab pauses the game. Choosing a card releases the mouse on purpose and does not pause.
 
+Co-op adds a lobby: Ready → Lobby → Playing. In co-op, pausing only frees your mouse; the fight goes on. Anyone in the room can open the gate or start again after it falls.
+
+## Co-op
+
+Up to four archers hold one gate together. The server runs the only simulation (Colyseus, server-authoritative) and replicates it to every client.
+
+- **Shared:** the gate, the wave, every foe, arrow, fire bolt, and oil slick.
+- **Each archer's own:** position, level, experience, cards, spells, and cooldowns. Every kill teaches every archer, so the team levels together, and each archer picks their own cards. The wave break waits until everyone has chosen.
+- **More archers, bigger waves.** Each archer past the first adds 25% more foes (`WAVES.extraPerArcher`) and 80% more health to every foe (`WAVES.healthPerArcher`). Mason's Bond from each archer strengthens the one gate; the best Gate Wright on the wall sets how much of each blow lands.
+- **Feel.** Your own walking and aiming never wait for the network. Your arrow flies on your screen the moment you loose it, and the server's copy takes over where it lands. The server checks every stride and shot: no walking off the wall, no shooting faster than the nock allows, no draw longer than the time held.
+- **Joining.** "Defend together" joins any open room. The room code goes into the page URL (`?room=`), so the address bar is the invite link. Late joiners start at level 1.
+
+Solo play runs the same simulation in the page, with no server.
+
 ## Audio
 
 Short synthesized cues: bow release (stronger with draw), hit, death, arrow sticking in stone, gate strike, wave horn, game over. No music yet.
@@ -109,8 +123,14 @@ Out of scope: side paths, allied tower archers, enemies swimming or climbing, an
 | [look.ts](look.ts) | Painted textures and the moat shader |
 | [goblin.ts](goblin.ts) | Foe rigs: goblin, runner, brute, shield bearer, caster |
 | [bow.ts](bow.ts) | First-person bow and the shared arrow mesh |
-| [world.ts](world.ts) | Rapier world, arrow flight, foe steering, spells, player movement, rendering |
+| [sim.ts](sim.ts) | The whole run with nothing drawn: Rapier world, arrow flight, foe steering, spells, waves, cards, gate, every archer. Runs on the co-op server, or in the page for solo play |
+| [world.ts](world.ts) | Rendering: draws any `WorldView`, smooths network motion, flies your own arrows ahead of the server |
+| [archer.ts](archer.ts) | Other archers on the wall, with name tags |
+| [net/schema.ts](net/schema.ts) | Replicated Colyseus state and client messages, shared by server and client |
+| [net/link.ts](net/link.ts) | `LocalLink` (solo sim) and `NetLink` (co-op room) behind one interface |
 | [audio.ts](audio.ts) | Synthesized sound cues |
-| [game.ts](game.ts) | Game states, input, pointer lock, waves, cards, gate, HUD |
+| [game.ts](game.ts) | Screens, input, pointer lock, prediction of your own feet and bow, cards, HUD |
+| [server/defender.ts](../../../server/defender.ts) | Co-op server entry: Colyseus on the game-host routes |
+| [server/defender-room.ts](../../../server/defender-room.ts) | The room: runs a `DefenderSim` and mirrors it into the schema |
 
-`npm run test:defender` covers the pure rules.
+`npm run test:defender` covers the pure rules. `npm run server` starts the co-op server, and `npm run smoke:defender` plays two archers against it.

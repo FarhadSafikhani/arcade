@@ -259,6 +259,35 @@ kbd { justify-self: end; padding: 2px 8px; border: 1px solid #c9a46a88; border-r
 .panel .primary { border-color: #e4a0a3; background: var(--defender-accent); }
 .panel .primary:hover { background: var(--defender-accent-hover); }
 
+/* Co-op */
+.coop-row { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: var(--defender-space-2); }
+.name-field { display: flex; align-items: center; gap: var(--defender-space-1); font: 600 13px var(--defender-display); letter-spacing: 0.06em; color: #f1d9a8; }
+.name-field input {
+    width: 130px;
+    min-height: 44px;
+    padding: 8px 10px;
+    border: 1px solid var(--defender-panel-edge);
+    border-radius: 8px;
+    background: #1c120a99;
+    color: var(--defender-ink);
+    font: 600 15px var(--defender-body);
+}
+.panel button:disabled { opacity: 0.6; cursor: progress; }
+.room-code { font-family: var(--defender-body); letter-spacing: 0.04em; user-select: all; }
+.crew-list, .crew { margin: 0; padding: 0; list-style: none; }
+.crew-list { display: grid; gap: var(--defender-space-1); font: 700 16px var(--defender-display); }
+.crew-list li, .crew li { display: flex; align-items: center; gap: 8px; }
+.crew-list li::before, .crew li::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--archer, #fff8ea); box-shadow: 0 0 0 1px #1c120a; }
+.crew {
+    position: absolute;
+    top: 64px;
+    left: var(--defender-inset);
+    display: grid;
+    gap: 4px;
+    font: 600 13px var(--defender-body);
+}
+.crew[hidden] { display: none; }
+
 @media (max-width: 640px) {
     .hud-brand span { display: none; }
     .hud-wave, .hud-gate { font-size: 15px; }

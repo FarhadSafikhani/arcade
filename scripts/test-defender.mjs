@@ -138,3 +138,40 @@ test('best wave reads defensively from storage', () => {
     assert.equal(rules.readBestWave({ getItem: () => 'nope' }, 'key'), 0);
     assert.equal(rules.readBestWave({ getItem: () => { throw new Error('blocked'); } }, 'key'), 0);
 });
+
+test('the aim the server fires along matches the camera, and the eye leans only where stone allows', () => {
+    const level = rules.aimDirection(0, 0);
+    assert.ok(Math.abs(level.x) < 1e-9 && Math.abs(level.y) < 1e-9 && Math.abs(level.z + 1) < 1e-9, 'yaw 0 looks down the bridge (-Z)');
+    const up = rules.aimDirection(0, 0.5);
+    assert.ok(up.y > 0, 'positive pitch looks up');
+    const standing = rules.eyePosition(0, PLAYER.walk.z.max, 0, 0);
+    assert.equal(standing.z, PLAYER.walk.z.max, 'looking level does not lean');
+    const leaning = rules.eyePosition(0, PLAYER.walk.z.min, 0, -PLAYER.pitchLimit);
+    assert.ok(leaning.z < PLAYER.walk.z.min && leaning.z >= PLAYER.leanLimitZ, 'looking down leans out, but not past the limit');
+    const turned = rules.turnAboutY({ x: 0, y: 0, z: -1 }, Math.PI / 2);
+    assert.ok(Math.abs(turned.x + 1) < 1e-9, 'turning a quarter left swings -Z to -X');
+});
+
+test('walking slides along the wall instead of stopping dead', () => {
+    const edge = PLAYER.walk.z.min;
+    const slid = rules.stepFeet(0, edge, 0.3, -0.5);
+    assert.equal(slid.z, edge, 'cannot step off the front of the walkway');
+    assert.ok(Math.abs(slid.x - 0.3) < 1e-9, 'but still moves sideways');
+});
+
+test('more archers on the wall draw bigger waves', () => {
+    assert.deepEqual(rules.spawnList(4, 1), rules.spawnList(4), 'solo waves are unchanged');
+    assert.ok(rules.spawnList(4, 3).length > rules.spawnList(4, 2).length);
+    assert.ok(rules.spawnList(4, 2).length > rules.spawnList(4, 1).length);
+});
+
+test('each extra archer adds a quarter more foes and four fifths more health', () => {
+    assert.equal(rules.crowdFactor(1), 1);
+    assert.equal(rules.crowdFactor(2), 1.25);
+    assert.equal(rules.crowdFactor(4), 1.75);
+    assert.equal(rules.wavePlan(8, 1)[0].count, 12);
+    assert.equal(rules.wavePlan(8, 2)[0].count, 15);
+    assert.equal(rules.scaleEnemy(GOBLIN, 1, 1).health, GOBLIN.health);
+    assert.equal(rules.scaleEnemy(GOBLIN, 1, 2).health, Math.round(GOBLIN.health * 1.8));
+    assert.equal(rules.scaleEnemy(GOBLIN, 1, 3).health, Math.round(GOBLIN.health * 2.6));
+});

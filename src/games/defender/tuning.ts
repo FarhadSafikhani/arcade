@@ -235,7 +235,31 @@ export const WAVES = {
     spawnGapShrink: 0.1,
     minSpawnGap: 0.45,
     breakSeconds: 6,
+    /** Each archer past the first adds this share of every group on a wave. */
+    extraPerArcher: 0.25,
+    /** Each archer past the first adds this share of every foe's health. */
+    healthPerArcher: 0.8,
 };
+
+export const NET = {
+    port: 2567,
+    roomName: 'defender',
+    maxArchers: 4,
+    /** Milliseconds between state patches sent to clients. */
+    patchMs: 33,
+    /** Seconds between pose updates a client sends. */
+    inputInterval: 1 / 30,
+    /** A pose may not move further than walk speed times this, plus `moveSlack`, since the last one. */
+    moveTolerance: 1.6,
+    moveSlack: 0.35,
+    /** Seconds of latency forgiven on the nock delay and the draw. */
+    shotSlack: 0.15,
+    /** The client snaps its feet to the server when they disagree by more than this. */
+    snapDistance: 1.5,
+};
+
+/** Cloak colors for archers 1 to 4. */
+export const ARCHER_COLORS = [0xb8282e, 0x2d6fb8, 0xd9a321, 0x3f9a4a] as const;
 
 export const GATE = {
     health: 100,
