@@ -1,14 +1,19 @@
 /**
- * Builds Defender as a RareCandy game-host release (https://rarecandy.ca/game-host/):
+ * Builds Defender with its co-op server, ready to host. Two targets:
  *
+ * --target railway (default): one Node service that is the whole site.
  *   release/
- *     game.json            manifest with the co-op backend
- *     public/              the game page, assets pinned to /defender/releases/<id>/
+ *     package.json         `npm start` runs the server, which also serves public/
+ *     railway.json         start command and the /healthz deploy check
+ *     public/              the game page at /
  *     server/index.mjs     the Colyseus server, bundled with every dependency
+ *   Deploy: cd <DIR> && railway up
  *
- * Usage: node scripts/build-defender-release.mjs [--release ID] [--output DIR]
- * Then publish from the rarecandy-games repo:
- *   node tools/publish-game.mjs --slug defender --directory <DIR>
+ * --target rarecandy: a RareCandy game-host release (https://rarecandy.ca/game-host/).
+ *   game.json, public/ pinned to /defender/releases/<id>/, server/index.mjs.
+ *   Publish from rarecandy-games: node tools/publish-game.mjs --slug defender --directory <DIR>
+ *
+ * Usage: node scripts/build-defender-release.mjs [--target railway|rarecandy] [--release ID] [--output DIR]
  */
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
@@ -34,11 +39,13 @@ try {
 } catch (error) {
     if (error.code !== 'ENOENT') throw error;
 }
-const base = `/${SLUG}/releases/${releaseId}/`;
+const target = args.target ?? 'railway';
+if (target !== 'railway' && target !== 'rarecandy') throw new Error(`Unknown target: ${target}`);
+const base = target === 'railway' ? '/' : `/${SLUG}/releases/${releaseId}/`;
 const staging = path.join(output, '.vite');
 
-// Browser: just the Defender page, talking to the backend through the host's /defender/ws route.
-process.env.VITE_DEFENDER_SERVER = `/${SLUG}/ws`;
+// Browser: just the Defender page, talking to the server on the same origin.
+process.env.VITE_DEFENDER_SERVER = target === 'railway' ? '/ws' : `/${SLUG}/ws`;
 await viteBuild({
     root,
     base,
@@ -80,7 +87,26 @@ await esbuild({
     banner: { js: "import { createRequire as __createRequire } from 'node:module'; const require = __createRequire(import.meta.url);" },
 });
 
-await fs.writeFile(path.join(output, 'game.json'), JSON.stringify({
+if (target === 'railway') {
+    await fs.writeFile(path.join(output, 'package.json'), JSON.stringify({
+        name: SLUG,
+        private: true,
+        type: 'module',
+        engines: { node: '22.x' },
+        scripts: { start: 'node server/index.mjs --public public' },
+    }, null, 2) + '\n');
+    // Railway: gate each deploy on the same health check the server already answers.
+    await fs.writeFile(path.join(output, 'railway.json'), JSON.stringify({
+        $schema: 'https://railway.com/railway.schema.json',
+        deploy: {
+            startCommand: 'npm start',
+            healthcheckPath: '/healthz',
+            healthcheckTimeout: 60,
+            restartPolicyType: 'ON_FAILURE',
+            restartPolicyMaxRetries: 5,
+        },
+    }, null, 2) + '\n');
+} else await fs.writeFile(path.join(output, 'game.json'), JSON.stringify({
     schemaVersion: 1,
     slug: SLUG,
     name: NAME,

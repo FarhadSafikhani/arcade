@@ -23,21 +23,25 @@ npm run dev             # then open /arcade/games/defender/ and choose "Defend t
 npm run smoke:defender  # two scripted archers join, start a run, and shoot
 ```
 
-Co-op is hosted on the RareCandy game host (https://rarecandy.ca/game-host/) as the `defender` slug,
-at https://games.rarecandy.ca/defender/. GitHub Pages serves only static files, so the arcade copy of
-Defender there is solo only: "Defend together" reports that it cannot reach a server.
+Co-op is live at https://defender-production.up.railway.app (Railway project `defender`, service
+`defender`). One Node service serves the page at `/` and the Colyseus server at `/ws`. GitHub Pages
+serves only static files, so the arcade copy of Defender there is solo only: "Defend together" reports
+that it cannot reach a server.
 
-Build a release, then publish it with the host's client from a clone of netherglaive/rarecandy-games:
+To deploy a new version, build the folder and upload it:
 
 ```sh
 npm run release:defender -- --output releases/defender/<release-id>
-node tools/publish-game.mjs --slug defender --directory <path-to>/releases/defender/<release-id>
+cd releases/defender/<release-id>
+railway link --project defender --service defender   # once per folder
+railway up --service defender --ci
 ```
 
-Publishing needs `GAME_HOST_URL` and a game-scoped `GAME_HOST_TOKEN` for `defender` in the environment.
-Never commit or paste the token. Each release ID must be new. Bump `PROTOCOL` in
-`src/games/defender/net/schema.ts` whenever the wire format changes, so open tabs from an older
-release refuse the new server instead of misreading it.
+The same builder can target the RareCandy game host instead (`--target rarecandy`), which publishes
+under `/defender/` with `tools/publish-game.mjs` from netherglaive/rarecandy-games.
+
+Bump `PROTOCOL` in `src/games/defender/net/schema.ts` whenever the wire format changes, so open tabs
+from an older build refuse the new server instead of misreading it.
 
 ## Deploy to GitHub Pages
 
